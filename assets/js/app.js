@@ -19,7 +19,7 @@ import settings from './views/settings.js';
 const ROUTES = { dashboard, ventures, engine, wiki, claude, finance, treasury, property, investments, legal, math: mathlab, settings };
 const NAV = [
   ['Command', [['dashboard', 'Command Centre', 'dashboard']]],
-  ['Build', [['ventures', 'Venture Engine', 'ventures'], ['engine', 'Engine 3D', 'cube'], ['wiki', 'Knowledge Wiki', 'wiki'], ['claude', 'Claude Desk', 'claude']]],
+  ['Build', [['ventures', 'Venture Engine', 'ventures'], ['engine', 'The Tower', 'tower'], ['wiki', 'Knowledge Wiki', 'wiki'], ['claude', 'Claude Desk', 'claude']]],
   ['Wealth', [['treasury', 'Treasury', 'treasury'], ['investments', 'Investments', 'investments'], ['property', 'Property', 'property'], ['finance', 'Accounting', 'finance']]],
   ['Govern', [['legal', 'Legal & Entities', 'legal'], ['math', 'Mastermind Lab', 'math']]],
 ];
