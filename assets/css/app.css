@@ -116,7 +116,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
-#top .crumb { color: var(--muted); font-size: 13px; }
+#top .crumb { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 #top .crumb b { color: var(--text); font-weight: 600; }
 #top .spacer { flex: 1; }
 #top .menu-btn { display: none; }
