@@ -371,7 +371,10 @@ pre.prompt { background: var(--bg-2); border: 1px solid var(--line); border-radi
 /* ---------- Engine 3D ---------- */
 .eng-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: stretch; }
 .eng-stage { position: relative; height: 660px; background: #07101a; overflow: hidden; touch-action: none; }
-.eng-stage canvas { display: block; width: 100%; height: 100%; }
+.eng-stage canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+#eng-canvas { pointer-events: none; }
+#eng-overlay { cursor: grab; }
+.eng-fallback { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; padding: 24px; gap: 6px; color: var(--text); }
 .eng-hint { position: absolute; left: 14px; bottom: 10px; color: var(--muted); pointer-events: none; }
 .eng-panel { height: 660px; overflow-y: auto; }
 .eng-head { margin-bottom: 10px; }
