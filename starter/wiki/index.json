@@ -1,14 +1,14 @@
 {
-  "updated": "2026-11-07T12:37:37.195Z",
+  "updated": "2026-11-08T08:09:33.630Z",
   "stats": {
-    "articles": 8,
-    "sources": 19,
-    "links": 29,
-    "words": 3360,
+    "articles": 14,
+    "sources": 110,
+    "links": 62,
+    "words": 13234,
     "confidence": {
       "high": 7,
-      "medium": 1,
-      "low": 0
+      "medium": 5,
+      "low": 2
     }
   },
   "missingLinks": [],
@@ -57,11 +57,43 @@
       "sources": 2,
       "links": [
         "empire-principles",
+        "uae-corporate-tax-essentials",
         "treasury-liquidity-tiers",
         "venture-validation-framework"
       ],
-      "words": 419,
+      "words": 432,
       "path": "wiki/articles/double-entry-accounting.md"
+    },
+    {
+      "slug": "dubai-property-purchase-costs-and-rental-yield-data",
+      "title": "Dubai Property Purchase Costs and Rental Yield Data",
+      "domain": "Property",
+      "tags": [
+        "dubai",
+        "property",
+        "dld",
+        "transfer-fee",
+        "mortgage",
+        "rental-index",
+        "yield",
+        "ejari",
+        "service-charges"
+      ],
+      "summary": "Budget about 7% of the price on top of the deposit for a mortgaged Dubai resale purchase (DLD 4%, agent 2% + VAT, trustee, mortgage registration 0.25%), and build net yields from DLD's own transaction, Ejari, rental-index and service-charge data rather than listing-based \"ROI\" figures.",
+      "confidence": "medium",
+      "created": "2026-11-08",
+      "updated": "2026-11-08",
+      "pinned": false,
+      "redirect": false,
+      "sources": 14,
+      "links": [
+        "property-investment-metrics",
+        "uae-corporate-tax-essentials",
+        "uae-holding-structures",
+        "treasury-liquidity-tiers"
+      ],
+      "words": 1772,
+      "path": "wiki/articles/dubai-property-purchase-costs-and-rental-yield-data.md"
     },
     {
       "slug": "empire-principles",
@@ -155,16 +187,18 @@
       "summary": "Judge property on net yield, cash-on-cash return, debt service cover and IRR — not on headline price or gross yield.",
       "confidence": "high",
       "created": "2026-11-07",
-      "updated": "2026-11-07",
+      "updated": "2026-11-08",
       "pinned": false,
       "redirect": false,
-      "sources": 2,
+      "sources": 3,
       "links": [
+        "dubai-property-purchase-costs-and-rental-yield-data",
         "compounding-and-the-rule-of-72",
         "treasury-liquidity-tiers",
-        "empire-principles"
+        "empire-principles",
+        "uae-holding-structures"
       ],
-      "words": 453,
+      "words": 566,
       "path": "wiki/articles/property-investment-metrics.md"
     },
     {
@@ -189,10 +223,167 @@
         "kelly-criterion-and-position-sizing",
         "empire-principles",
         "property-investment-metrics",
-        "double-entry-accounting"
+        "double-entry-accounting",
+        "dubai-property-purchase-costs-and-rental-yield-data"
       ],
-      "words": 397,
+      "words": 415,
       "path": "wiki/articles/treasury-liquidity-tiers.md"
+    },
+    {
+      "slug": "uae-corporate-tax-essentials",
+      "title": "UAE Corporate Tax Essentials",
+      "domain": "Legal & Structuring",
+      "tags": [
+        "uae",
+        "tax",
+        "corporate-tax",
+        "small-business-relief",
+        "free-zone",
+        "qfzp",
+        "natural-persons",
+        "compliance",
+        "e-invoicing"
+      ],
+      "summary": "Each venture pays 0% up to AED 375,000 of taxable profit and 9% above, Small Business Relief (revenue ≤ AED 3m) now runs to tax periods ending 31 Dec 2029, and an individual trading personally is taxable once combined business turnover exceeds AED 1m — but registration, returns and records are required regardless.",
+      "confidence": "medium",
+      "created": "2026-11-08",
+      "updated": "2026-11-08",
+      "pinned": false,
+      "redirect": false,
+      "sources": 13,
+      "links": [
+        "uae-holding-structures",
+        "dubai-property-purchase-costs-and-rental-yield-data",
+        "double-entry-accounting",
+        "venture-validation-framework"
+      ],
+      "words": 1663,
+      "path": "wiki/articles/uae-corporate-tax-essentials.md"
+    },
+    {
+      "slug": "uae-holding-structures",
+      "title": "UAE Holding Structures",
+      "domain": "Legal & Structuring",
+      "tags": [
+        "uae",
+        "structuring",
+        "holding-company",
+        "adgm",
+        "difc",
+        "rak-icc",
+        "mainland",
+        "foundations",
+        "corporate-tax",
+        "succession"
+      ],
+      "summary": "Hold venture shares in a low-cost free zone holdco (ADGM SPV or DIFC prescribed company), keep Dubai rental property out of any company that relies on 0% free zone status, and confirm DLD eligibility before buying property through an entity.",
+      "confidence": "medium",
+      "created": "2026-11-08",
+      "updated": "2026-11-08",
+      "pinned": false,
+      "redirect": false,
+      "sources": 17,
+      "links": [
+        "uae-corporate-tax-essentials",
+        "dubai-property-purchase-costs-and-rental-yield-data",
+        "property-investment-metrics",
+        "empire-principles",
+        "venture-dossier-al-ain-ostrich-farm"
+      ],
+      "words": 1884,
+      "path": "wiki/articles/uae-holding-structures.md"
+    },
+    {
+      "slug": "venture-dossier-al-ain-ostrich-farm",
+      "title": "Venture Dossier: Al Ain Ostrich Farm",
+      "domain": "Business & Ventures",
+      "tags": [
+        "venture",
+        "ostrich",
+        "al-ain",
+        "agri-tourism",
+        "farming",
+        "adafsa",
+        "moccae",
+        "south-africa",
+        "diligence"
+      ],
+      "summary": "The biggest risks are permission and supply, not demand — ADAFSA's farm-activity rules do not name ostriches, the Abu Dhabi Farm Licence is for Emirati farm owners, live birds from South Africa were banned in 2019, and an established state-backed ostrich farm (Ostrich Oasis, ~2,000 birds, 75 t meat/yr) already operates in Al Ain.",
+      "confidence": "low",
+      "created": "2026-11-08",
+      "updated": "2026-11-08",
+      "pinned": false,
+      "redirect": false,
+      "sources": 17,
+      "links": [
+        "venture-validation-framework",
+        "uae-corporate-tax-essentials",
+        "uae-holding-structures",
+        "treasury-liquidity-tiers"
+      ],
+      "words": 1629,
+      "path": "wiki/articles/venture-dossier-al-ain-ostrich-farm.md"
+    },
+    {
+      "slug": "venture-dossier-dcs-golf",
+      "title": "Venture Dossier: DCS Golf",
+      "domain": "Business & Ventures",
+      "tags": [
+        "venture",
+        "dcs-golf",
+        "golf",
+        "luxury",
+        "leather",
+        "canvas",
+        "dtc",
+        "licensing",
+        "diligence"
+      ],
+      "summary": "Hand-made leather golf bags sit in a proven USD 850–1,200 band (MacKenzie, Vessel leather, Sun Mountain Legacy), but at home-made labour costs the margin is thin and the cheap home-business licences are for UAE/GCC nationals only — validate price with pre-orders and corporate gifting before buying tooling or stock.",
+      "confidence": "low",
+      "created": "2026-11-08",
+      "updated": "2026-11-08",
+      "pinned": false,
+      "redirect": false,
+      "sources": 16,
+      "links": [
+        "venture-dossier-wednesday-circuit",
+        "double-entry-accounting",
+        "uae-corporate-tax-essentials",
+        "venture-validation-framework",
+        "uae-holding-structures"
+      ],
+      "words": 1453,
+      "path": "wiki/articles/venture-dossier-dcs-golf.md"
+    },
+    {
+      "slug": "venture-dossier-wednesday-circuit",
+      "title": "Venture Dossier: Wednesday Circuit",
+      "domain": "Business & Ventures",
+      "tags": [
+        "venture",
+        "wednesday-circuit",
+        "golf",
+        "corporate-events",
+        "networking",
+        "dubai",
+        "diligence"
+      ],
+      "summary": "Demand context is strong (13 Dubai courses near peak capacity, fast-growing business base), but the venture lives or dies on securing a recurring peak-season tee-time block at premier courses and on executives paying a premium over sponsor-funded incumbents like the CEO Masters — test both before spending on brand.",
+      "confidence": "medium",
+      "created": "2026-11-08",
+      "updated": "2026-11-08",
+      "pinned": false,
+      "redirect": false,
+      "sources": 13,
+      "links": [
+        "venture-validation-framework",
+        "uae-corporate-tax-essentials",
+        "venture-dossier-dcs-golf",
+        "uae-holding-structures"
+      ],
+      "words": 1281,
+      "path": "wiki/articles/venture-dossier-wednesday-circuit.md"
     },
     {
       "slug": "venture-validation-framework",
@@ -208,16 +399,19 @@
       "summary": "Score ideas, list the assumptions that must be true, test the riskiest one cheaply, and release capital in stages as evidence arrives.",
       "confidence": "high",
       "created": "2026-11-07",
-      "updated": "2026-11-07",
+      "updated": "2026-11-08",
       "pinned": false,
       "redirect": false,
       "sources": 3,
       "links": [
+        "venture-dossier-wednesday-circuit",
+        "venture-dossier-dcs-golf",
+        "venture-dossier-al-ain-ostrich-farm",
         "kelly-criterion-and-position-sizing",
         "double-entry-accounting",
         "empire-principles"
       ],
-      "words": 480,
+      "words": 528,
       "path": "wiki/articles/venture-validation-framework.md"
     }
   ]

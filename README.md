@@ -10,6 +10,7 @@ The operating system of the De Castro Empire — one place to originate and exec
 |---|---|
 | Command Centre | Net worth, liquidity, runway, deadlines, next venture actions, latest research |
 | Venture Engine | Stage pipeline, weighted 100-point scoring, assumption mapping with "test next", tasks, unit economics, one-click diligence from Claude |
+| Engine 3D | Interactive 3D model of the pipeline: ventures orbit a stage ring, every module orbits the engine and links to the stages it powers; stage gates, readiness rings and one-click advance |
 | Knowledge Wiki | Sourced, dated, confidence-rated articles with wiki links, backlinks and stale flags |
 | Claude Desk | Research queue shared with Claude's scheduled tasks; approve Claude's proposals; copy prompts |
 | Treasury | Cash by liquidity tier vs targets, runway, recurring flows, 12-month forecast, FX |

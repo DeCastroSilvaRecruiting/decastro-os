@@ -34,7 +34,7 @@ function listView(s) {
   return `
   <div class="page-head"><div><div class="eyebrow">Build</div><h1>Venture Engine</h1>
     <p>Every idea moves through the same discipline: score it, state the assumptions that must be true, test the riskiest one first, and only then commit capital.</p></div>
-    <div class="actions"><button class="btn primary" data-act="new">${icon('plus')} New venture</button></div></div>
+    <div class="actions"><a class="btn" href="#/engine">${icon('cube')} View in 3D</a><button class="btn primary" data-act="new">${icon('plus')} New venture</button></div></div>
   <div class="kanban">${lanes}</div>
   <div class="card mt"><div class="card-head"><h3>How scoring works</h3></div>
     <div class="grid g4">${RUBRIC.map((r) => `<div><b>${esc(r.label)}</b><div class="muted small">Weight ${r.w}%</div></div>`).join('')}</div>

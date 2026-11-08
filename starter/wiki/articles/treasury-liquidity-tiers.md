@@ -45,6 +45,7 @@ The Treasury page shows each tier against its target. When the reserve is fully 
 - [[Empire Principles]] (principle 2)
 - [[Property Investment Metrics]]
 - [[Double-Entry Accounting]]
+- [[Dubai Property Purchase Costs and Rental Yield Data]] — property deposits need ~47% of price in cash
 
 ## Sources
 1. Association for Financial Professionals — CTP body of knowledge [T2]

@@ -52,6 +52,7 @@ sources:
 Each venture becomes an entity in De Castro OS with its own books from day one. Clean records lower audit and tax-filing costs, make bank and investor conversations easier, and are a precondition for raising capital or selling a business later. UAE filing and record-keeping obligations should be researched per entity — see [[Empire Principles]] (principle 9).
 
 ## Related
+- [[UAE Corporate Tax Essentials]] — the FTA expects 7 years of records
 - [[Treasury Liquidity Tiers]]
 - [[Venture Validation Framework]]
 

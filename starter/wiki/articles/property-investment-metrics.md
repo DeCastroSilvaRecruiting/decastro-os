@@ -5,8 +5,9 @@ tags: [property, real-estate, yield, cash-on-cash, dscr, irr]
 confidence: high
 summary: Judge property on net yield, cash-on-cash return, debt service cover and IRR — not on headline price or gross yield.
 created: 2026-11-07
-updated: 2026-11-07
+updated: 2026-11-08
 sources:
+  - Dubai Land Department — Request for sale registration (fees) — https://dubailand.gov.ae/en/eservices/request-for-sale-registration (accessed 2026-11-08) [T1]
   - Royal Institution of Chartered Surveyors — RICS Valuation – Global Standards (Red Book) — https://www.rics.org [T1]
   - Brealey, Myers & Allen — Principles of Corporate Finance, chs. 5–6 (NPV and IRR) [T1]
 ---
@@ -35,7 +36,9 @@ Price 1,500,000 · 75% LTV · rent 110,000/yr · 5% vacancy · service charge 18
 The **Deal analyser** under Property runs this with your own inputs, including acquisition fees and an exit.
 
 ## Acquisition costs
-Transfer fees, agency fees, mortgage registration and valuation fees add materially to the cash required, and are lost on day one. Current Dubai fee levels should be confirmed with the Dubai Land Department — a research item for Claude.
+Transfer fees, agency fees, trustee fees, mortgage registration and valuation are lost on day one. For a mortgaged Dubai resale purchase they total **about 7% of the price** (as of Nov 2026): DLD transfer fee 4% (officially 2% buyer + 2% seller), agency 2% + VAT, trustee AED 4,000 + VAT, mortgage registration 0.25% of the loan. Since Feb 2025 banks no longer finance these costs. Full breakdown, LTV limits and DLD data sources: [[Dubai Property Purchase Costs and Rental Yield Data]].
+
+Always compute net yield on **total cost** (price + acquisition costs), not price alone. In the example above, adding ~AED 105,000 of costs cuts net yield from 5.4% to about 5.0%.
 
 ## Key takeaways
 - Gross yield flatters; always compute net.
@@ -50,7 +53,10 @@ Only buy when net numbers work at today's rent and a higher rate. Treat expected
 - [[Compounding and the Rule of 72]]
 - [[Treasury Liquidity Tiers]] — keep reserves for voids and repairs
 - [[Empire Principles]] (principle 8)
+- [[Dubai Property Purchase Costs and Rental Yield Data]] — real Dubai fee and rent inputs
+- [[UAE Holding Structures]] — personal vs entity ownership
 
 ## Sources
 1. RICS — *Valuation – Global Standards* (Red Book) — https://www.rics.org [T1]
 2. Brealey, Myers & Allen — *Principles of Corporate Finance*, chs. 5–6 [T1]
+3. Dubai Land Department — Request for sale registration — https://dubailand.gov.ae/en/eservices/request-for-sale-registration (accessed 2026-11-08) [T1]

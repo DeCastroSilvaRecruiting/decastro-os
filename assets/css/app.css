@@ -367,3 +367,32 @@ pre.prompt { background: var(--bg-2); border: 1px solid var(--line); border-radi
   .g4 { grid-template-columns: 1fr; }
   .kpi .value { font-size: 27px; }
 }
+
+/* ---------- Engine 3D ---------- */
+.eng-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: stretch; }
+.eng-stage { position: relative; height: 660px; background: radial-gradient(ellipse at 50% 45%, var(--gold-soft), transparent 60%), var(--panel); touch-action: none; }
+.eng-stage canvas { display: block; width: 100%; height: 100%; }
+.eng-hint { position: absolute; left: 14px; bottom: 10px; color: var(--muted); pointer-events: none; }
+.eng-panel { height: 660px; overflow-y: auto; }
+.eng-head { margin-bottom: 10px; }
+.eng-head .eyebrow { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+.eng-head h2 { font-size: 26px; line-height: 1.15; }
+.eng-head p { margin: 6px 0 0; }
+.eng-panel p { margin: 0 0 12px; }
+.eng-sub { margin: 18px 0 8px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.eng-gates { display: flex; flex-direction: column; gap: 6px; }
+.eng-gate { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: var(--panel-2); font-size: 13px; }
+.eng-gate:hover { border-color: var(--gold); text-decoration: none; }
+.eng-gate .tick { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 1.5px solid var(--line-2); display: grid; place-items: center; font-size: 12px; color: #0b0e13; }
+.eng-gate.ok .tick { background: var(--green); border-color: var(--green); }
+.eng-gate.ok > .grow > span:first-child { color: var(--muted); }
+.eng-gate .grow { flex: 1; min-width: 0; }
+.eng-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.eng-legend > div { margin: 5px 0; }
+.lg-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; vertical-align: 0; }
+@media (max-width: 1100px) {
+  .eng-wrap { grid-template-columns: 1fr; }
+  .eng-panel { height: auto; max-height: none; }
+  .eng-stage { height: 520px; }
+}
+@media (max-width: 520px) { .eng-stage { height: 420px; } }
