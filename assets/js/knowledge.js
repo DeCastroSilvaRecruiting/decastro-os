@@ -80,6 +80,40 @@ export async function syncQueue() {
   store.update((s) => { s.queue = items; s.settings.lastSync = new Date().toISOString(); s.settings.deletedQueue = []; });
   return { items: items.length, pushed: changed };
 }
+/** Two-way merge of ideas with ideas/ideas.json (Claude's scout writes there). Newest `updated` wins. */
+export async function syncIdeas() {
+  const api = store.gh();
+  const f = await api.getFile('ideas/ideas.json');
+  const remote = f ? JSON.parse(f.text) : { items: [] };
+  const map = new Map();
+  for (const it of remote.items || []) map.set(it.id, it);
+  for (const it of store.get().ideas) {
+    const r = map.get(it.id);
+    if (!r || (it.updated || '') > (r.updated || '')) map.set(it.id, it);
+  }
+  const items = [...map.values()].sort((a, b) => (b.created || '').localeCompare(a.created || ''));
+  const changed = JSON.stringify(items) !== JSON.stringify(remote.items || []);
+  if (changed) await api.putFile('ideas/ideas.json', JSON.stringify({ updated: new Date().toISOString(), items }, null, 2) + '\n', `ideas: sync from De Castro OS (${items.length} ideas)`, f?.sha);
+  store.update((s) => { s.ideas = items; });
+  return { items: items.length, pushed: changed };
+}
+
+/** Share a non-financial brief of your ventures so Claude's scouts know what you are building. */
+export async function syncBrief() {
+  const api = store.gh();
+  const brief = store.get().ventures.map((v) => ({
+    id: v.id, name: v.name, stage: v.stage, playbook: v.playbook || 'generic', summary: v.summary, tags: v.tags,
+    problem: v.problem, customer: v.customer, thesis: v.thesis,
+    riskiestAssumptions: (v.assumptions || []).filter((a) => !['Validated', 'Invalidated'].includes(a.status)).sort((a, b) => (b.risk || 0) - (a.risk || 0)).slice(0, 3).map((a) => a.text),
+  }));
+  const text = JSON.stringify({ note: 'Written by De Castro OS. Contains no financial data.', ventures: brief }, null, 2) + '\n';
+  const f = await api.getFile('ventures/brief.json');
+  const prev = f ? JSON.stringify(JSON.parse(f.text).ventures) : '';
+  if (prev === JSON.stringify(brief)) return { pushed: false };
+  await api.putFile('ventures/brief.json', text, 'ventures: brief from De Castro OS', f?.sha);
+  return { pushed: true };
+}
+
 export function deleteItem(id) {
   store.update((s) => { s.queue = s.queue.filter((q) => q.id !== id); s.settings.deletedQueue = [...(s.settings.deletedQueue || []), id]; });
 }

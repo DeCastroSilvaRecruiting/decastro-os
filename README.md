@@ -9,7 +9,9 @@ The operating system of the De Castro Empire — one place to originate and exec
 | Module | What it does |
 |---|---|
 | Command Centre | Net worth, liquidity, runway, deadlines, next venture actions, latest research |
-| Venture Engine | Stage pipeline, weighted 100-point scoring, assumption mapping with "test next", tasks, unit economics, one-click diligence from Claude |
+| Idea Scout | Opportunities ranked against your skills, network and current ventures; Claude's twice-weekly scout adds sourced business ideas and product leads; one click turns an idea into a venture with its own playbook |
+| Venture Engine | Stage pipeline, weighted 100-point scoring, assumption mapping with "test next", tasks, unit economics, one-click diligence from Claude. Each venture has a workspace: a stage-by-stage playbook (who does each step: you, a delegate, Claude or an app tool), stage gates, KPIs and related wiki knowledge |
+| Commerce Lab | The China-to-Amazon store workbench: product pipeline and scorecard with red flags, Amazon.ae margin and landed-cost calculator, supplier vetting checklist, automation map (hours you keep vs delegate), 24-month cash forecast, dated rules and fees |
 | The Tower | Interactive 3D living building: six stage floors rise from a seed vault to a canopy crown, every module is a pavilion bridged to the floors it powers; stage gates, readiness rings and one-click advance |
 | Knowledge Wiki | Sourced, dated, confidence-rated articles with wiki links, backlinks and stale flags |
 | Claude Desk | Research queue shared with Claude's scheduled tasks; approve Claude's proposals; copy prompts |
@@ -54,7 +56,10 @@ assets/js/
   ui.js           formatting, modals, forms, tables, charts
   schemas.js      record definitions + generic CRUD
   prompts.js      Claude scheduled-task prompts
-  seed.js         initial state
+  seed.js         initial state and one-time migrations
+  playbooks.js    per-venture guided steps and the automation map
+  ideabank.js     idea bank and fit scoring
+  ecom.js         Amazon unit economics, product scorecard and cash simulation
   views/*.js      one file per module
 starter/          a copy of the vault's starter wiki and queue, used in local mode
 ```

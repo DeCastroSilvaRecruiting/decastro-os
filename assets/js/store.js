@@ -1,5 +1,5 @@
 // State store (localStorage), derived metrics, GitHub client and vault encryption.
-import { SEED } from './seed.js';
+import { SEED, ECOM_VENTURE } from './seed.js';
 import { num, today } from './ui.js';
 import { propertyMetrics } from './fin.js';
 
@@ -15,7 +15,21 @@ export function load() {
   // forward-compatible: add any new top-level keys from SEED
   for (const k of Object.keys(SEED)) if (state[k] === undefined) state[k] = clone(SEED[k]);
   for (const k of Object.keys(SEED.settings)) if (state.settings[k] === undefined) state.settings[k] = clone(SEED.settings[k]);
+  runMigrations();
   return state;
+}
+// One-time upgrades for existing installs. Each runs once, recorded in settings.migrated, so deleting what it added sticks.
+const MIGRATIONS = [
+  { id: 'ecom-store-v1', run(s) {
+    if (!s.ventures.some((v) => v.id === ECOM_VENTURE.id)) s.ventures.push(clone(ECOM_VENTURE));
+    if (s.fx.CNY === undefined) s.fx.CNY = 0.52;
+  } },
+];
+function runMigrations() {
+  state.settings.migrated ||= [];
+  let changed = false;
+  for (const m of MIGRATIONS) if (!state.settings.migrated.includes(m.id)) { m.run(state); state.settings.migrated.push(m.id); changed = true; }
+  if (changed) persist();
 }
 export const get = () => state;
 export const settings = () => state.settings;

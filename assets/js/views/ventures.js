@@ -3,10 +3,13 @@ import * as K from '../knowledge.js';
 import { esc, icon, uid, openForm, fmtDate, money, fnum, pct, num, today, toast, confirmBox, emptyState, copyText } from '../ui.js';
 import { STAGES, RUBRIC, DOMAINS } from '../seed.js';
 import { unitEconomics } from '../fin.js';
+import { readiness, nextStage, STAGE_INFO, FLOW } from '../gates.js';
+import { playbookOf, stepsFor, playbookProgress, MODES, PLAYBOOKS } from '../playbooks.js';
 
 const BASIC = [
   { k: 'name', label: 'Venture name', required: true },
   { k: 'stage', label: 'Stage', type: 'select', options: STAGES },
+  { k: 'playbook', label: 'Playbook (guides each stage)', type: 'select', options: Object.entries(PLAYBOOKS).map(([v, p]) => ({ v, l: p.name })) },
   { k: 'summary', label: 'One-line description', full: true },
   { k: 'tags', label: 'Tags', type: 'tags', placeholder: 'golf, luxury, b2b' },
   { k: 'capitalRequired', label: 'Capital required (base ccy)', type: 'number' },
@@ -41,12 +44,60 @@ function listView(s) {
     <p class="muted small" style="margin-bottom:0">Each criterion is rated 0–10 where 10 is always best (high market demand, low capital need, strong downside protection). The score out of 100 is the weighted sum. Use it to rank ideas against each other — not as a verdict.</p></div>`;
 }
 
-function detailView(s, v) {
+
+// ---------- Venture workspace: every venture gets its own guided life ----------
+const STOP = new Set(['the', 'and', 'for', 'with', 'from', 'store', 'china', 'venture', 'business', 'company']);
+async function relatedKnowledge(v) {
+  const idx = await K.loadIndex();
+  const words = [...(v.tags || []), ...v.name.split(/\W+/), v.playbook === 'ecom' ? 'amazon' : ''].map((x) => String(x).toLowerCase()).filter((x) => x.length > 3 && !STOP.has(x));
+  const uniq = [...new Set(words)];
+  return idx.articles.map((a) => {
+    const hay = `${a.title} ${(a.tags || []).join(' ')} ${a.summary || ''} ${a.slug}`.toLowerCase();
+    const hits = uniq.filter((w) => hay.includes(w)).length + (a.slug.includes(v.id.replace(/^v_/, '')) ? 3 : 0);
+    return { a, hits };
+  }).filter((x) => x.hits > 0).sort((x, y) => y.hits - x.hits).slice(0, 5).map((x) => x.a);
+}
+
+function stepRow(v, st) {
+  const done = !!v.steps?.[st.id]?.done;
+  const m = MODES[st.mode] || MODES.You;
+  const act = st.research ? `<button class="btn sm" data-act="stepResearch" data-id="${st.id}">${icon('spark')} Ask Claude</button>`
+    : st.href ? `<a class="btn sm" href="${st.href}">Open ${icon('arrow', 'style="width:12px;vertical-align:-1px"')}</a>`
+    : st.link ? `<button class="btn sm" data-act="stepLink" data-link="${st.link}">Do it here</button>` : '';
+  return `<div class="check-item ${done ? 'done' : ''}"><input type="checkbox" data-change="toggleStep" data-id="${st.id}" ${done ? 'checked' : ''} aria-label="Done">
+    <div class="txt"><div>${esc(st.title)} <span class="badge ${m.cls}">${m.label}</span></div><div class="small muted">${esc(st.why)}</div></div>${done ? '' : act}</div>`;
+}
+function guideHTML(v) {
+  const pb = playbookOf(v), prog = playbookProgress(v), rd = readiness(v), next = nextStage(v.stage);
+  const steps = stepsFor(v, v.stage);
+  const open = steps.filter((x) => !v.steps?.[x.id]?.done);
+  const others = FLOW.filter((st) => st !== v.stage && (pb.steps[st] || []).length);
+  return `<div class="card"><div class="card-head"><h3>Your next moves · ${esc(v.stage)}</h3><div class="right"><span class="badge gold">${pb.name}</span><span class="badge">${prog.done}/${prog.total} steps</span></div></div>
+    <p class="muted small" style="margin-top:0">${esc(STAGE_INFO[v.stage] || '')}</p>
+    ${steps.length ? (open.length ? `<div class="callout gold small">Do this next: <b>${esc(open[0].title)}</b></div>` : '<div class="callout green small">Every step for this stage is done.</div>') : ''}
+    ${steps.map((x) => stepRow(v, x)).join('')}
+    ${rd.total ? `<hr><div class="row"><b class="small">Gate to ${next ? esc(next) : 'the next level'}</b><span class="right small muted">${rd.met}/${rd.total} met</span></div>
+      <div class="bar-track" style="margin:6px 0 10px"><div class="bar-fill" style="width:${Math.round(rd.pct * 100)}%"></div></div>
+      ${rd.gates.map((g) => `<a class="row small" href="${g.href}" style="color:${g.ok ? 'var(--muted)' : 'var(--text)'};margin-bottom:4px"><span class="badge ${g.ok ? 'green' : ''}">${g.ok ? '✓' : '○'}</span><span>${esc(g.label)}${g.hint ? ` <span class="muted">· ${esc(g.hint)}</span>` : ''}</span></a>`).join('')}` : ''}
+    ${next ? `<button class="btn ${rd.pct === 1 ? 'primary' : ''} sm mt" data-act="advance">${rd.pct === 1 ? 'Advance to' : 'Advance anyway to'} ${esc(next)}</button>` : ''}
+    ${others.length ? `<details class="mt"><summary class="muted small">All stages of this playbook</summary>${others.map((st) => `<div class="mt"><div class="small"><b>${st}</b></div>${pb.steps[st].map((x) => stepRow(v, x)).join('')}</div>`).join('')}</details>` : ''}
+  </div>`;
+}
+function kpiCard(v) {
+  const pb = playbookOf(v);
+  return `<div class="card"><div class="card-head"><h3>Venture dashboard</h3></div>
+    <div class="form">${pb.kpis.map(([name, unit], i) => `<div class="field"><label>${esc(name)}${unit ? ` <span class="muted">(${esc(unit)})</span>` : ''}</label><input type="number" step="any" value="${esc(v.kpis?.[name]?.v ?? '')}" data-change="kpi" data-name="${esc(name)}">${v.kpis?.[name]?.on ? `<div class="hint">Updated ${fmtDate(v.kpis[name].on)}</div>` : ''}</div>`).join('')}</div>
+    <p class="small muted" style="margin-bottom:0">Update these in your weekly review. They are yours alone: nothing is shared with Claude.</p></div>`;
+}
+
+async function detailView(s, v) {
   const score = store.ventureScore(v, RUBRIC);
   const ue = unitEconomics({ price: num(v.unit.price), cogs: num(v.unit.cogs), cac: num(v.unit.cac), lifetimeMonths: num(v.unit.lifetimeMonths) || 12, purchasesPerMonth: num(v.unit.purchasesPerMonth) || 1 });
   const hasUE = num(v.unit.price) > 0;
   const b = store.base();
   const qs = s.queue.filter((q) => q.venture === v.id);
+  const related = await relatedKnowledge(v);
+  const prog = playbookProgress(v), rd = readiness(v);
   const riskiest = v.assumptions.filter((a) => a.status !== 'Validated' && a.status !== 'Invalidated').sort((a, b) => (b.risk || 0) - (a.risk || 0))[0];
 
   return `
@@ -58,8 +109,15 @@ function detailView(s, v) {
       <button class="btn primary" data-act="diligence">${icon('spark')} Commission diligence</button>
     </div></div>
 
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="card kpi"><div class="label">Stage gate</div><div class="value">${rd.total ? `${rd.met}/${rd.total}` : '—'}</div><div class="delta">${rd.total ? 'conditions met to advance' : 'no gate at this stage'}</div></div>
+    <div class="card kpi"><div class="label">Playbook</div><div class="value">${Math.round(prog.pct * 100)}%</div><div class="delta">${prog.done} of ${prog.total} steps done</div></div>
+    <div class="card kpi"><div class="label">Open tasks</div><div class="value">${v.tasks.filter((t) => !t.done).length}</div><div class="delta">${v.assumptions.filter((a) => a.status === 'Validated').length}/${v.assumptions.length} assumptions validated</div></div>
+    <div class="card kpi"><div class="label">Claude research</div><div class="value">${qs.filter((q) => q.status === 'done').length}/${qs.length}</div><div class="delta">${related.length} related wiki articles</div></div>
+  </div>
   <div class="grid g-main">
     <div class="stack">
+      ${guideHTML(v)}
       <div class="card"><div class="card-head"><h3>Thesis</h3><div class="right"><button class="btn sm ghost" data-act="thesis">${icon('edit')} Edit</button></div></div>
         ${[['Problem', v.problem], ['Customer', v.customer], ['Why this wins', v.thesis], ['Revenue model', v.revenueModel]].map(([l, t]) => `<div class="mb"><div class="muted small" style="text-transform:uppercase;letter-spacing:.8px">${l}</div><div style="white-space:pre-wrap">${t ? esc(t) : '<span class="muted">Not written yet.</span>'}</div></div>`).join('')}
         <div class="row small muted">${v.entity ? `Entity: <b style="color:var(--text)">${esc(v.entity)}</b>` : 'No entity linked'} · Capital required: <b style="color:var(--text)">${v.capitalRequired ? money(num(v.capitalRequired), b) : '—'}</b></div>
@@ -99,6 +157,11 @@ function detailView(s, v) {
           : `<div class="empty small">Enter price, unit cost, acquisition cost and customer lifetime.<br><button class="btn sm" data-act="unit">Set unit economics</button></div>`}
       </div>
 
+      ${v.playbook === 'ecom' ? `<div class="card"><div class="card-head"><h3>Commerce Lab</h3></div><div class="row" style="gap:6px;flex-wrap:wrap"><a class="btn sm" href="#/commerce/pipeline">Product pipeline</a><a class="btn sm" href="#/commerce/calc/scratch">Margin calculator</a><a class="btn sm" href="#/commerce/suppliers">Suppliers</a><a class="btn sm" href="#/commerce/automation">Automation map</a><a class="btn sm" href="#/commerce/forecast">Cash forecast</a></div></div>` : ''}
+      ${kpiCard(v)}
+      <div class="card"><div class="card-head"><h3>Related knowledge</h3><div class="right"><a href="#/wiki" class="small">Wiki</a></div></div>
+        ${related.length ? `<div class="list">${related.map((a) => `<a class="list-item" href="#/wiki/${a.slug}" style="color:var(--text)"><div class="grow small">${esc(a.title)}</div><span class="badge ${a.confidence === 'high' ? 'green' : a.confidence === 'low' ? 'red' : 'gold'}">${esc(a.confidence || '—')}</span></a>`).join('')}</div>` : '<div class="muted small">No articles match yet. Ask Claude a research question and the wiki grows with this venture.</div>'}
+      </div>
       <div class="card"><div class="card-head"><h3>Claude research</h3></div>
         ${qs.length ? `<div class="list">${qs.map((q) => `<a class="list-item" href="${q.result?.article ? `#/wiki/${q.result.article}` : '#/claude'}" style="color:var(--text)"><span class="badge ${q.status === 'done' ? 'green' : 'blue'}">${esc(q.status)}</span><div class="grow small">${esc(q.title)}</div></a>`).join('')}</div>` : '<div class="muted small">Nothing commissioned yet.</div>'}
         <button class="btn sm mt" data-act="askVenture">${icon('plus')} Research question</button>
@@ -111,7 +174,7 @@ function detailView(s, v) {
 const V = (params) => store.byId('ventures', params[0]);
 const touch = (id, fn) => store.update((s) => { const v = s.ventures.find((x) => x.id === id); fn(v); v.updated = today(); });
 
-export default {
+const mod = {
   title: 'Venture Engine',
   render(s, params) {
     if (params[0]) { const v = V(params); return v ? detailView(s, v) : emptyState('Venture not found', '<a href="#/ventures">Back to the engine</a>'); }
@@ -119,9 +182,9 @@ export default {
   },
   actions: {
     new() {
-      openForm({ title: 'New venture', fields: [...BASIC, THESIS[0], THESIS[1]], values: { stage: 'Idea' }, onSave: (d) => {
+      openForm({ title: 'New venture', fields: [...BASIC, THESIS[0], THESIS[1]], values: { stage: 'Idea', playbook: 'generic' }, onSave: (d) => {
         const id = uid('v');
-        store.update((s) => s.ventures.push({ id, ...d, thesis: '', revenueModel: '', entity: '', scores: Object.fromEntries(RUBRIC.map((r) => [r.k, 5])), assumptions: [], tasks: [], notes: '', unit: {}, created: today(), updated: today() }));
+        store.update((s) => s.ventures.push({ id, ...d, thesis: '', revenueModel: '', entity: '', scores: Object.fromEntries(RUBRIC.map((r) => [r.k, 5])), assumptions: [], tasks: [], notes: '', unit: {}, steps: {}, kpis: {}, automation: {}, automationCost: {}, created: today(), updated: today() }));
         location.hash = `#/ventures/${id}`;
       } });
     },
@@ -143,6 +206,17 @@ export default {
     addTask(_, __, p) { taskForm(p[0]); },
     editTask(el, _, p) { taskForm(p[0], V(p).tasks.find((t) => t.id === el.dataset.id)); },
     toggleTask(el, _, p) { touch(p[0], (x) => { const t = x.tasks.find((t) => t.id === el.dataset.id); t.done = el.checked; t.doneOn = el.checked ? today() : ''; }); },
+    toggleStep(el, _, p) { touch(p[0], (x) => { (x.steps ||= {})[el.dataset.id] = { done: el.checked, on: today() }; }); },
+    kpi(el, _, p) { touch(p[0], (x) => { (x.kpis ||= {})[el.dataset.name] = el.value === '' ? undefined : { v: num(el.value), on: today() }; if (el.value === '') delete x.kpis[el.dataset.name]; }); },
+    advance(_, __, p) { const v = V(p); const n = nextStage(v.stage); if (n) { touch(v.id, (x) => { x.stage = n; }); toast(`Moved to ${n}`, 'ok'); } },
+    stepLink(el, e, p) { const m = { thesis: 'thesis', unit: 'unit', tasks: 'addTask', assumptions: 'addAssumption' }[el.dataset.link]; if (m) mod.actions[m](el, e, p); },
+    stepResearch(el, _, p) {
+      const v = V(p); const st = Object.values(playbookOf(v).steps).flat().find((x) => x.id === el.dataset.id); if (!st?.research) return;
+      const item = K.addToQueue({ type: 'research', title: `${st.research.title}: ${v.name}`, question: `${st.research.question}\nVenture: ${v.name}. ${v.summary}`, domain: st.research.domain, venture: v.id, priority: 'High' });
+      touch(v.id, (x) => { (x.steps ||= {})[st.id] = { ...(x.steps[st.id] || {}), asked: today() }; });
+      toast(K.mode() === 'connected' ? 'Sent to Claude. The answer appears in the wiki and under this venture.' : 'Queued locally. Copy the prompt from the Claude Desk, or connect your vault.', 'ok');
+      if (K.mode() !== 'connected') copyText(K.promptFor(item, store.get().ventures));
+    },
     diligence(_, __, p) {
       const v = V(p);
       const item = K.addToQueue({ type: 'diligence', title: `Due diligence: ${v.name}`, question: `Assess ${v.name} (${v.summary}). Cover market size and demand evidence in the UAE/GCC, competitors and pricing benchmarks, regulatory and licensing requirements, unit economics benchmarks, capital required and key risks. Recommend the three riskiest assumptions to test first and the cheapest test for each.`, domain: 'Business & Ventures', venture: v.id, priority: 'High' });
@@ -161,6 +235,7 @@ export default {
     async delete(_, __, p) { if (await confirmBox('Delete this venture and all its assumptions, tasks and notes?')) { store.remove('ventures', p[0]); location.hash = '#/ventures'; } },
   },
 };
+export default mod;
 
 function assumptionForm(vid, a) {
   openForm({ title: a ? 'Edit assumption' : 'New assumption', values: a || { status: 'Untested', risk: 3 }, fields: [

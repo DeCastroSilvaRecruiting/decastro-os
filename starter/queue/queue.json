@@ -1,6 +1,104 @@
 {
-  "updated": "2026-11-08T10:30:00.000Z",
+  "updated": "2026-11-08T11:30:00.000Z",
   "items": [
+    {
+      "id": "q_amz_review",
+      "type": "review",
+      "priority": "High",
+      "domain": "Business & Ventures",
+      "title": "Verify and upgrade: Amazon FBA from China: model, rules and economics",
+      "question": "Re-verify every fee, threshold and rule in [[Amazon FBA from China: Model, Rules and Economics]] against Amazon Seller Central and sell.amazon.ae pages (referral and FBA rate cards, subscription, storage, inbound from China, Brand Registry, drop shipping policy text), Dubai Customs and the Federal Tax Authority. The first version leaned on vendor articles. Raise confidence only where Tier 1 sources confirm.",
+      "venture": "v_amazon",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-08T11:30:00.000Z",
+      "updated": "2026-11-08T11:30:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_amz_entity",
+      "type": "research",
+      "priority": "High",
+      "domain": "Legal & Structuring",
+      "title": "Best licence, entity, VAT and corporate tax set-up for an Amazon.ae private-label seller based in Dubai",
+      "question": "Compare free zone e-commerce, mainland DET and any existing holdco route for a B2C Amazon.ae seller: licence activity, cost, Amazon acceptance, importer code, VAT registration timing, corporate tax (including whether B2C sales qualify for a free zone 0% rate under the current ministerial decisions, and Small Business Relief), banking and payouts in AED/USD. Give a recommended structure for a first-year seller and the questions to put to an adviser. Link to [[UAE Holding Structures]] and [[UAE Corporate Tax Essentials]].",
+      "venture": "v_amazon",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-08T11:30:00.000Z",
+      "updated": "2026-11-08T11:30:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_amz_sourcing",
+      "type": "research",
+      "priority": "High",
+      "domain": "Business & Ventures",
+      "title": "China sourcing playbook for a first-time private-label importer into the UAE",
+      "question": "How to find, verify and manage factories on Alibaba, 1688, Global Sources and Made-in-China: licence verification services, factory vs trading company, Trade Assurance and escrow, sample strategy, MOQ negotiation, Incoterms, third-party inspection options and costs, tooling and IP protection, payment terms. Include door-to-FBA freight options to the UAE (sea and air), transit times, typical cost structure, and customs broker practice in Dubai. Cite sources and dates; use quotes ranges only from named providers.",
+      "venture": "v_amazon",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-08T11:30:00.000Z",
+      "updated": "2026-11-08T11:30:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_amz_categories",
+      "type": "research",
+      "priority": "Normal",
+      "domain": "Markets & Macro",
+      "title": "Which small, light, uncertified product categories look strongest on Amazon.ae and Noon right now?",
+      "question": "Using public best-seller, new-release and trend data (and noting what could not be verified), identify 5 categories or niches with proven year-round demand, weak listings, low return rates and no certification burden. Include golf accessories as a candidate for the owner's beachhead. Give evidence with dates and flag seasonality (Ramadan, summer, back-to-school).",
+      "venture": "v_amazon",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-08T11:30:00.000Z",
+      "updated": "2026-11-08T11:30:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_amz_compliance",
+      "type": "research",
+      "priority": "Normal",
+      "domain": "Legal & Structuring",
+      "title": "UAE and GCC product conformity and import rules by category for an Amazon seller",
+      "question": "Which product types need conformity certification or registration before import or sale in the UAE (for example ECAS or other schemes), battery and dangerous-goods shipping rules, labelling (Arabic/English, origin, importer), restricted products, and how Amazon.ae gated categories interact. Produce a category-by-category checklist and say which authority to confirm with.",
+      "venture": "v_amazon",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-08T11:30:00.000Z",
+      "updated": "2026-11-08T11:30:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_amz_automation",
+      "type": "research",
+      "priority": "Normal",
+      "domain": "Business & Ventures",
+      "title": "What a low-input Amazon store stack realistically looks like: tools, agencies, costs and hours",
+      "question": "Document the automation stack for private-label sellers: Amazon native tools (automated pricing, ad rules, inventory alerts), listing and image services, PPC agencies, prep and freight forwarders, accounting. Give indicative cost ranges only from named providers, and sourced evidence on how many hours a week owners actually spend at different stages. Be explicit about what stays manual. Update [[Amazon FBA from China: Model, Rules and Economics]].",
+      "venture": "v_amazon",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-08T11:30:00.000Z",
+      "updated": "2026-11-08T11:30:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_amz_channels",
+      "type": "research",
+      "priority": "Low",
+      "domain": "Business & Ventures",
+      "title": "Expanding beyond Amazon.ae: Amazon.sa, Noon and a Shopify store from a UAE entity",
+      "question": "Rules, fees, conformity and logistics for selling the same products on Amazon.sa, Noon and an own store from a UAE entity, including GCC shipping and customs and payment processing. When does diversification beat doubling down on one marketplace?",
+      "venture": "v_amazon",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-08T11:30:00.000Z",
+      "updated": "2026-11-08T11:30:00.000Z",
+      "result": null
+    },
     {
       "id": "q_seed_structure",
       "type": "research",
@@ -49,7 +147,7 @@
       "updated": "2026-11-08T08:20:00.000Z",
       "result": {
         "article": "uae-corporate-tax-essentials",
-        "summary": "0% to AED 375k then 9%; Small Business Relief (revenue ≤ AED 3m) extended to periods ending 31 Dec 2029; sole traders taxable above AED 1m combined turnover; register in 3 months, file/pay in 9, keep records 7 years."
+        "summary": "0% to AED 375k then 9%; Small Business Relief (revenue \u2264 AED 3m) extended to periods ending 31 Dec 2029; sole traders taxable above AED 1m combined turnover; register in 3 months, file/pay in 9, keep records 7 years."
       }
     },
     {
@@ -83,7 +181,7 @@
       "updated": "2026-11-08T10:30:00.000Z",
       "result": {
         "article": "venture-dossier-dcs-golf",
-        "summary": "Hand-made bags sell at USD 850–1,200, but a UAE full-leather bag leaves ~27% DTC margin and losses via retail, and the home licences are officially for UAE/GCC nationals — lead with canvas+leather trim and corporate gifting."
+        "summary": "Hand-made bags sell at USD 850\u20131,200, but a UAE full-leather bag leaves ~27% DTC margin and losses via retail, and the home licences are officially for UAE/GCC nationals \u2014 lead with canvas+leather trim and corporate gifting."
       }
     },
     {
@@ -100,7 +198,7 @@
       "updated": "2026-11-08T10:30:00.000Z",
       "result": {
         "article": "venture-dossier-al-ain-ostrich-farm",
-        "summary": "ADAFSA farm rules do not name ostriches, the Farm Licence is for Emirati owners, SA bird imports were banned in 2019, and Ostrich Oasis already runs the model in Al Ain — resolve permission and supply first and reframe around the visitor experience."
+        "summary": "ADAFSA farm rules do not name ostriches, the Farm Licence is for Emirati owners, SA bird imports were banned in 2019, and Ostrich Oasis already runs the model in Al Ain \u2014 resolve permission and supply first and reframe around the visitor experience."
       }
     },
     {
@@ -122,7 +220,7 @@
       "type": "research",
       "priority": "Normal",
       "domain": "Property",
-      "title": "Net yields for 3–5 target Dubai communities from DLD open data",
+      "title": "Net yields for 3\u20135 target Dubai communities from DLD open data",
       "question": "Pull 12 months of DLD sales and Ejari rents plus Service Charge Index figures for shortlisted communities and compute net yield on total cost, versus current investment mortgage rates (EIBOR + margin). Informs the first purchase decision.",
       "venture": "",
       "status": "proposed",

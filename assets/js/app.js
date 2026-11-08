@@ -4,6 +4,8 @@ import { icon, esc, toast } from './ui.js';
 import * as K from './knowledge.js';
 
 import dashboard from './views/dashboard.js';
+import ideas from './views/ideas.js';
+import commerce from './views/commerce.js';
 import ventures from './views/ventures.js';
 import engine from './views/engine3d.js';
 import wiki from './views/wiki.js';
@@ -16,10 +18,10 @@ import legal from './views/legal.js';
 import mathlab from './views/mathlab.js';
 import settings from './views/settings.js';
 
-const ROUTES = { dashboard, ventures, engine, wiki, claude, finance, treasury, property, investments, legal, math: mathlab, settings };
+const ROUTES = { dashboard, ideas, commerce, ventures, engine, wiki, claude, finance, treasury, property, investments, legal, math: mathlab, settings };
 const NAV = [
   ['Command', [['dashboard', 'Command Centre', 'dashboard']]],
-  ['Build', [['ventures', 'Venture Engine', 'ventures'], ['engine', 'The Tower', 'tower'], ['wiki', 'Knowledge Wiki', 'wiki'], ['claude', 'Claude Desk', 'claude']]],
+  ['Build', [['ideas', 'Idea Scout', 'bulb'], ['ventures', 'Venture Engine', 'ventures'], ['commerce', 'Commerce Lab', 'cart'], ['engine', 'The Tower', 'tower'], ['wiki', 'Knowledge Wiki', 'wiki'], ['claude', 'Claude Desk', 'claude']]],
   ['Wealth', [['treasury', 'Treasury', 'treasury'], ['investments', 'Investments', 'investments'], ['property', 'Property', 'property'], ['finance', 'Accounting', 'finance']]],
   ['Govern', [['legal', 'Legal & Entities', 'legal'], ['math', 'Mastermind Lab', 'math']]],
 ];
@@ -38,7 +40,7 @@ function parseHash() {
 
 function renderNav(active) {
   const s = store.get();
-  const counts = { ventures: s.ventures.filter((v) => !['Parked'].includes(v.stage)).length, claude: s.queue.filter((q) => ['queued', 'proposed', 'in-progress'].includes(q.status)).length };
+  const counts = { ideas: s.ideas.filter((i) => i.status === 'new' && i.source === 'claude').length, ventures: s.ventures.filter((v) => !['Parked'].includes(v.stage)).length, claude: s.queue.filter((q) => ['queued', 'proposed', 'in-progress'].includes(q.status)).length };
   $nav.innerHTML = `
     <div class="brand"><div class="mark">DC</div><div><div class="name">${esc(s.settings.empire)} OS</div><div class="sub">Wealth · Trust · Legacy</div></div></div>
     ${NAV.map(([group, items]) => `<div class="nav-group">${group}</div>${items.map(([k, label, ic]) => `
@@ -102,7 +104,7 @@ document.addEventListener('click', async (e) => {
   if (a === 'theme') { store.update((s) => { s.settings.theme = s.settings.theme === 'light' ? 'dark' : 'light'; }); applyTheme(); }
   if (a === 'ask') wiki.ask();
   if (a === 'sync') {
-    try { const r = await K.syncQueue(); K.clearCache(); toast(`Synced ${r.items} queue items${r.pushed ? ' and pushed changes' : ''}`, 'ok'); render(); }
+    try { const r = await K.syncQueue(); await K.syncIdeas().catch((e) => console.warn(e)); await K.syncBrief().catch((e) => console.warn(e)); K.clearCache(); toast(`Synced ${r.items} queue items${r.pushed ? ' and pushed changes' : ''}`, 'ok'); render(); }
     catch (err) { toast(err.message, 'error'); }
   }
 });
@@ -116,7 +118,7 @@ store.subscribe(() => render());
 window.addEventListener('hashchange', render);
 store.maybeSnapshot();
 render();
-if (K.mode() === 'connected') K.syncQueue().catch((e) => console.warn('Initial sync failed', e));
+if (K.mode() === 'connected') K.syncQueue().then(() => K.syncIdeas()).then(() => K.syncBrief()).catch((e) => console.warn('Initial sync failed', e));
 else if (!store.get().settings.starterQueueLoaded) {
   // First run in local mode: load the starter research questions so the Claude Desk isn't empty.
   fetch('starter/queue/queue.json').then((r) => (r.ok ? r.json() : null)).then((q) => {

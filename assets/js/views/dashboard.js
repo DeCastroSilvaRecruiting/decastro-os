@@ -2,6 +2,8 @@ import * as store from '../store.js';
 import * as K from '../knowledge.js';
 import { esc, money, compact, pct, fmtDate, lineChart, barsHTML, icon, today } from '../ui.js';
 import { RUBRIC, STAGES } from '../seed.js';
+import { allIdeas } from './ideas.js';
+import { playbookProgress } from '../playbooks.js';
 
 function greeting() {
   const h = new Date().getHours();
@@ -22,6 +24,7 @@ export default {
     const prev = snaps.length > 1 ? snaps[snaps.length - 2].netWorth : null;
     const delta = prev != null ? w.netWorth - prev : null;
     const nextTasks = s.ventures.flatMap((v) => v.tasks.filter((t) => !t.done).map((t) => ({ ...t, v }))).sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999')).slice(0, 6);
+    const topIdeas = allIdeas(s).filter((i) => i.kind !== 'product' && i.status === 'new').sort((a, b) => b.calc.total - a.calc.total).slice(0, 3);
     const isEmpty = !s.cash.length && !s.holdings.length && !s.properties.length;
 
     const setup = [
@@ -86,10 +89,13 @@ export default {
       </div>
     </div>
 
+    <div class="card mt"><div class="card-head"><h3>Idea Scout · top opportunities for you</h3><div class="right"><a href="#/ideas" class="small">All ideas</a></div></div>
+      <div class="grid g3">${topIdeas.map((i) => `<a class="list-item" href="#/ideas" style="color:var(--text);align-items:flex-start"><span class="score-ring">${i.calc.total}</span><div class="grow"><b>${esc(i.title)}</b><div class="sub">${esc(i.calc.notes[0] || i.pitch.slice(0, 80))}</div></div></a>`).join('') || '<div class="empty small">No open ideas. Brief the scout.</div>'}</div></div>
+
     <div class="grid g2 mt">
       <div class="card"><div class="card-head"><h3>Venture pipeline</h3></div>
         ${barsHTML(stageCounts.map((x) => ({ ...x, display: String(x.value) })), { max: Math.max(3, ...stageCounts.map((x) => x.value)) })}
-        <div class="list mt">${s.ventures.filter((v) => v.stage !== 'Parked').sort((a, b) => store.ventureScore(b, RUBRIC) - store.ventureScore(a, RUBRIC)).slice(0, 4).map((v) => `<a class="list-item" href="#/ventures/${v.id}" style="color:var(--text)"><div class="grow"><b>${esc(v.name)}</b><div class="sub">${esc(v.stage)}</div></div><span class="score-ring">${store.ventureScore(v, RUBRIC)}</span></a>`).join('')}</div>
+        <div class="list mt">${s.ventures.filter((v) => v.stage !== 'Parked').sort((a, b) => store.ventureScore(b, RUBRIC) - store.ventureScore(a, RUBRIC)).slice(0, 4).map((v) => `<a class="list-item" href="#/ventures/${v.id}" style="color:var(--text)"><div class="grow"><b>${esc(v.name)}</b><div class="sub">${esc(v.stage)} · playbook ${Math.round(playbookProgress(v).pct * 100)}%</div></div><span class="score-ring">${store.ventureScore(v, RUBRIC)}</span></a>`).join('')}</div>
       </div>
       <div class="card"><div class="card-head"><h3>Latest knowledge</h3><div class="right"><a href="#/wiki" class="small">Wiki</a></div></div>
         <div class="list">${idx.articles.slice().sort((a, b) => (b.updated || '').localeCompare(a.updated || '')).slice(0, 6).map((a) => `<a class="list-item" href="#/wiki/${a.slug}" style="color:var(--text)"><div class="grow"><div>${esc(a.title)}</div><div class="sub">${esc(a.domain)} · ${fmtDate(a.updated)}</div></div><span class="badge ${a.confidence === 'high' ? 'green' : a.confidence === 'low' ? 'red' : 'gold'}">${esc(a.confidence || '—')}</span></a>`).join('') || '<div class="empty small">No articles yet.</div>'}</div>

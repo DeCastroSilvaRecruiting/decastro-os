@@ -399,3 +399,9 @@ pre.prompt { background: var(--bg-2); border: 1px solid var(--line); border-radi
   .eng-stage { height: 520px; }
 }
 @media (max-width: 520px) { .eng-stage { height: 420px; } }
+
+/* Workspace, Commerce and Idea Scout */
+.grid > *, .stack, .stack > * { min-width: 0; }
+.card-head { flex-wrap: wrap; row-gap: 6px; }
+.check-item .txt { min-width: 0; overflow-wrap: anywhere; }
+.idea h3 { text-transform: uppercase; letter-spacing: .6px; font-size: 12px; }

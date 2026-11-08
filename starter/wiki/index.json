@@ -1,18 +1,50 @@
 {
-  "updated": "2026-11-08T08:09:33.630Z",
+  "updated": "2026-11-08T10:39:09.349Z",
   "stats": {
-    "articles": 14,
-    "sources": 110,
-    "links": 62,
-    "words": 13234,
+    "articles": 15,
+    "sources": 114,
+    "links": 67,
+    "words": 15067,
     "confidence": {
       "high": 7,
-      "medium": 5,
+      "medium": 6,
       "low": 2
     }
   },
   "missingLinks": [],
   "articles": [
+    {
+      "slug": "amazon-fba-from-china-model-rules-and-economics",
+      "title": "Amazon FBA from China: Model, Rules and Economics",
+      "domain": "Business & Ventures",
+      "tags": [
+        "amazon",
+        "ecommerce",
+        "fba",
+        "sourcing",
+        "china",
+        "private-label",
+        "uae",
+        "passive-income",
+        "global-trend-store"
+      ],
+      "summary": "A compliant China-to-Amazon.ae store is private label sold through FBA with you as seller of record; it can run on low input once set up, but it is capital-hungry, fee-heavy and never fully passive.",
+      "confidence": "medium",
+      "created": "2026-11-08",
+      "updated": "2026-11-08",
+      "pinned": true,
+      "redirect": false,
+      "sources": 4,
+      "links": [
+        "uae-corporate-tax-essentials",
+        "uae-holding-structures",
+        "venture-validation-framework",
+        "double-entry-accounting",
+        "treasury-liquidity-tiers"
+      ],
+      "words": 1833,
+      "path": "wiki/articles/amazon-fba-from-china-model-rules-and-economics.md"
+    },
     {
       "slug": "compounding-and-the-rule-of-72",
       "title": "Compounding and the Rule of 72",

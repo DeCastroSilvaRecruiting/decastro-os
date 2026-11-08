@@ -43,4 +43,18 @@ If the queue is empty, do the protocol's "idle" step instead (strengthen the wea
 4. Run: node scripts/rebuild-index.mjs
 5. Commit with message "briefing: <YYYY-MM>" and push.`,
   },
+  {
+    key: 'scout',
+    name: 'De Castro — Idea & trend scout',
+    when: 'Tuesdays and Fridays, early morning (Dubai)',
+    cron: 'CRON_TZ=Asia/Dubai 13 6 * * 2,5',
+    prompt: `You are running the De Castro Empire IDEA & TREND SCOUT in the decastro-vault repository.
+
+1. Read CLAUDE.md, then follow claude/IDEA_SCOUT.md exactly.
+2. Read ventures/brief.json and the whole of ideas/ideas.json. Never repeat or resurrect an existing idea.
+3. Add up to 2 business ideas and up to 5 evidence-backed product leads for the Global Trend Store to ideas/ideas.json, applying the kill-flag screening. Adding fewer, or none, is fine when nothing meets the bar.
+4. Update the wiki only if you learned something material and sourced. Add a "Scouted" section to today's digest.
+5. Run: node scripts/rebuild-index.mjs
+6. Commit with message "research: idea scout <date>" and push to the default branch.`,
+  },
 ];
