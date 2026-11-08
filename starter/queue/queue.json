@@ -1,0 +1,89 @@
+{
+  "updated": "2026-11-07T12:00:00.000Z",
+  "items": [
+    {
+      "id": "q_seed_structure",
+      "type": "research",
+      "priority": "High",
+      "domain": "Legal & Structuring",
+      "title": "UAE holding structures for a family wealth & venture group: ADGM vs DIFC vs RAK ICC vs mainland",
+      "question": "Which structure should hold ventures, property and investments? Compare setup and annual costs, substance and audit requirements, Corporate Tax treatment (incl. qualifying free zone rules), eligibility to hold Dubai property, banking practicality, succession benefits and privacy. Cite the official authority pages.",
+      "venture": "",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-07T12:00:00.000Z",
+      "updated": "2026-11-07T12:00:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_seed_dxbfees",
+      "type": "research",
+      "priority": "High",
+      "domain": "Property",
+      "title": "Dubai property purchase costs and rental yield data: what are current DLD fees, and where to get reliable yield data by community?",
+      "question": "Verify current transfer, registration and trustee fees and mortgage registration costs with the Dubai Land Department; explain how to use the RERA rental index and DLD transaction data to estimate net yields by community. Update [[Property Investment Metrics]].",
+      "venture": "",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-07T12:00:00.000Z",
+      "updated": "2026-11-07T12:00:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_seed_ct",
+      "type": "research",
+      "priority": "Normal",
+      "domain": "Legal & Structuring",
+      "title": "UAE Corporate Tax essentials for a founder with several small ventures",
+      "question": "Registration, thresholds and rates, small business relief, free zone treatment, record-keeping and filing deadlines, and how this applies to an individual starting businesses. Primary source: tax.gov.ae.",
+      "venture": "",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-07T12:00:00.000Z",
+      "updated": "2026-11-07T12:00:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_seed_wedcircuit",
+      "type": "diligence",
+      "priority": "Normal",
+      "domain": "Business & Ventures",
+      "title": "Due diligence: Wednesday Circuit",
+      "question": "Market for C-suite golf networking and corporate golf events in the UAE: number and capacity of championship courses, corporate day pricing benchmarks, competitors and membership-based networking models, licensing needed to sell events, and the riskiest assumptions to test first.",
+      "venture": "v_wedcircuit",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-07T12:00:00.000Z",
+      "updated": "2026-11-07T12:00:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_seed_dcs",
+      "type": "diligence",
+      "priority": "Normal",
+      "domain": "Business & Ventures",
+      "title": "Due diligence: DCS Golf",
+      "question": "Luxury hand-made leather/canvas golf bags: price points of premium competitors, materials and supplier options (UAE vs import), unit cost structure for small-batch production, DTC and pro-shop channels in the GCC, and licensing for a home-based start.",
+      "venture": "v_dcsgolf",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-07T12:00:00.000Z",
+      "updated": "2026-11-07T12:00:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_seed_ostrich",
+      "type": "diligence",
+      "priority": "Normal",
+      "domain": "Business & Ventures",
+      "title": "Due diligence: Al Ain Ostrich Farm",
+      "question": "Ostrich farming economics (birds, feed, mortality, meat/leather/feather yields), South African industry benchmarks (Oudtshoorn), UAE permits for livestock farming, slaughter and food service (ADAFSA, MOCCAE), agri-tourism demand in Al Ain, and capital required for a greenfield site.",
+      "venture": "v_ostrich",
+      "status": "queued",
+      "requestedBy": "owner",
+      "created": "2026-11-07T12:00:00.000Z",
+      "updated": "2026-11-07T12:00:00.000Z",
+      "result": null
+    }
+  ]
+}

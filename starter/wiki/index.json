@@ -1,0 +1,224 @@
+{
+  "updated": "2026-11-07T12:37:37.195Z",
+  "stats": {
+    "articles": 8,
+    "sources": 19,
+    "links": 29,
+    "words": 3360,
+    "confidence": {
+      "high": 7,
+      "medium": 1,
+      "low": 0
+    }
+  },
+  "missingLinks": [],
+  "articles": [
+    {
+      "slug": "compounding-and-the-rule-of-72",
+      "title": "Compounding and the Rule of 72",
+      "domain": "Mathematics & Decisions",
+      "tags": [
+        "compounding",
+        "mathematics",
+        "investing",
+        "time-value-of-money"
+      ],
+      "summary": "Growth multiplies rather than adds; the rule of 72 estimates doubling time, and time in the market matters more than the starting amount.",
+      "confidence": "high",
+      "created": "2026-11-07",
+      "updated": "2026-11-07",
+      "pinned": false,
+      "redirect": false,
+      "sources": 2,
+      "links": [
+        "empire-principles",
+        "kelly-criterion-and-position-sizing",
+        "treasury-liquidity-tiers"
+      ],
+      "words": 483,
+      "path": "wiki/articles/compounding-and-the-rule-of-72.md"
+    },
+    {
+      "slug": "double-entry-accounting",
+      "title": "Double-Entry Accounting",
+      "domain": "Finance & Accounting",
+      "tags": [
+        "accounting",
+        "bookkeeping",
+        "financial-statements",
+        "ifrs"
+      ],
+      "summary": "Every transaction is recorded as equal debits and credits, which keeps assets equal to liabilities plus equity and makes errors visible.",
+      "confidence": "high",
+      "created": "2026-11-07",
+      "updated": "2026-11-07",
+      "pinned": false,
+      "redirect": false,
+      "sources": 2,
+      "links": [
+        "empire-principles",
+        "treasury-liquidity-tiers",
+        "venture-validation-framework"
+      ],
+      "words": 419,
+      "path": "wiki/articles/double-entry-accounting.md"
+    },
+    {
+      "slug": "empire-principles",
+      "title": "Empire Principles",
+      "domain": "Mathematics & Decisions",
+      "tags": [
+        "principles",
+        "philosophy",
+        "decision-making"
+      ],
+      "summary": "The short list of rules the De Castro Empire runs on, refined weekly as research adds evidence.",
+      "confidence": "medium",
+      "created": "2026-11-07",
+      "updated": "2026-11-07",
+      "pinned": true,
+      "redirect": false,
+      "sources": 3,
+      "links": [
+        "kelly-criterion-and-position-sizing",
+        "treasury-liquidity-tiers",
+        "compounding-and-the-rule-of-72",
+        "venture-validation-framework",
+        "property-investment-metrics",
+        "double-entry-accounting",
+        "how-the-knowledge-engine-works"
+      ],
+      "words": 329,
+      "path": "wiki/articles/empire-principles.md"
+    },
+    {
+      "slug": "how-the-knowledge-engine-works",
+      "title": "How the Knowledge Engine Works",
+      "domain": "Mathematics & Decisions",
+      "tags": [
+        "meta",
+        "system",
+        "research"
+      ],
+      "summary": "The wiki compounds because every question becomes a sourced, dated, linked article that is re-verified on a schedule.",
+      "confidence": "high",
+      "created": "2026-11-07",
+      "updated": "2026-11-07",
+      "pinned": true,
+      "redirect": false,
+      "sources": 2,
+      "links": [
+        "empire-principles",
+        "compounding-and-the-rule-of-72",
+        "venture-validation-framework"
+      ],
+      "words": 371,
+      "path": "wiki/articles/how-the-knowledge-engine-works.md"
+    },
+    {
+      "slug": "kelly-criterion-and-position-sizing",
+      "title": "Kelly Criterion and Position Sizing",
+      "domain": "Investing",
+      "tags": [
+        "risk",
+        "position-sizing",
+        "kelly",
+        "mathematics"
+      ],
+      "summary": "Kelly gives the growth-maximising stake for a bet with an edge, but practitioners use half or less because inputs are uncertain and full Kelly is very volatile.",
+      "confidence": "high",
+      "created": "2026-11-07",
+      "updated": "2026-11-07",
+      "pinned": false,
+      "redirect": false,
+      "sources": 3,
+      "links": [
+        "compounding-and-the-rule-of-72",
+        "empire-principles",
+        "venture-validation-framework"
+      ],
+      "words": 428,
+      "path": "wiki/articles/kelly-criterion-and-position-sizing.md"
+    },
+    {
+      "slug": "property-investment-metrics",
+      "title": "Property Investment Metrics",
+      "domain": "Property",
+      "tags": [
+        "property",
+        "real-estate",
+        "yield",
+        "cash-on-cash",
+        "dscr",
+        "irr"
+      ],
+      "summary": "Judge property on net yield, cash-on-cash return, debt service cover and IRR — not on headline price or gross yield.",
+      "confidence": "high",
+      "created": "2026-11-07",
+      "updated": "2026-11-07",
+      "pinned": false,
+      "redirect": false,
+      "sources": 2,
+      "links": [
+        "compounding-and-the-rule-of-72",
+        "treasury-liquidity-tiers",
+        "empire-principles"
+      ],
+      "words": 453,
+      "path": "wiki/articles/property-investment-metrics.md"
+    },
+    {
+      "slug": "treasury-liquidity-tiers",
+      "title": "Treasury Liquidity Tiers",
+      "domain": "Treasury",
+      "tags": [
+        "treasury",
+        "cash-management",
+        "liquidity",
+        "reserves",
+        "runway"
+      ],
+      "summary": "Split cash into operating, reserve and strategic tiers sized in months of burn, so you can survive shocks and still act on opportunities.",
+      "confidence": "high",
+      "created": "2026-11-07",
+      "updated": "2026-11-07",
+      "pinned": false,
+      "redirect": false,
+      "sources": 2,
+      "links": [
+        "kelly-criterion-and-position-sizing",
+        "empire-principles",
+        "property-investment-metrics",
+        "double-entry-accounting"
+      ],
+      "words": 397,
+      "path": "wiki/articles/treasury-liquidity-tiers.md"
+    },
+    {
+      "slug": "venture-validation-framework",
+      "title": "Venture Validation Framework",
+      "domain": "Business & Ventures",
+      "tags": [
+        "ventures",
+        "validation",
+        "lean-startup",
+        "unit-economics",
+        "entrepreneurship"
+      ],
+      "summary": "Score ideas, list the assumptions that must be true, test the riskiest one cheaply, and release capital in stages as evidence arrives.",
+      "confidence": "high",
+      "created": "2026-11-07",
+      "updated": "2026-11-07",
+      "pinned": false,
+      "redirect": false,
+      "sources": 3,
+      "links": [
+        "kelly-criterion-and-position-sizing",
+        "double-entry-accounting",
+        "empire-principles"
+      ],
+      "words": 480,
+      "path": "wiki/articles/venture-validation-framework.md"
+    }
+  ]
+}
