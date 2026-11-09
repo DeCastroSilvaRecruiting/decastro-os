@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16233d"/><stop offset="0.6" stop-color="#0d1424"/><stop offset="1" stop-color="#070b14"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe39a"/><stop offset="0.55" stop-color="#d9b25a"/><stop offset="1" stop-color="#a8822f"/></linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3c4" stop-opacity="0"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0.85"/></linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.5"><stop offset="0" stop-color="#e2c477" stop-opacity="0.28"/><stop offset="1" stop-color="#e2c477" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="230" r="230" fill="url(#glow)"/>
+  <rect x="251" y="40" width="10" height="92" rx="5" fill="url(#beam)"/>
+  <path d="M256 118 C 222 150 214 186 216 204 L 296 204 C 298 186 290 150 256 118 Z" fill="url(#gold)"/>
+  <g fill="url(#gold)">
+    <rect x="206" y="214" width="100" height="26" rx="5"/>
+    <rect x="196" y="248" width="120" height="28" rx="5"/>
+    <rect x="186" y="284" width="140" height="30" rx="5"/>
+    <rect x="176" y="322" width="160" height="32" rx="5"/>
+  </g>
+  <g fill="#0d1424" opacity="0.55">
+    <rect x="214" y="224" width="84" height="5" rx="2"/><rect x="204" y="259" width="104" height="5" rx="2"/>
+    <rect x="194" y="296" width="124" height="5" rx="2"/><rect x="184" y="335" width="144" height="5" rx="2"/>
+  </g>
+  <path d="M120 372 Q 256 404 392 372 L 372 398 Q 256 426 140 398 Z" fill="url(#gold)" opacity="0.9"/>
+  <path d="M168 404 Q 256 424 344 404 L 300 452 Q 256 462 212 452 Z" fill="#b8913f" opacity="0.55"/>
+</svg>

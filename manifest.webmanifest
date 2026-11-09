@@ -1,0 +1,22 @@
+{
+  "name": "De Castro OS",
+  "short_name": "De Castro",
+  "description": "The operating system of the De Castro Empire: ventures, the Tower, procurement, knowledge, finance and treasury.",
+  "id": "./",
+  "start_url": "./#/dashboard",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1424",
+  "theme_color": "#0d1424",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "The Tower", "url": "./#/engine", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Procurement", "url": "./#/procure", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Claude Desk", "url": "./#/claude", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
