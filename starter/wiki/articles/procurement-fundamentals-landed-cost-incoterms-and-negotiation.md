@@ -115,13 +115,14 @@ The classic economic order quantity (Wilson) formula is **Q = √(2 × D × S ÷
 - **Treasury:** committed purchase-order payments are known cash outflows: the engine puts them on your deadlines. Fund inventory from the strategic tier, not the reserve (see [[Treasury Liquidity Tiers]]).
 
 ## Open questions
-- The ICC's own Incoterms 2020 text, to confirm the table above cell by cell (the ICC site could not be fetched).
+- The table above, confirmed cell by cell against the ICC's own text. [[China Sourcing Playbook for UAE Private-Label Importers]] cites the ICC Academy and the US International Trade Administration (Tier 1) on Incoterms: reconcile this table with it.
 - UAE customs duty and import VAT treatment by product code, from Dubai Customs and the Federal Tax Authority.
 - Typical freight rates and transit times from China and South Africa to Jebel Ali, from forwarder quotes with dates.
 - Which supplier-protection schemes apply to which order types, from the schemes' own terms.
 - Ostrich-farm import permits and veterinary conditions, from ADAFSA and the Ministry of Climate Change and Environment.
 
 ## Related
+- [[China Sourcing Playbook for UAE Private-Label Importers]] — supplier verification, 30/70 payment and inspection, and FOB versus other terms for China orders
 - [[Amazon FBA from China: Model, Rules and Economics]] — landed cost and UAE duty and VAT applied to a product business
 - [[Venture Validation Framework]] — gates before capital is released for stock or equipment
 - [[Treasury Liquidity Tiers]] — where purchase commitments should be funded from

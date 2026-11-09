@@ -1,13 +1,13 @@
 {
-  "updated": "2026-11-09T04:33:16.476Z",
+  "updated": "2026-11-09T04:34:54.864Z",
   "stats": {
-    "articles": 16,
-    "sources": 118,
-    "links": 72,
-    "words": 17479,
+    "articles": 18,
+    "sources": 197,
+    "links": 87,
+    "words": 29478,
     "confidence": {
       "high": 7,
-      "medium": 7,
+      "medium": 9,
       "low": 2
     }
   },
@@ -28,22 +28,66 @@
         "passive-income",
         "global-trend-store"
       ],
-      "summary": "A compliant China-to-Amazon.ae store is private label sold through FBA with you as seller of record; it can run on low input once set up, but it is capital-hungry, fee-heavy and never fully passive.",
+      "summary": "A compliant China-to-Amazon.ae store is private label sold through FBA with you as seller of record; Amazon's own rate card now confirms the fees, the business can run on low input once set up, but it is capital-hungry, fee-heavy and never fully passive.",
       "confidence": "medium",
       "created": "2026-11-08",
-      "updated": "2026-11-08",
+      "updated": "2026-11-09",
       "pinned": true,
       "redirect": false,
-      "sources": 4,
+      "sources": 16,
       "links": [
+        "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
         "uae-corporate-tax-essentials",
         "uae-holding-structures",
+        "china-sourcing-playbook-for-uae-private-label-importers",
         "venture-validation-framework",
         "double-entry-accounting",
         "treasury-liquidity-tiers"
       ],
-      "words": 1833,
+      "words": 3888,
       "path": "wiki/articles/amazon-fba-from-china-model-rules-and-economics.md"
+    },
+    {
+      "slug": "china-sourcing-playbook-for-uae-private-label-importers",
+      "title": "China Sourcing Playbook for UAE Private-Label Importers",
+      "domain": "Business & Ventures",
+      "tags": [
+        "china",
+        "sourcing",
+        "alibaba",
+        "1688",
+        "global-sources",
+        "made-in-china",
+        "supplier-verification",
+        "trade-assurance",
+        "inspection",
+        "incoterms",
+        "freight",
+        "customs",
+        "dubai",
+        "fba",
+        "amazon-ae",
+        "trademark",
+        "global-trend-store",
+        "dcs-golf"
+      ],
+      "summary": "Source through Alibaba Trade Assurance or a verified Global Sources supplier, check the licence yourself, pay 30/70 with the balance released only after a passed third-party inspection (about USD 268–298 a man-day, named providers), buy FOB/FCA and clear under your own importer code; but plan freight around the Hormuz closure, which since March 2026 has pushed China–UAE sea cargo through east-coast ports at far higher cost and longer transit.",
+      "confidence": "medium",
+      "created": "2026-11-09",
+      "updated": "2026-11-09",
+      "pinned": false,
+      "redirect": false,
+      "sources": 36,
+      "links": [
+        "amazon-fba-from-china-model-rules-and-economics",
+        "venture-validation-framework",
+        "treasury-liquidity-tiers",
+        "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
+        "venture-dossier-dcs-golf",
+        "uae-corporate-tax-essentials"
+      ],
+      "words": 5389,
+      "path": "wiki/articles/china-sourcing-playbook-for-uae-private-label-importers.md"
     },
     {
       "slug": "compounding-and-the-rule-of-72",
@@ -228,11 +272,12 @@
       "links": [
         "amazon-fba-from-china-model-rules-and-economics",
         "treasury-liquidity-tiers",
+        "china-sourcing-playbook-for-uae-private-label-importers",
         "venture-validation-framework",
         "double-entry-accounting",
         "uae-corporate-tax-essentials"
       ],
-      "words": 2412,
+      "words": 2452,
       "path": "wiki/articles/procurement-fundamentals-landed-cost-incoterms-and-negotiation.md"
     },
     {
@@ -318,10 +363,48 @@
         "uae-holding-structures",
         "dubai-property-purchase-costs-and-rental-yield-data",
         "double-entry-accounting",
-        "venture-validation-framework"
+        "venture-validation-framework",
+        "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax"
       ],
-      "words": 1663,
+      "words": 1688,
       "path": "wiki/articles/uae-corporate-tax-essentials.md"
+    },
+    {
+      "slug": "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
+      "title": "UAE E-commerce Seller Set-up: Licence, VAT and Corporate Tax",
+      "domain": "Legal & Structuring",
+      "tags": [
+        "uae",
+        "dubai",
+        "e-commerce",
+        "amazon",
+        "fba",
+        "licensing",
+        "det",
+        "free-zone",
+        "vat",
+        "corporate-tax",
+        "qfzp",
+        "small-business-relief",
+        "customs",
+        "global-trend-store"
+      ],
+      "summary": "For a first-year B2C Amazon.ae seller, a Dubai mainland (DET) LLC with an online-retail activity, a Dubai Customs code and VAT registered on time beats a free zone company, because sales to consumers are an excluded activity for the free zone 0% rate and a free zone entity adds a mainland-access problem without a tax benefit; at AED 400k–600k revenue Corporate Tax is nil either way.",
+      "confidence": "medium",
+      "created": "2026-11-09",
+      "updated": "2026-11-09",
+      "pinned": false,
+      "redirect": false,
+      "sources": 31,
+      "links": [
+        "amazon-fba-from-china-model-rules-and-economics",
+        "uae-corporate-tax-essentials",
+        "uae-holding-structures",
+        "china-sourcing-playbook-for-uae-private-label-importers",
+        "treasury-liquidity-tiers"
+      ],
+      "words": 4490,
+      "path": "wiki/articles/uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax.md"
     },
     {
       "slug": "uae-holding-structures",

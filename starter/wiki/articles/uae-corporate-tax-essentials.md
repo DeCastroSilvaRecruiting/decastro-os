@@ -115,6 +115,7 @@ Lessons: (1) while profits are small, the AED 375k band alone usually brings tax
 - [[Dubai Property Purchase Costs and Rental Yield Data]] — rental income and licensing
 - [[Double-Entry Accounting]] — the books the FTA expects
 - [[Venture Validation Framework]] — tax is a cost line in every venture model
+- [[UAE E-commerce Seller Set-up: Licence, VAT and Corporate Tax]] — why B2C Amazon sales get no free zone 0%, and the year-one seller structure
 
 ## Sources
 1. Ministry of Finance — Federal Decree-Law No. 47 of 2022 and its amendments — https://mof.gov.ae/wp-content/uploads/2025/04/Federal-Decree-Law-No.-47-of-2022-and-its-amendments.pdf (2025; accessed 2026-11-08) [T1]

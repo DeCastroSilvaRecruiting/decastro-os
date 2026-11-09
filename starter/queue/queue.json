@@ -9,11 +9,14 @@
       "title": "Verify and upgrade: Amazon FBA from China: model, rules and economics",
       "question": "Re-verify every fee, threshold and rule in [[Amazon FBA from China: Model, Rules and Economics]] against Amazon Seller Central and sell.amazon.ae pages (referral and FBA rate cards, subscription, storage, inbound from China, Brand Registry, drop shipping policy text), Dubai Customs and the Federal Tax Authority. The first version leaned on vendor articles. Raise confidence only where Tier 1 sources confirm.",
       "venture": "v_amazon",
-      "status": "queued",
+      "status": "done",
       "requestedBy": "owner",
       "created": "2026-11-08T11:30:00.000Z",
-      "updated": "2026-11-08T11:30:00.000Z",
-      "result": null
+      "updated": "2026-11-09T02:02:41.000Z",
+      "result": {
+        "article": "amazon-fba-from-china-model-rules-and-economics",
+        "summary": "Re-verified against sell.amazon.ae, Dubai Customs, FTA and MoF: fees, duty, VAT thresholds and CT lines confirmed; import VAT handling and FBA fee corrected (net ~AED 34.55/unit before the Hormuz freight uplift); Seller Central eligibility rules still unverified (login-gated)."
+      }
     },
     {
       "id": "q_amz_entity",
@@ -23,11 +26,14 @@
       "title": "Best licence, entity, VAT and corporate tax set-up for an Amazon.ae private-label seller based in Dubai",
       "question": "Compare free zone e-commerce, mainland DET and any existing holdco route for a B2C Amazon.ae seller: licence activity, cost, Amazon acceptance, importer code, VAT registration timing, corporate tax (including whether B2C sales qualify for a free zone 0% rate under the current ministerial decisions, and Small Business Relief), banking and payouts in AED/USD. Give a recommended structure for a first-year seller and the questions to put to an adviser. Link to [[UAE Holding Structures]] and [[UAE Corporate Tax Essentials]].",
       "venture": "v_amazon",
-      "status": "queued",
+      "status": "done",
       "requestedBy": "owner",
       "created": "2026-11-08T11:30:00.000Z",
-      "updated": "2026-11-08T11:30:00.000Z",
-      "result": null
+      "updated": "2026-11-09T02:02:41.000Z",
+      "result": {
+        "article": "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
+        "summary": "For a first-year B2C Amazon.ae seller a Dubai mainland DET LLC beats a free zone company because consumer sales are excluded from the free zone 0% rate; CT is nil at AED 400–600k revenue, but VAT likely becomes mandatory in year one because imports count towards the AED 375k threshold."
+      }
     },
     {
       "id": "q_amz_sourcing",
@@ -37,11 +43,14 @@
       "title": "China sourcing playbook for a first-time private-label importer into the UAE",
       "question": "How to find, verify and manage factories on Alibaba, 1688, Global Sources and Made-in-China: licence verification services, factory vs trading company, Trade Assurance and escrow, sample strategy, MOQ negotiation, Incoterms, third-party inspection options and costs, tooling and IP protection, payment terms. Include door-to-FBA freight options to the UAE (sea and air), transit times, typical cost structure, and customs broker practice in Dubai. Cite sources and dates; use quotes ranges only from named providers.",
       "venture": "v_amazon",
-      "status": "queued",
+      "status": "done",
       "requestedBy": "owner",
       "created": "2026-11-08T11:30:00.000Z",
-      "updated": "2026-11-08T11:30:00.000Z",
-      "result": null
+      "updated": "2026-11-09T02:02:41.000Z",
+      "result": {
+        "article": "china-sourcing-playbook-for-uae-private-label-importers",
+        "summary": "Verify licences yourself, pay 30/70 with the balance tied to a passed inspection (USD 268–298/man-day), file the trademark in China first, ship FOB/FCA under your own Dubai customs code, and budget ~AED 5/unit sea freight while Hormuz stays closed."
+      }
     },
     {
       "id": "q_amz_categories",
@@ -269,6 +278,48 @@
       "requestedBy": "claude",
       "created": "2026-11-08T10:30:00.000Z",
       "updated": "2026-11-08T10:30:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_cl_sellercentral",
+      "type": "research",
+      "title": "Amazon.ae Seller Central requirements check (needs login)",
+      "question": "With Seller Central access: current trade-licence rule, drop shipping policy text, subscription after the promotion, long-term storage and inbound fees, Amazon.ae payout currencies, and which trademark offices Brand Registry accepts (UAE MoE or not). Closes the unverified items in [[Amazon FBA from China: Model, Rules and Economics]].",
+      "domain": "Business & Ventures",
+      "priority": "Normal",
+      "venture": "v_amazon",
+      "status": "proposed",
+      "requestedBy": "claude",
+      "created": "2026-11-09T02:02:41.000Z",
+      "updated": "2026-11-09T02:02:41.000Z",
+      "result": null
+    },
+    {
+      "id": "q_cl_freightquotes",
+      "type": "research",
+      "title": "Door-to-FBA freight quotes, China to Dubai, during the Hormuz closure",
+      "question": "Written quotes from at least three named forwarders for 3–5 CBM LCL and air to Amazon.ae FBA, stating discharge port and trucking from Khor Fakkan/Fujairah, to replace the illustrative freight lines in the sourcing playbook and the Commerce Lab default.",
+      "domain": "Business & Ventures",
+      "priority": "Normal",
+      "venture": "v_amazon",
+      "status": "proposed",
+      "requestedBy": "claude",
+      "created": "2026-11-09T02:02:41.000Z",
+      "updated": "2026-11-09T02:02:41.000Z",
+      "result": null
+    },
+    {
+      "id": "q_cl_dcclicence",
+      "type": "research",
+      "title": "Dubai mainland LLC vs Dubai CommerCity dual licence: all-in year-one cost",
+      "question": "Real year-one and renewal cost of a DET e-commerce LLC (licence, Ejari/flexi-desk, approvals, Chamber) vs Dubai CommerCity with DET dual licence, from 2–3 written quotes, to finalise the Global Trend Store entity.",
+      "domain": "Legal & Structuring",
+      "priority": "Normal",
+      "venture": "v_amazon",
+      "status": "proposed",
+      "requestedBy": "claude",
+      "created": "2026-11-09T02:02:41.000Z",
+      "updated": "2026-11-09T02:02:41.000Z",
       "result": null
     },
     {
