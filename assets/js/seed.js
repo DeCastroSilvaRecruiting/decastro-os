@@ -80,7 +80,8 @@ export const SEED = {
     edge: ['network', 'headhunting', 'golf', 'dubai', 'southafrica', 'leather', 'agri', 'research'],
     ecom: { vatRegistered: false, dutyRate: 0.05, vatRate: 0.05, storageRate: 2 },
     procure: { dutyRate: 0.05, vatRate: 0.05, vatRecoverable: true, capitalRate: 0.1, fxChecked: '' },
-    tower: { sky: 'live', layer: 'pipeline' },
+    tower: { sky: 'live', layer: 'pipeline', play: false },
+    game: { active: 'matthew', avatars: null, learned: {} },
   },
   // Units of base currency per 1 unit of currency. USD is the CBUAE peg.
   fx: { AED: 1, USD: 3.6725, CNY: 0.52 },
@@ -93,6 +94,7 @@ export const SEED = {
   ideas: [],       // owner and Claude ideas: {id, kind: business|product, title, pitch, status: new|promoted|dismissed, ...}
   products: [],    // Commerce product pipeline
   suppliers: [],   // supplier register with vetting checklist (shared by Commerce and Procurement)
+  gameTasks: [],   // The Tower game: tasks created in workshops (not tied to a venture)
   catalog: [],     // Procurement: items you buy
   prices: [],      // Procurement: price observations (quotes, invoices, market checks)
   rfqs: [],        // Procurement: requests for quotation with supplier quotes

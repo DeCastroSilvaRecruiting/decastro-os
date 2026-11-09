@@ -36,6 +36,10 @@ export function events(s) {
     for (const t of v.tasks || []) if (t.done) add(t.doneOn || '', 10, `${v.name}: ${t.text}`, 'ventures', `#/ventures/${v.id}`, { venture: v.id });
     for (const a of v.assumptions || []) if (a.status === 'Validated' || a.status === 'Invalidated') add('', 30, `${v.name}: assumption ${a.status.toLowerCase()}`, 'ventures', `#/ventures/${v.id}`, { venture: v.id });
   }
+  const WS_MOD = { hq: 'ventures' };
+  for (const [id, date] of Object.entries(s.settings?.game?.learned || {})) { const ws = id.split('.')[0]; add(date, 15, `Lesson learned: ${id.split('.')[1]} (${ws === 'hq' ? 'Venture HQ' : ws})`, WS_MOD[ws] || ws, '#/engine'); }
+  for (const v of s.ventures || []) for (const [k, sec] of Object.entries(v.plan || {})) if ((sec?.text || '').trim().length >= 20) add(sec.on, 25, `${v.name}: plan section written (${k})`, 'ventures', '#/engine', { venture: v.id, stage: v.stage });
+  for (const t of s.gameTasks || []) if (t.done) add(t.doneOn, 10, `Task done: ${t.text}`, WS_MOD[t.ws] || t.ws || 'core', '#/engine');
   for (const q of s.queue || []) if (q.status === 'done') add(q.updated, 40, `Research done: ${q.title}`, 'claude', '#/claude', { venture: q.venture });
   for (const d of s.decisions || []) {
     add(d.date, 25, `Decision logged: ${d.title}`, 'math', '#/math/decisions');

@@ -4,7 +4,9 @@
 // what is done and how far the empire has come; the sky follows your local clock.
 import * as store from '../store.js';
 import * as K from '../knowledge.js';
-import { esc, icon, compact, fnum, toast, confirmBox, copyText, today, fmtDate } from '../ui.js';
+import { esc, icon, compact, fnum, toast, confirmBox, copyText, today, fmtDate, uid, openForm } from '../ui.js';
+import { addAvatar, DEFAULT_AVATARS, SKIN, HAIR, HAIR_STYLES, FACIAL, TOPS, ACCESSORIES } from '../avatar.js';
+import * as GW from '../game-world.js';
 import { RUBRIC } from '../seed.js';
 import { FLOW, STAGE_INFO, readiness, nextStage, prevStage } from '../gates.js';
 import { Renderer, skyAt, M, V, TAU } from '../gl.js';
@@ -26,6 +28,17 @@ let wikiCount = 0;
 let ptab = 'needs';
 let curSc = null;
 const tw = () => store.get().settings.tower || { sky: 'live', layer: 'pipeline' };
+// ---------- game state (survives re-renders) ----------
+const gameRT = { chars: {}, trail: [], at: null, wtab: 'learn', planV: null, arrivedAt: -10 };
+const isPlay = () => !!tw().play;
+const gs = () => store.get().settings.game || {};
+const activeId = () => (gs().active === 'lizzie' ? 'lizzie' : 'matthew');
+const otherId = () => (activeId() === 'matthew' ? 'lizzie' : 'matthew');
+const avatarCfg = (id) => ({ ...DEFAULT_AVATARS[id], ...((gs().avatars || {})[id] || {}) });
+let wikiArticles = [];
+function ensureChars() {
+  for (const [id, deg] of [['matthew', 92], ['lizzie', 97]]) if (!gameRT.chars[id]) { const pos = GW.toXYZ(deg, GW.ringR(deg)); gameRT.chars[id] = { pos, yaw: Math.atan2(pos[0], pos[2]), path: [], goal: null, walk: 0, phase: 0, waveAt: 0 }; }
+}
 
 function gameCtx(s) {
   return { today: today(), deadlines: store.deadlines(14), wealth: store.wealth(), wikiCount, fxWarning: fxWarning(s), procureAlerts: procureAlerts(s) };
@@ -111,11 +124,15 @@ function start(canvas, overlay, panel) {
     overlay.remove(); canvas.remove();
     stage.insertAdjacentHTML('afterbegin', `<div class="eng-fallback"><b>The 3D tower needs WebGL 2.</b><br><span class="small muted">Your browser or device could not start it. Everything else on this page still works: the empire level, what needs you, the gates and the readiness table.</span></div>`);
     let sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0);
-    loop = { stop() {}, refresh() { sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0); }, select(s) { selected = s; panel.innerHTML = panelHTML(sc0); }, setLayer() { panel.innerHTML = panelHTML(sc0); }, panel() { panel.innerHTML = panelHTML(sc0); } };
+    loop = { stop() {}, refresh() { sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0); }, select(s) { selected = s; panel.innerHTML = panelHTML(sc0); }, setLayer() { panel.innerHTML = panelHTML(sc0); }, panel() { panel.innerHTML = panelHTML(sc0); },
+      walkTo(k) { gameRT.at = k; panel.innerHTML = panelHTML(sc0); }, setPlay() { panel.innerHTML = panelHTML(sc0); } };
     return;
   }
   const reg = T.buildStatic(R);
-  window.__dcTower = { cam: () => cam, select: (x) => loop?.select(x), sc: () => curSc, R };
+  GW.buildHQ(R);
+  ensureChars();
+  const avs = { matthew: addAvatar(R, avatarCfg('matthew'), 'avatar'), lizzie: addAvatar(R, avatarCfg('lizzie'), 'avatar') };
+  window.__dcTower = { cam: () => cam, select: (x) => loop?.select(x), sc: () => curSc, R, game: gameRT, walk: (k) => loop?.walkTo(k) };
   const ctx = overlay.getContext('2d');
   const root = document.documentElement;
   let sc = buildScene(store.get()), refs = null, vp = new Float32Array(16), view = new Float32Array(16);
@@ -137,7 +154,7 @@ function start(canvas, overlay, panel) {
   function resize() {
     const r = stage.getBoundingClientRect();
     W = Math.max(2, r.width); H = Math.max(2, r.height); dpr = Math.min(window.devicePixelRatio || 1, 1.6);
-    colW = W < 620 ? 112 : 168;
+    colW = isPlay() ? 0 : W < 620 ? 112 : 168;
     R.resize(W, H, dpr);
     overlay.width = Math.floor(W * dpr); overlay.height = Math.floor(H * dpr);
   }
@@ -155,6 +172,41 @@ function start(canvas, overlay, panel) {
 
   const ease = (g, dim, hl, k) => { if (!g) return; g.dim += (dim - g.dim) * k; g.hl += (hl - g.hl) * k; };
 
+  function stepChars(dt, t) {
+    const act = gameRT.chars[activeId()], fol = gameRT.chars[otherId()];
+    // follower trails the active character, then stands beside it
+    const lastT = gameRT.trail[gameRT.trail.length - 1];
+    if (!lastT || V.len(V.sub(act.pos, lastT)) > 0.06) { gameRT.trail.push(act.pos.slice()); if (gameRT.trail.length > 80) gameRT.trail.shift(); }
+    const gap = V.len([act.pos[0] - fol.pos[0], 0, act.pos[2] - fol.pos[2]]);
+    if (act.path.length && gap > 0.6 && gameRT.trail.length > 9) { fol.path = [gameRT.trail[gameRT.trail.length - 9]]; fol.goal = null; }
+    else if (!act.path.length && !fol.path.length && gap > 0.75) { const q = GW.toPolar(act.pos), side = q.r > 5.2 ? GW.toXYZ(q.deg + 4.2, q.r) : GW.toXYZ(q.deg, Math.min(5.0, q.r + 0.42)); fol.path = [side]; fol.goal = { faceTo: act }; }
+    for (const id of ['matthew', 'lizzie']) {
+      const c = gameRT.chars[id];
+      if (c.path.length) {
+        const tg = c.path[0], dx = tg[0] - c.pos[0], dz = tg[2] - c.pos[2], dist = Math.hypot(dx, dz), sp = (id === activeId() ? 1.25 : 1.4) * dt;
+        if (dist <= sp) { c.pos = tg.slice(); c.path.shift(); } else { c.pos = [c.pos[0] + (dx / dist) * sp, c.pos[1] + (tg[1] - c.pos[1]) * Math.min(1, sp / dist), c.pos[2] + (dz / dist) * sp]; }
+        if (dist > 1e-4) { let d = Math.atan2(dx, dz) - c.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); c.yaw += d * Math.min(1, dt * 10); }
+        c.phase += Math.min(dist, sp) * 17; c.walk += (1 - c.walk) * Math.min(1, dt * 8);
+        if (!c.path.length) arrive(id, c, t);
+      } else c.walk += (0 - c.walk) * Math.min(1, dt * 6);
+      if (!c.path.length && c.faceYaw != null) { let d = c.faceYaw - c.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); c.yaw += d * Math.min(1, dt * 6); }
+    }
+  }
+  function arrive(id, c, t) {
+    const g = c.goal; c.goal = null;
+    if (!g) { c.faceYaw = null; return; }
+    if (g.faceTo) { c.faceYaw = Math.atan2(g.faceTo.pos[0] - c.pos[0], g.faceTo.pos[2] - c.pos[2]); return; }
+    const centre = g.k === 'hq' ? [0, 0, 0] : T.polar(g.deg, (MODULES.find((m) => m.k === g.k) || {}).r || 5.7);
+    c.faceYaw = Math.atan2(centre[0] - c.pos[0], centre[2] - c.pos[2]);
+    if (id === activeId()) { c.waveAt = t; gameRT.at = g.k; gameRT.wtab = 'learn'; selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc); }
+  }
+  function walkTo(k, spot) {
+    const c = gameRT.chars[activeId()], place = k ? GW.placeOf(k) : null;
+    if (k && !place) return;
+    c.path = GW.route(c.pos, place || spot); c.goal = place; c.faceYaw = null;
+    gameRT.at = null; selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc);
+  }
+
   function frame(now) {
     if (!running) return;
     if (!canvas.isConnected) { stop(); return; }
@@ -163,11 +215,23 @@ function start(canvas, overlay, panel) {
     env = skyAt(skyHour(tw().sky));
     const layer = tw().layer;
 
+    // ---- characters
+    const P = isPlay();
+    stepChars(dt / 1000, t);
+    for (const id of ['matthew', 'lizzie']) {
+      const c = gameRT.chars[id], wave = Math.max(0, 1 - Math.abs(t - c.waveAt - 0.9) / 0.9) * (c.waveAt ? 1 : 0);
+      avs[id].pose(c.pos, c.yaw, { walk: c.walk, phase: c.phase, wave: Math.min(1, wave * 1.6), t });
+    }
+    if (P) {
+      const a = gameRT.chars[activeId()].pos;
+      cam.tt = [a[0], a[1] + 0.38, a[2]];
+      if (!drag.on && now - lastInteract > 2500) { const want = Math.atan2(a[2], a[0]) + (GW.toPolar(a).r < 5.2 ? 0.55 : 0.12); let d = want - cam.base; d = Math.atan2(Math.sin(d), Math.cos(d)); cam.base += d * (1 - Math.exp(-dt * 0.0016)); }
+    }
     // ---- camera
-    if (cam.auto && !drag.on && now - lastInteract > 3500) cam.phase += dt * 0.00022;
+    if (cam.auto && !P && !drag.on && now - lastInteract > 3500) cam.phase += dt * 0.00022;
     cam.zoom += (cam.zoomT - cam.zoom) * (1 - Math.exp(-dt * 0.005));
     for (let i = 0; i < 3; i++) cam.tc[i] += (cam.tt[i] - cam.tc[i]) * (1 - Math.exp(-dt * 0.005));
-    const yaw = cam.base + Math.sin(cam.phase) * cam.swayAmp * (cam.auto ? 1 : 0);
+    const yaw = cam.base + Math.sin(cam.phase) * cam.swayAmp * (cam.auto && !P ? 1 : 0);
     const fov = (34 * Math.PI) / 180, aspEff = Math.max(0.3, (W - colW) / H);
     const fit = Math.max(21 / (2 * Math.tan(fov / 2)), 23 / (2 * Math.tan(fov / 2) * aspEff));
     const dist = fit * cam.zoom, cp = Math.cos(cam.pitch), eye = [cam.tc[0] + dist * cp * Math.cos(yaw), cam.tc[1] + dist * Math.sin(cam.pitch), cam.tc[2] + dist * cp * Math.sin(yaw)];
@@ -202,9 +266,9 @@ function start(canvas, overlay, panel) {
     for (const b of beacons) { const sp = b.sev >= 3 ? 5 : b.sev === 2 ? 3 : 1.6, amp = b.sev >= 3 ? 0.45 : b.sev === 2 ? 0.3 : 0.15; for (const g of b.groups) { g.dim = 1 - amp + amp * Math.sin(t * sp); g.hl = isSel(b) ? 1 : 0; } }
     if (perks.skyline) perks.skyline.occ = Math.min(1, 0.22 + 0.1 * sc.G.level.n);
 
-    try { vp = R.render({ view, proj, eye, t, env, sunTarget: [0, 3, 0] }); } catch (e) { console.error(e); stop(); return; }
-    drawOverlay(t, view, { any, isSel, isHov, floorFocus, modLit, count, focusMod, focusStage, selVenture, vlinks, layer });
-    overlay.style.cursor = hover ? 'pointer' : drag.on ? 'grabbing' : 'grab';
+    try { vp = R.render({ view, proj, eye, t, env, sunTarget: [0, 3, 0], focus: P ? [gameRT.chars[activeId()].pos[0], gameRT.chars[activeId()].pos[1] + 0.3, gameRT.chars[activeId()].pos[2]] : null }); } catch (e) { console.error(e); stop(); return; }
+    drawOverlay(t, view, { any, isSel, isHov, floorFocus, modLit, count, focusMod, focusStage, selVenture, vlinks, layer, play: P });
+    overlay.style.cursor = hover || P ? 'pointer' : drag.on ? 'grabbing' : 'grab';
     requestAnimationFrame(frame);
   }
 
@@ -256,14 +320,29 @@ function start(canvas, overlay, panel) {
     }
     // venture link captions and pod badges
     for (const L of F.vlinks) { const a = P(L.from.pos), b = P([L.to.base[0], T.modBodyTop(L.to) + 0.2, L.to.base[2]]); if (a && b) pill(L.why, (a.x + b.x) / 2, (a.y + b.y) / 2 - 10, { size: 10, weight: 500 }); }
+    // play mode: Venture HQ sign and name tags
+    if (F.play) {
+      const hp = GW.toXYZ(GW.HQ.deg, 3.45), a = P([hp[0], 1.15, hp[2]]);
+      if (a) { pill('Venture HQ', a.x, a.y, { size: W < 620 ? 10 : 11.5, hit: { kind: 'place', id: 'hq' } }); }
+      for (const id of ['matthew', 'lizzie']) {
+        const c = gameRT.chars[id], q = P([c.pos[0], c.pos[1] + 0.8, c.pos[2]]); if (!q) continue;
+        const on = id === activeId();
+        ctx.font = `${on ? 700 : 600} 11px Inter, system-ui, sans-serif`; const nm = avatarCfg(id).name, w = ctx.measureText(nm).width + 18;
+        ctx.fillStyle = on ? 'rgba(226,196,119,0.95)' : 'rgba(8,13,22,0.72)'; rrect(q.x - w / 2, q.y - 10, w, 20, 10); ctx.fill();
+        ctx.fillStyle = on ? '#11151c' : '#e8e6e0'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(nm, q.x, q.y + 0.5);
+        ctx.beginPath(); ctx.moveTo(q.x - 5, q.y + 10); ctx.lineTo(q.x + 5, q.y + 10); ctx.lineTo(q.x, q.y + 15); ctx.closePath(); ctx.fillStyle = on ? 'rgba(226,196,119,0.95)' : 'rgba(8,13,22,0.72)'; ctx.fill();
+        hits.push({ o: { kind: 'char', id }, test: (px, py) => Math.abs(px - q.x) < w / 2 && Math.abs(py - q.y) < 11 });
+      }
+      if (gameRT.chars[activeId()].path.length) { const dst = gameRT.chars[activeId()].path[gameRT.chars[activeId()].path.length - 1], d = P(dst); if (d) { ctx.strokeStyle = '#e2c477'; ctx.lineWidth = 2; ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t * 6); ctx.beginPath(); ctx.ellipse(d.x, d.y, 12, 5, 0, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; } }
+    }
     // stage column
-    const right = [view[0], view[4], view[8]], order = ['Parked', ...FLOW], colX = W - colW + 4, rows = [];
+    const right = [view[0], view[4], view[8]], order = F.play ? [] : ['Parked', ...FLOW], colX = W - colW + 4, rows = [];
     for (const st of order) {
       const vs = sc.ventures.filter((x) => x.stage === st), midY = T.stageMidY(st), rr = st === 'Parked' ? 1.1 : T.rad(midY) + 0.7;
       const a = P([0, midY, 0]), e = P([right[0] * rr, midY, right[2] * rr]); if (!a || !e) continue;
       rows.push({ st, vs, desired: a.y, h: 20 + vs.length * 14, edge: e });
     }
-    { const g = ctx.createLinearGradient(colX - 30, 0, colX + 40, 0); g.addColorStop(0, 'rgba(6,10,18,0)'); g.addColorStop(1, light ? 'rgba(255,255,255,0.5)' : env.uNight < 0.3 ? 'rgba(8,13,22,0.4)' : 'rgba(6,10,18,0.62)'); ctx.fillStyle = g; ctx.fillRect(colX - 30, 0, W - colX + 30, H); }
+    if (!F.play) { const g = ctx.createLinearGradient(colX - 30, 0, colX + 40, 0); g.addColorStop(0, 'rgba(6,10,18,0)'); g.addColorStop(1, light ? 'rgba(255,255,255,0.5)' : env.uNight < 0.3 ? 'rgba(8,13,22,0.4)' : 'rgba(6,10,18,0.62)'); ctx.fillStyle = g; ctx.fillRect(colX - 30, 0, W - colX + 30, H); }
     let yPrev = H - 8;
     for (const rw of rows) { rw.y = Math.min(rw.desired, yPrev - rw.h + 8); yPrev = rw.y - 12; }
     const shift = rows.length ? Math.max(0, 16 - (rows[rows.length - 1].y - 8)) : 0; if (shift) rows.forEach((rw) => { rw.y += shift; });
@@ -315,11 +394,15 @@ function start(canvas, overlay, panel) {
   }
 
   // ---------- picking ----------
-  function pick(x, y) {
-    for (const h of hits) if (h.test(x, y)) return h.o;
+  function ray(x, y) {
     const nx = (x / W) * 2 - 1, ny = 1 - (y / H) * 2, inv = M.inv(vp);
     const un = (z) => { const w = inv[3] * nx + inv[7] * ny + inv[11] * z + inv[15]; return [(inv[0] * nx + inv[4] * ny + inv[8] * z + inv[12]) / w, (inv[1] * nx + inv[5] * ny + inv[9] * z + inv[13]) / w, (inv[2] * nx + inv[6] * ny + inv[10] * z + inv[14]) / w]; };
-    const a = un(-1), b = un(1), d = V.norm(V.sub(b, a));
+    const a = un(-1), b = un(1); return { a, d: V.norm(V.sub(b, a)) };
+  }
+  function ground(x, y) { const { a, d } = ray(x, y); if (d[1] > -1e-4) return null; const tt = -a[1] / d[1]; return V.add(a, V.mul(d, tt)); }
+  function pick(x, y) {
+    for (const h of hits) if (h.test(x, y)) return h.o;
+    const { a, d } = ray(x, y);
     let pod = null, podT = Infinity;
     for (const vn of sc.ventures) { const tt = raySphere(a, d, vn.pos, 0.2 + 0.14 * (vn.score / 100) + 0.22); if (tt && tt < podT) { podT = tt; pod = vn; } }
     if (pod) return { kind: 'venture', id: pod.id };
@@ -343,7 +426,19 @@ function start(canvas, overlay, panel) {
   const end = (e) => {
     pointers.delete(e.pointerId);
     if (!drag.on) return;
-    if (pointers.size === 0) { drag.on = false; if (drag.moved < 6) { const h = pick(local(e).x, local(e).y); select(h || { kind: 'core', id: null }); } }
+    if (pointers.size === 0) {
+      drag.on = false;
+      if (drag.moved < 6) {
+        const p = local(e), h = pick(p.x, p.y);
+        if (isPlay()) {
+          if (h && (h.kind === 'module' || h.kind === 'place')) walkTo(h.id);
+          else if (h && h.kind === 'stage') walkTo('hq');
+          else if (h && h.kind === 'char') { if (h.id !== activeId()) { store.update((s) => { s.settings.game = { ...(s.settings.game || {}), active: h.id }; }, { render: false }); gameRT.at = null; panel.innerHTML = panelHTML(sc); toast(`Playing as ${avatarCfg(h.id).name}`, 'ok'); } }
+          else if (h && h.kind === 'venture') select(h);
+          else { const gp = ground(p.x, p.y), spot = gp && GW.spotFromGround(gp); if (spot) walkTo(null, spot); }
+        } else select(h && h.kind !== 'char' && h.kind !== 'place' ? h : h && h.kind === 'place' ? { kind: 'stage', id: 'Idea' } : { kind: 'core', id: null });
+      }
+    }
     drag.pinch = 0;
   };
   overlay.addEventListener('pointerup', end); overlay.addEventListener('pointercancel', end);
@@ -356,17 +451,22 @@ function start(canvas, overlay, panel) {
     else if (s.kind === 'venture') { const vn = sc.ventures.find((x) => x.id === s.id); cam.tt = vn ? [vn.pos[0] * 0.4, vn.pos[1], vn.pos[2] * 0.4] : [0, 4.2, 0]; cam.zoomT = 0.55; }
     else { cam.tt = [0, 4.2, 0]; cam.zoomT = 1; }
   }
-  function select(s) { selected = { kind: s.kind, id: s.id }; ptab = 'needs'; focusFor(s); rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
+  function select(s) { selected = { kind: s.kind, id: s.id }; ptab = 'needs'; if (!isPlay()) focusFor(s); rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
   function refresh() { sc = buildScene(store.get()); curSc = sc; rebuildDynamic(); panel.innerHTML = panelHTML(sc); levelCheck(sc); }
   function setLayer() { rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
   function stop() { running = false; ro.disconnect(); R.dispose(); }
-  loop = { stop, refresh, select, setLayer, panel() { panel.innerHTML = panelHTML(sc); } };
-  focusFor(selected);
+  function setPlay(on) {
+    resize();
+    if (on) { cam.zoomT = 0.24; cam.pitch = 0.78; cam.auto = false; } else { cam.tt = [0, 4.2, 0]; cam.zoomT = 1; cam.pitch = CAM0.pitch; gameRT.at = null; }
+    selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc);
+  }
+  loop = { stop, refresh, select, setLayer, walkTo, setPlay, panel() { panel.innerHTML = panelHTML(sc); } };
+  if (isPlay()) { cam.zoomT = Math.min(cam.zoomT, 0.3); cam.zoom = cam.zoomT; cam.pitch = Math.max(cam.pitch, 0.6); } else focusFor(selected);
   panel.innerHTML = panelHTML(sc);
   levelCheck(sc);
   requestAnimationFrame(frame);
 }
-const clampZ = (z) => Math.max(0.32, Math.min(1.5, z));
+const clampZ = (z) => Math.max(isPlay() ? 0.1 : 0.32, Math.min(1.5, z));
 
 /** Celebrate a level reached since the owner last looked. */
 function levelCheck(sc) {
@@ -440,6 +540,7 @@ function empireHTML(sc, full) {
 let showAllMs = false;
 function panelHTML(sc) {
   const sel = selected, layer = tw().layer;
+  if (isPlay() && sel.kind !== 'venture') return gameRT.at ? workshopHTML(sc, gameRT.at) : playHomeHTML(sc);
   if (sel.kind === 'venture') {
     const vn = sc.ventures.find((x) => x.id === sel.id);
     if (!vn) { selected = { kind: 'core', id: null }; return panelHTML(sc); }
@@ -452,6 +553,7 @@ function panelHTML(sc) {
       ${statusHTML(sc.stat(vn), { emptyNeeds: 'Nothing urgent. Work the next gate below.' })}
       ${v.stage === 'Parked' ? `<p class="small muted">${esc(STAGE_INFO.Parked)}</p>` : nxt ? `<h4 class="eng-sub">To rise into ${nxt} <span class="muted">· +${100 * (FLOW.indexOf(nxt) + 1)} XP</span></h4>${gateList(rd.gates)}` : `<h4 class="eng-sub">At the canopy</h4>${gateList(rd.gates)}`}
       <div class="eng-actions">
+        ${isPlay() ? `<button class="btn sm" data-act="leavePlace">← Back to the game</button>` : ''}
         ${nxt && v.stage !== 'Parked' ? `<button class="btn ${rd.pct >= 1 ? 'primary' : ''}" data-act="advance" data-id="${v.id}">${icon('arrow')} Advance to ${nxt}</button>` : ''}
         ${v.stage === 'Parked' ? `<button class="btn primary" data-act="revive" data-id="${v.id}">Revive to Idea</button>` : ''}
         ${prv && v.stage !== 'Parked' ? `<button class="btn sm ghost" data-act="back" data-id="${v.id}">Back to ${prv}</button>` : ''}
@@ -503,6 +605,84 @@ function panelHTML(sc) {
     </div>`;
 }
 
+
+// ---------- Game panels ----------
+const placeStat = (sc, k) => (k === 'hq' ? { needs: sc.G.attention.filter((n) => n.k === 'ventures' || n.k === 'core'), done: sc.G.events.filter((e) => e.k === 'ventures'), xp: sc.G.events.filter((e) => e.k === 'ventures').reduce((a, e) => a + e.xp, 0) } : sc.stat({ kind: 'module', id: k }));
+const questPlace = (n) => (n.k === 'ventures' || n.k === 'core' || !GW.placeOf(n.k) ? 'hq' : n.k);
+function liveVentures() { return store.get().ventures.filter((v) => v.stage !== 'Parked'); }
+function tasksAt(k) {
+  const s = store.get(), out = [];
+  (s.gameTasks || []).filter((x) => (x.ws || 'hq') === k).forEach((x) => out.push({ ...x, src: 'g' }));
+  s.ventures.forEach((v) => (v.tasks || []).forEach((x) => { if ((x.ws || (k === 'hq' ? 'hq' : '')) === k) out.push({ ...x, src: v.id, vname: v.name }); }));
+  return out.sort((a, b) => (a.done - b.done) || String(a.due || '9').localeCompare(String(b.due || '9')));
+}
+
+function playHomeHTML(sc) {
+  const act = activeId(), c = gameRT.chars[act], walking = c && c.path.length && c.goal;
+  const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}"><span style="background:${a.hair}"></span></div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
+  return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">The Tower · game</div><h2>${walking ? `Walking to ${esc(c.goal.label)}…` : 'Where to next?'}</h2><p class="small muted">Tap a building to walk there, or tap the garden to roam. Each building is a workshop: learn, do the work, and set tasks without leaving the game.</p></div>
+    <div class="gm-chars">${card('matthew')}${card('lizzie')}</div>
+    <h4 class="eng-sub">Workshops</h4>
+    <div class="gm-places">${GW.PLACES.map((p) => { const st = placeStat(sc, p.k), sv = st.needs.reduce((a, n) => Math.max(a, n.sev), 0), W = GW.WORKSHOPS[p.k]; return `<button class="gm-place" data-act="goto" data-id="${p.k}"><span class="gm-pin" style="background:${p.k === 'hq' ? '#e2c477' : GROUPS[p.group]?.color || '#888'}"></span><span class="grow"><b>${esc(W?.title || p.label)}</b></span>${st.needs.length ? `<span class="gm-n" style="background:${SEV_COLOR[sv]}">${st.needs.length}</span>` : ''}</button>`; }).join('')}</div>
+    <h4 class="eng-sub">Orders of the day</h4>
+    ${sc.G.quests.length ? `<div class="eng-feed">${sc.G.quests.map((n) => `<button class="eng-row gm-btnrow" data-act="goto" data-id="${questPlace(n)}"><span class="eng-dot" style="background:${SEV_COLOR[n.sev]}"></span><span class="grow small">${esc(n.text)}</span>${n.xp ? `<span class="eng-xp">+${n.xp}</span>` : ''}</button>`).join('')}</div>` : '<p class="small muted">No open orders. Visit Venture HQ and write the next section of a plan.</p>'}
+    ${empireHTML(sc, false).split('<h4 class="eng-sub">Orders of the day</h4>')[0]}`;
+}
+
+function workshopHTML(sc, k) {
+  const W = GW.WORKSHOPS[k], place = GW.placeOf(k), who = avatarCfg(activeId()).name;
+  if (!W) { gameRT.at = null; return playHomeHTML(sc); }
+  const st = placeStat(sc, k), tasks = tasksAt(k), open = tasks.filter((x) => !x.done);
+  const tab = (id, l, n) => `<button class="eng-tab ${gameRT.wtab === id ? 'on' : ''}" data-act="wtab" data-tab="${id}">${l}${n != null ? `<span class="n">${n}</span>` : ''}</button>`;
+  const learned = gs().learned || {};
+  let body = '';
+  if (gameRT.wtab === 'learn') {
+    const arts = (W.domain ? wikiArticles.filter((a) => a.domain === W.domain) : wikiArticles.slice().sort((a, b) => String(b.updated || '').localeCompare(String(a.updated || '')))).slice(0, 5);
+    body = `<div class="gm-lessons">${W.lessons.map(([id, title, text]) => { const key = `${k}.${id}`, done = learned[key]; return `<div class="gm-lesson ${done ? 'done' : ''}"><div class="row" style="gap:8px"><span class="tick">${done ? '✓' : ''}</span><b class="grow">${esc(title)}</b>${done ? `<span class="small muted">${fmtDate(done)}</span>` : `<span class="eng-xp">+${GW.LESSON_XP}</span>`}</div><p class="small" style="margin:6px 0 8px 24px">${esc(text)}</p>${done ? '' : `<button class="btn sm" style="margin-left:24px" data-act="learn" data-id="${key}">I've got this</button>`}</div>`; }).join('')}</div>
+      <h4 class="eng-sub">From the wiki</h4>${arts.length ? `<div class="list">${arts.map((a) => `<a class="list-item" href="#/wiki/${esc(a.slug)}"><span class="grow small"><b>${esc(a.title)}</b>${a.summary ? `<span class="muted" style="display:block">${esc(a.summary.slice(0, 110))}${a.summary.length > 110 ? '…' : ''}</span>` : ''}</span></a>`).join('')}</div>` : `<p class="small muted">No articles here yet. <button class="btn sm" data-act="gameAsk" data-ws="${k}">Ask Claude to research this area</button></p>`}`;
+  } else if (gameRT.wtab === 'do') {
+    body = `${k === 'hq' ? planStudioHTML() : ''}
+      <h4 class="eng-sub">${k === 'hq' ? 'Also at HQ' : 'Tools in this workshop'}</h4>
+      <div class="gm-actions">${W.actions.map(([href, l]) => `<a class="btn" href="${href}">${esc(l)} ${icon('arrow')}</a>`).join('')}
+        <button class="btn" data-act="gameTaskNew" data-ws="${k}">${icon('plus')} New task here</button>
+        ${k !== 'hq' ? `<button class="btn" data-act="gameAsk" data-ws="${k}">${icon('spark')} Ask Claude</button>` : ''}</div>`;
+  } else if (gameRT.wtab === 'tasks') {
+    body = `<div class="row" style="margin:6px 0 10px"><button class="btn primary sm" data-act="gameTaskNew" data-ws="${k}">${icon('plus')} New task</button><span class="small muted right">+10 XP each when done</span></div>
+      ${tasks.length ? tasks.slice(0, 20).map((x) => `<div class="check-item ${x.done ? 'done' : ''}"><input type="checkbox" ${x.done ? 'checked' : ''} data-change="gameTaskDone" data-id="${esc(x.id)}" data-src="${esc(x.src)}" aria-label="Done"><div class="txt">${esc(x.text)}<div class="small muted">${x.vname ? `${esc(x.vname)} · ` : ''}${x.due ? `due ${fmtDate(x.due)}` : 'no date'}${x.done && x.doneOn ? ` · done ${fmtDate(x.doneOn)}` : ''}</div></div></div>`).join('') : '<p class="small muted">No tasks in this workshop yet. Tasks with a date reach your Command Centre deadlines.</p>'}`;
+  } else body = statusHTML(st);
+  return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">${esc(who)} is in the workshop</div><h2>${esc(W.title)}</h2><p class="small muted">${esc(W.theme)}</p></div>
+    <div class="row" style="gap:8px;margin-bottom:8px"><button class="btn sm ghost" data-act="leavePlace">← Leave</button>${k !== 'hq' && place ? `<a class="btn sm ghost" href="${MODULES.find((m) => m.k === k)?.href || '#/engine'}">Open the full module</a>` : ''}</div>
+    <div class="eng-tabs gm-tabs">${tab('learn', 'Learn', W.lessons.filter(([id]) => !learned[`${k}.${id}`]).length || null)}${tab('do', k === 'hq' ? 'Plan Studio' : 'Do')}${tab('tasks', 'Tasks', open.length)}${tab('needs', 'Needs you', st.needs.length)}</div>
+    <div class="gm-body">${body}</div>`;
+}
+
+function planStudioHTML() {
+  const vs = liveVentures();
+  if (!vs.length) return '<p class="small muted">Plant a venture first: the plan belongs to a venture.</p>';
+  if (!vs.some((v) => v.id === gameRT.planV)) gameRT.planV = vs[0].id;
+  const v = vs.find((x) => x.id === gameRT.planV), pr = GW.planProgress(v), p = v.plan || {};
+  return `<div class="gm-plan">
+    <div class="row" style="gap:8px;flex-wrap:wrap"><select class="pill-select" data-change="planVenture" aria-label="Venture">${vs.map((x) => `<option value="${x.id}" ${x.id === v.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select><span class="small muted right">${pr.done}/${pr.total} sections</span></div>
+    <div class="bar-track" style="margin:8px 0 10px"><div class="bar-fill" style="width:${Math.round(pr.pct * 100)}%;background:linear-gradient(90deg,#c9a54c,#ffe39a)"></div></div>
+    ${GW.PLAN.map(([key, title, prompt]) => { const done = (p[key]?.text || '').trim().length >= 20; return `<button class="gm-sec ${done ? 'done' : ''}" data-act="planEdit" data-k="${key}"><span class="tick">${done ? '✓' : ''}</span><span class="grow"><b>${esc(title)}</b><span class="small muted" style="display:block">${esc(done ? p[key].text.slice(0, 90) + (p[key].text.length > 90 ? '…' : '') : prompt)}</span></span>${done ? '' : `<span class="eng-xp">+${GW.PLAN_XP}</span>`}</button>`; }).join('')}
+    <div class="gm-actions" style="margin-top:10px"><button class="btn sm" data-act="planCopy">Copy plan</button><button class="btn sm" data-act="planAsk" ${pr.done ? '' : 'disabled'}>${icon('spark')} Ask Claude to critique</button><a class="btn sm ghost" href="#/ventures/${v.id}">Open venture</a></div></div>`;
+}
+
+const SWATCH = [['#1f3a5f', 'Navy'], ['#f4f4f2', 'White'], ['#1d1f24', 'Black'], ['#c9a54c', 'Gold'], ['#d9667a', 'Rose'], ['#7fb2e5', 'Sky blue'], ['#6b7a3a', 'Olive'], ['#7a2335', 'Burgundy'], ['#d8cbb0', 'Stone'], ['#8c939c', 'Grey'], ['#2f6e4a', 'Green'], ['#b8392e', 'Red'], ['#e9c46a', 'Sand'], ['#5b3a8e', 'Purple']];
+function wardrobeForm(id) {
+  const a = avatarCfg(id), opts = (arr) => arr.map(([v, l]) => ({ v, l })), sw = opts(SWATCH);
+  const withCur = (list, cur) => (list.some((x) => x.v === cur) ? list : [{ v: cur, l: `Current (${cur})` }, ...list]);
+  openForm({ title: `Wardrobe: ${a.name}`, wide: true, intro: '<p class="small muted" style="margin-top:0">Match the character to the real person. A photo helps Claude tune these exactly.</p>', values: a, fields: [
+    { k: 'name', label: 'Name', required: true },
+    { k: 'skin', label: 'Skin tone', type: 'select', options: withCur(SKIN.map((c, i) => ({ v: c, l: `Tone ${i + 1}` })), a.skin) },
+    { k: 'hair', label: 'Hair colour', type: 'select', options: withCur(HAIR.map((c, i) => ({ v: c, l: ['Black', 'Dark brown', 'Brown', 'Chestnut', 'Light brown', 'Dark blonde', 'Blonde', 'Red', 'Grey'][i] })), a.hair) },
+    { k: 'hairStyle', label: 'Hair style', type: 'select', options: opts(HAIR_STYLES) }, { k: 'facial', label: 'Facial hair', type: 'select', options: opts(FACIAL) },
+    { k: 'top', label: 'Top', type: 'select', options: opts(TOPS) }, { k: 'topColor', label: 'Top colour', type: 'select', options: withCur(sw, a.topColor) },
+    { k: 'bottomColor', label: 'Trousers or skirt colour', type: 'select', options: withCur(sw, a.bottomColor) }, { k: 'shoes', label: 'Shoes', type: 'select', options: withCur(sw, a.shoes) },
+    { k: 'accessory', label: 'Accessory', type: 'select', options: opts(ACCESSORIES) }, { k: 'accent', label: 'Cap, visor or accent colour', type: 'select', options: withCur(sw, a.accent) },
+  ], onSave: (d) => { store.update((s) => { s.settings.game = { ...(s.settings.game || {}) }; s.settings.game.avatars = { ...(s.settings.game.avatars || {}), [id]: { ...a, ...d } }; }); toast(`${d.name} updated`, 'ok'); } });
+}
+
 function gateUses(sc, k) {
   const uses = sc.ventures.flatMap((x) => x.ready.gates.filter((g) => g.module === k && !g.ok).map((g) => ({ x, g })));
   if (!uses.length) return '';
@@ -522,17 +702,17 @@ const setTower = (patch) => store.update((s) => { s.settings.tower = { ...(s.set
 export default {
   title: 'The Tower',
   async render(s) {
-    try { wikiCount = (await K.loadIndex()).articles.length; } catch { wikiCount = 0; }
+    try { const ix = await K.loadIndex(); wikiArticles = ix.articles || []; wikiCount = wikiArticles.length; } catch { wikiCount = 0; wikiArticles = []; }
     const live = s.ventures.filter((v) => v.stage !== 'Parked');
     const rows = live.map((v) => ({ v, r: readiness(v) })).sort((a, b) => FLOW.indexOf(b.v.stage) - FLOW.indexOf(a.v.stage) || b.r.pct - a.r.pct);
     const t = s.settings.tower || {};
     return `
     <div class="page-head"><div><div class="eyebrow">Build</div><h1>The Tower</h1>
-      <p>Your empire as a living building. Ideas rise floor by floor from the seed vault to the crown; every tool is a pavilion at the base. Switch layers to see what needs you and what is done, and watch the skyline grow as real work earns XP.</p></div>
+      <p>Your empire as a living building, and a game. Press Play to walk the island as yourself or Lizzie: every building is a workshop where you learn, write your business plans and set tasks. Switch layers to see what needs you and what is done, and watch the skyline grow as real work earns XP.</p></div>
       <div class="actions"><button class="btn" data-act="resetCam">${icon('sync')} Reset view</button><button class="btn" data-act="toggleSpin">${cam.auto ? 'Pause rotation' : 'Rotate'}</button><a class="btn primary" href="#/ventures" data-act="newVenture">${icon('plus')} New idea</a></div></div>
     <div class="eng-wrap">
       <div class="eng-stage card flush"><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="3D model of the venture tower: stage floors, the seed vault, the connected pavilions and outposts"></canvas>
-        <div class="eng-layers" role="toolbar" aria-label="Tower layers">${LAYERS.map(([k, l]) => `<button class="eng-layer ${(t.layer || 'pipeline') === k ? 'on' : ''}" data-act="layer" data-id="${k}" aria-pressed="${(t.layer || 'pipeline') === k}">${l}</button>`).join('')}
+        <div class="eng-layers" role="toolbar" aria-label="Tower layers"><button class="eng-layer eng-play ${t.play ? 'on' : ''}" data-act="playToggle">${t.play ? '■ Exit game' : '▶ Play'}</button>${LAYERS.map(([k, l]) => `<button class="eng-layer ${(t.layer || 'pipeline') === k ? 'on' : ''}" data-act="layer" data-id="${k}" aria-pressed="${(t.layer || 'pipeline') === k}">${l}</button>`).join('')}
           <select class="eng-sky" data-change="sky" aria-label="Sky">${SKIES.map(([k, l]) => `<option value="${k}" ${(t.sky || 'live') === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
       <aside class="eng-panel card" id="eng-panel"></aside>
     </div>
@@ -562,6 +742,61 @@ export default {
       loop?.setLayer();
     },
     sky(el) { setTower({ sky: el.value }); },
+    playToggle(el) { const on = !isPlay(); setTower({ play: on }); el.textContent = on ? '■ Exit game' : '▶ Play'; el.classList.toggle('on', on); loop?.setPlay(on); if (on) toast('Tap a building to walk there', 'ok'); },
+    goto(el) { if (!isPlay()) { setTower({ play: true }); loop?.setPlay(true); document.querySelector('.eng-play')?.classList.add('on'); } loop?.walkTo(el.dataset.id); },
+    leavePlace() { gameRT.at = null; selected = { kind: 'core', id: null }; loop?.panel(); },
+    wtab(el) { gameRT.wtab = el.dataset.tab; loop?.panel(); },
+    playAs(el) { store.update((s) => { s.settings.game = { ...(s.settings.game || {}), active: el.dataset.id }; }, { render: false }); gameRT.at = null; loop?.panel(); toast(`Playing as ${avatarCfg(el.dataset.id).name}`, 'ok'); },
+    wardrobe(el) { wardrobeForm(el.dataset.id); },
+    learn(el) { const id = el.dataset.id; store.update((s) => { s.settings.game = { ...(s.settings.game || {}) }; s.settings.game.learned = { ...(s.settings.game.learned || {}), [id]: today() }; }, { render: false }); toast(`Lesson learned: +${GW.LESSON_XP} XP`, 'ok'); loop?.refresh(); },
+    gameTaskNew(el) {
+      const ws = el.dataset.ws || gameRT.at || 'hq';
+      openForm({ title: `New task · ${GW.WORKSHOPS[ws]?.title || 'Workshop'}`, values: { ws, venture: ws === 'hq' ? gameRT.planV || '' : '' }, fields: [
+        { k: 'text', label: 'What needs doing?', required: true, full: true },
+        { k: 'venture', label: 'Venture', type: 'select', options: () => [{ v: '', l: 'General (the empire)' }, ...liveVentures().map((v) => ({ v: v.id, l: v.name }))] },
+        { k: 'due', label: 'Due date', type: 'date', hint: 'Dated tasks reach your deadlines' },
+        { k: 'ws', label: 'Workshop', type: 'select', options: GW.PLACES.map((p) => ({ v: p.k, l: GW.WORKSHOPS[p.k]?.title || p.label })) },
+      ], onSave: (d) => {
+        store.update((s) => {
+          const rec = { id: uid('t'), text: d.text, due: d.due || '', done: false, doneOn: '', ws: d.ws, created: today() };
+          if (d.venture) { const v = s.ventures.find((x) => x.id === d.venture); (v.tasks ||= []).push(rec); v.updated = today(); } else (s.gameTasks ||= []).push(rec);
+        }, { render: false });
+        toast('Task created', 'ok'); gameRT.wtab = 'tasks'; loop?.refresh();
+      } });
+    },
+    gameTaskDone(el) {
+      store.update((s) => {
+        const list = el.dataset.src === 'g' ? s.gameTasks : s.ventures.find((v) => v.id === el.dataset.src)?.tasks;
+        const x = (list || []).find((y) => y.id === el.dataset.id); if (!x) return;
+        x.done = el.checked; x.doneOn = el.checked ? today() : '';
+      }, { render: false });
+      if (el.checked) toast('Done: +10 XP', 'ok');
+      loop?.refresh();
+    },
+    planVenture(el) { gameRT.planV = el.value; loop?.panel(); },
+    planEdit(el) {
+      const v = store.byId('ventures', gameRT.planV), key = el.dataset.k, sec = GW.PLAN.find((x) => x[0] === key), cur = (v.plan || {})[key] || {};
+      openForm({ title: `${v.name}: ${sec[1]}`, wide: true, values: { text: cur.text || '' }, fields: [{ k: 'text', label: sec[2], type: 'textarea', full: true, hint: 'Twenty characters or more counts as written. Be specific: names, numbers, dates.' }],
+        onSave: (d) => {
+          const was = (cur.text || '').trim().length >= 20, now = (d.text || '').trim().length >= 20;
+          store.update((s) => { const x = s.ventures.find((y) => y.id === v.id); x.plan = { ...(x.plan || {}), [key]: { text: d.text || '', on: cur.on || today() } }; x.updated = today(); }, { render: false });
+          if (now && !was) toast(`Plan section written: +${GW.PLAN_XP} XP`, 'ok');
+          loop?.refresh();
+        } });
+    },
+    planCopy() { const v = store.byId('ventures', gameRT.planV); copyText(GW.planMarkdown(v)); toast('Plan copied as Markdown', 'ok'); },
+    planAsk() {
+      const v = store.byId('ventures', gameRT.planV);
+      K.addToQueue({ type: 'review', title: `Plan review: ${v.name}`, question: `Critique this business plan as a sceptical investor would. For each section say what is strong, what is missing or unproven, and the cheapest test that would prove or disprove it. Check any market figures against current sources and cite them.
+
+${GW.planMarkdown(v)}`, domain: 'Business & Ventures', venture: v.id, priority: 'Normal' });
+      toast(K.mode() === 'connected' ? 'Sent to Claude' : 'Queued. Connect your vault so Claude can pick it up.', 'ok');
+    },
+    gameAsk(el) {
+      const ws = el.dataset.ws, W = GW.WORKSHOPS[ws];
+      openForm({ title: `Ask Claude · ${W?.title || ''}`, fields: [{ k: 'title', label: 'Your question', required: true, full: true, placeholder: 'Decision-shaped: what will the answer help you decide?' }, { k: 'question', label: 'Detail and the decision it informs', type: 'textarea' }],
+        onSave: (d) => { K.addToQueue({ type: 'research', title: d.title, question: d.question || '', domain: W?.domain || 'Business & Ventures', venture: '', priority: 'Normal' }); toast(K.mode() === 'connected' ? 'Sent to Claude' : 'Queued. Connect your vault so Claude can pick it up.', 'ok'); } });
+    },
     ptab(el) { ptab = el.dataset.tab; loop?.panel(); },
     allMilestones() { showAllMs = true; loop?.panel(); },
     pickVenture(el) { loop?.select({ kind: 'venture', id: el.dataset.id }); if (window.innerWidth < 1100) document.getElementById('eng-panel')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); },

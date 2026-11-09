@@ -51,6 +51,7 @@ export function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79
 
 // ---------------------------------------------------------------- mesh builder
 // vertex = pos3 nrm3 col4 mat4(rough, metal|param, emissive, kind) uv2  → 16 floats
+export const IDENT = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 export class Mesh {
   constructor() { this.v = []; this.idx = []; this.n = 0; }
   vert(p, n, c, m, uv = [0, 0]) { this.v.push(p[0], p[1], p[2], n[0], n[1], n[2], c[0], c[1], c[2], c[3] === undefined ? 1 : c[3], m[0], m[1], m[2], m[3], uv[0], uv[1]); return this.n++; }
@@ -180,12 +181,12 @@ vec3 skyCol(vec3 d){
 
 const VS_MAIN = `#version 300 es
 layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm; layout(location=2) in vec4 aCol; layout(location=3) in vec4 aMat; layout(location=4) in vec2 aUV;
-uniform mat4 uVP; uniform mat4 uSVP; uniform float uTime;
+uniform mat4 uVP; uniform mat4 uSVP; uniform mat4 uModel; uniform float uTime;
 out vec3 vPos; out vec3 vNrm; out vec4 vCol; out vec4 vMat; out vec2 vUV; out vec4 vSh;
 void main(){
-  vec3 p = aPos;
+  vec3 p = (uModel*vec4(aPos,1.)).xyz;
   if (aMat.w > 6.5 && aMat.w < 7.5) { float w = aCol.a; p.x += sin(uTime*1.4 + p.x*0.8 + p.z*0.6)*0.05*w; p.z += cos(uTime*1.1 + p.z*0.7 + p.y)*0.04*w; p.y += sin(uTime*2.0 + p.x)*0.012*w; }
-  vec3 n = aNrm;
+  vec3 n = mat3(uModel)*aNrm;
   if (aMat.w > 12.5 && aMat.w < 13.5) {   // slewing / orbiting parts: rotate about the pivot stored in uv
     float sp = aCol.a; float a = sp < 0.1 ? 0.75*sin(uTime*sp*3.1) + uTime*sp*0.5 : uTime*sp;
     float c = cos(a), s = sin(a); vec2 q = p.xz - aUV; p.xz = aUV + vec2(q.x*c - q.y*s, q.x*s + q.y*c); n.xz = vec2(n.x*c - n.z*s, n.x*s + n.z*c);
@@ -196,8 +197,8 @@ void main(){
 }`;
 
 const VS_SHADOW = `#version 300 es
-layout(location=0) in vec3 aPos; uniform mat4 uSVP;
-void main(){ gl_Position = uSVP*vec4(aPos,1.); }`;
+layout(location=0) in vec3 aPos; uniform mat4 uSVP; uniform mat4 uModel;
+void main(){ gl_Position = uSVP*uModel*vec4(aPos,1.); }`;
 const FS_SHADOW = `#version 300 es
 precision highp float; out vec4 o; void main(){ o = vec4(1.); }`;
 
@@ -206,6 +207,7 @@ precision highp sampler2DShadow;
 ${COMMON}
 in vec3 vPos; in vec3 vNrm; in vec4 vCol; in vec4 vMat; in vec2 vUV; in vec4 vSh;
 uniform vec3 uCam; uniform float uDim, uHL, uOcc, uPassBack, uShadowTexel;
+uniform vec3 uFocus; uniform float uCut;
 uniform sampler2DShadow uShadow;
 out vec4 oCol;
 
@@ -226,6 +228,14 @@ vec3 shade(vec3 alb, vec3 N, vec3 V, float rough, float metal, float sh, float a
 }
 
 void main(){
+  if (uCut > 0.5 && vPos.y > uFocus.y + 0.06) {          // see-through: fade whatever stands between the camera and the player
+    vec3 ab = uFocus - uCam; float L = length(ab); vec3 dir = ab / max(L, 1e-4);
+    float s = dot(vPos - uCam, dir);
+    if (s > 0.0 && s < L - 0.32) {
+      float d = length(vPos - uCam - dir*s), rad = 0.3 + 1.1*(s/L);
+      if (d < rad && h21(gl_FragCoord.xy) < smoothstep(rad, rad*0.55, d)*0.92) discard;
+    }
+  }
   int kind = int(vMat.w + 0.5);
   vec3 V = normalize(uCam - vPos);
   vec3 N = normalize(vNrm);
@@ -519,7 +529,7 @@ export class Renderer {
     const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(mesh.idx), gl.STATIC_DRAW);
     const S = 64; [[0, 3, 0], [1, 3, 12], [2, 4, 24], [3, 4, 40], [4, 2, 56]].forEach(([i, n, off]) => { gl.enableVertexAttribArray(i); gl.vertexAttribPointer(i, n, gl.FLOAT, false, S, off); });
     gl.bindVertexArray(null);
-    const g = { vao, vb, ib, count: mesh.idx.length, pass: o.pass || 'opaque', shadow: !!o.shadow, center: o.center || [0, 3, 0], tag: o.tag || '', dim: 1, hl: 0, occ: 0 };
+    const g = { vao, vb, ib, count: mesh.idx.length, pass: o.pass || 'opaque', shadow: !!o.shadow, center: o.center || [0, 3, 0], tag: o.tag || '', dim: 1, hl: 0, occ: 0, model: IDENT.slice() };
     this.groups.push(g); return g;
   }
   removeTag(tag) { const gl = this.gl; this.groups = this.groups.filter((g) => { if (g.tag !== tag) return true; gl.deleteVertexArray(g.vao); gl.deleteBuffer(g.vb); gl.deleteBuffer(g.ib); return false; }); }
@@ -544,7 +554,7 @@ export class Renderer {
     gl.colorMask(false, false, false, false); gl.depthMask(true); gl.enable(gl.DEPTH_TEST); gl.disable(gl.BLEND); gl.disable(gl.CULL_FACE); gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(2, 4);
     gl.useProgram(P.shadow.id); this.u(P.shadow, 'uSVP', svp);
-    for (const g of this.groups) if (g.shadow) { gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); }
+    for (const g of this.groups) if (g.shadow) { this.u(P.shadow, 'uModel', g.model); gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); }
     gl.disable(gl.POLYGON_OFFSET_FILL); gl.colorMask(true, true, true, true);
 
     // 2. main pass into the multisampled HDR buffer
@@ -558,9 +568,9 @@ export class Renderer {
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true);
     // scene
     gl.useProgram(P.main.id); setEnv(P.main);
-    this.u(P.main, 'uVP', vp); this.u(P.main, 'uSVP', svp); this.u(P.main, 'uCam', F.eye); this.u(P.main, 'uShadowTexel', 1 / this.shadowSize);
+    this.u(P.main, 'uVP', vp); this.u(P.main, 'uSVP', svp); this.u(P.main, 'uCam', F.eye); this.u(P.main, 'uFocus', F.focus || [0, -99, 0]); this.u(P.main, 'uCut', F.focus ? 1 : 0); this.u(P.main, 'uShadowTexel', 1 / this.shadowSize);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.shadowTex); this.ui(P.main, 'uShadow', 0);
-    const draw = (g, back) => { this.u(P.main, 'uDim', g.dim); this.u(P.main, 'uHL', g.hl); this.u(P.main, 'uOcc', g.occ); this.u(P.main, 'uPassBack', back); gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); };
+    const draw = (g, back) => { this.u(P.main, 'uModel', g.model); this.u(P.main, 'uDim', g.dim); this.u(P.main, 'uHL', g.hl); this.u(P.main, 'uOcc', g.occ); this.u(P.main, 'uPassBack', back); gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); };
     gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND);
     for (const g of this.groups) if (g.pass === 'opaque' || g.pass === 'foliage') draw(g, 0);
     // glass: far → near, back faces then front faces

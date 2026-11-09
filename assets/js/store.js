@@ -172,6 +172,7 @@ export function deadlines(withinDays = 60) {
   });
   state.entities.forEach((e) => push(e.expiry, `Licence renewal: ${e.name}`, 'Entity', '#/legal/entities'));
   state.ventures.forEach((v) => v.tasks.filter((t) => !t.done).forEach((t) => push(t.due, `${v.name}: ${t.text}`, 'Venture', `#/ventures/${v.id}`)));
+  (state.gameTasks || []).filter((t) => !t.done).forEach((t) => push(t.due, `Task: ${t.text}`, 'Task', '#/engine'));
   // Procurement: payments, deliveries, quote expiry and need-by dates
   const supName = (id) => state.suppliers.find((x) => x.id === id)?.name || 'supplier';
   state.orders.filter((o) => !['Received', 'Closed', 'Cancelled', 'Draft'].includes(o.status)).forEach((o) => {
