@@ -4,6 +4,7 @@ import { esc, icon, uid, openForm, fmtDate, money, fnum, pct, num, today, toast,
 import { STAGES, RUBRIC, DOMAINS } from '../seed.js';
 import { unitEconomics } from '../fin.js';
 import { readiness, nextStage, STAGE_INFO, FLOW } from '../gates.js';
+import { ventureCard as procureCard } from './procure.js';
 import { playbookOf, stepsFor, playbookProgress, MODES, PLAYBOOKS } from '../playbooks.js';
 
 const BASIC = [
@@ -142,6 +143,7 @@ async function detailView(s, v) {
     </div>
 
     <div class="stack">
+      ${procureCard(s, v.id)}
       <div class="card"><div class="card-head"><h3>Score</h3><div class="right"><span class="score-ring" style="font-size:30px">${score}</span><span class="muted">/100</span></div></div>
         ${RUBRIC.map((r) => `<div class="rubric-row"><span>${esc(r.label)}</span><input type="range" min="0" max="10" step="1" value="${num(v.scores[r.k])}" data-change="score" data-k="${r.k}" aria-label="${esc(r.label)}"><b>${num(v.scores[r.k])}</b><span class="w">×${r.w}%</span></div>`).join('')}
       </div>

@@ -1,13 +1,13 @@
 {
-  "updated": "2026-11-08T10:39:09.349Z",
+  "updated": "2026-11-09T04:33:16.476Z",
   "stats": {
-    "articles": 15,
-    "sources": 114,
-    "links": 67,
-    "words": 15067,
+    "articles": 16,
+    "sources": 118,
+    "links": 72,
+    "words": 17479,
     "confidence": {
       "high": 7,
-      "medium": 6,
+      "medium": 7,
       "low": 2
     }
   },
@@ -203,6 +203,37 @@
       ],
       "words": 428,
       "path": "wiki/articles/kelly-criterion-and-position-sizing.md"
+    },
+    {
+      "slug": "procurement-fundamentals-landed-cost-incoterms-and-negotiation",
+      "title": "Procurement Fundamentals: Landed Cost, Incoterms and Negotiation",
+      "domain": "Business & Ventures",
+      "tags": [
+        "procurement",
+        "sourcing",
+        "landed-cost",
+        "incoterms",
+        "logistics",
+        "negotiation",
+        "inventory",
+        "suppliers"
+      ],
+      "summary": "Buy on total delivered cost, not unit price: add freight, insurance, duty and handling, know who carries risk under the Incoterm, structure payment to protect your cash, and treat order-quantity maths as a starting point.",
+      "confidence": "medium",
+      "created": "2026-11-09",
+      "updated": "2026-11-09",
+      "pinned": false,
+      "redirect": false,
+      "sources": 4,
+      "links": [
+        "amazon-fba-from-china-model-rules-and-economics",
+        "treasury-liquidity-tiers",
+        "venture-validation-framework",
+        "double-entry-accounting",
+        "uae-corporate-tax-essentials"
+      ],
+      "words": 2412,
+      "path": "wiki/articles/procurement-fundamentals-landed-cost-incoterms-and-negotiation.md"
     },
     {
       "slug": "property-investment-metrics",

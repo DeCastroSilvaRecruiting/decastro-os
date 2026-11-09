@@ -24,6 +24,10 @@ const MIGRATIONS = [
     if (!s.ventures.some((v) => v.id === ECOM_VENTURE.id)) s.ventures.push(clone(ECOM_VENTURE));
     if (s.fx.CNY === undefined) s.fx.CNY = 0.52;
   } },
+  // Procurement buys from many countries. These rates are rough placeholders: update them in Treasury.
+  { id: 'procure-fx-v1', run(s) {
+    for (const [c, r] of Object.entries({ EUR: 4.2, GBP: 4.85, ZAR: 0.21, INR: 0.043 })) if (s.fx[c] === undefined) s.fx[c] = r;
+  } },
 ];
 function runMigrations() {
   state.settings.migrated ||= [];
@@ -168,6 +172,16 @@ export function deadlines(withinDays = 60) {
   });
   state.entities.forEach((e) => push(e.expiry, `Licence renewal: ${e.name}`, 'Entity', '#/legal/entities'));
   state.ventures.forEach((v) => v.tasks.filter((t) => !t.done).forEach((t) => push(t.due, `${v.name}: ${t.text}`, 'Venture', `#/ventures/${v.id}`)));
+  // Procurement: payments, deliveries, quote expiry and need-by dates
+  const supName = (id) => state.suppliers.find((x) => x.id === id)?.name || 'supplier';
+  state.orders.filter((o) => !['Received', 'Closed', 'Cancelled', 'Draft'].includes(o.status)).forEach((o) => {
+    (o.payments || []).filter((p) => !p.paid).forEach((p) => push(p.due, `Pay ${supName(o.supplier)}: ${p.label} (${o.number})`, 'Payment', '#/procure/orders'));
+    if (['Shipped', 'Customs', 'In production', 'Confirmed'].includes(o.status)) push(o.eta, `Delivery due: ${o.number} from ${supName(o.supplier)}`, 'Delivery', '#/procure/orders');
+  });
+  state.rfqs.filter((r) => ['Open', 'Comparing'].includes(r.status)).forEach((r) => {
+    push(r.need, `Decide supplier: ${r.title}`, 'Sourcing', '#/procure/sourcing');
+    (r.quotes || []).forEach((q) => push(q.validUntil, `Quote expires: ${r.title} (${state.suppliers.find((x) => x.id === q.supplier)?.name || q.supplierName || 'supplier'})`, 'Sourcing', '#/procure/sourcing'));
+  });
   state.decisions.filter((d) => !d.outcome || d.outcome === 'Pending').forEach((d) => push(d.reviewDate, `Review decision: ${d.title}`, 'Decision', '#/math/decisions'));
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }

@@ -129,3 +129,17 @@ export function simulate(a) {
   }
   return { rows, capitalNeeded: -minCash, breakEvenMonth: (rows.find((r) => r.cumProfit > 0) || {}).m || null, endMonthlyProfit: rows[rows.length - 1].profit };
 }
+
+// Supplier vetting checklist shared by Commerce Lab and Procurement.
+export const SUPPLIER_CHECKS = [
+  ['licence', 'Business licence verified and the name matches the factory'],
+  ['factory', 'A factory, or a trading company that says so openly'],
+  ['escrow', 'Escrow or Trade Assurance payment is available'],
+  ['audit', 'Factory audit or live video tour completed'],
+  ['samples', 'Samples received and inspected'],
+  ['refs', 'References or past export clients to the Gulf, Europe or US'],
+  ['terms', 'Deposit of 30% or less, balance after inspection'],
+  ['ip', 'No-copy, tooling and packaging ownership agreed in writing'],
+  ['inspect', 'Third-party inspection accepted before shipment'],
+  ['comms', 'Answers in English within 24 hours'],
+];

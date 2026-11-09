@@ -1,7 +1,7 @@
 import * as store from '../store.js';
 import * as K from '../knowledge.js';
 import { esc, icon, uid, openForm, toast, today, num, money, compact, pct, fnum, tabsHTML, lineChart } from '../ui.js';
-import { amazonEconomics, verdict, productScore, simulate, PRODUCT_RUBRIC, KILL_FLAGS, AMAZON_AE } from '../ecom.js';
+import { SUPPLIER_CHECKS, amazonEconomics, verdict, productScore, simulate, PRODUCT_RUBRIC, KILL_FLAGS, AMAZON_AE } from '../ecom.js';
 import { AUTOMATION, LEVELS, weeklyHours } from '../playbooks.js';
 import { allIdeas } from './ideas.js';
 
@@ -14,18 +14,6 @@ const CATEGORIES = [
   { v: '15b', l: 'Beauty, health, baby, pet above AED 50 (15%)' },
   { v: '7', l: 'Electronics & accessories (7%)' },
   { v: '6', l: 'Computers & major appliances (6%)' },
-];
-const SUPPLIER_CHECKS = [
-  ['licence', 'Business licence verified and the name matches the factory'],
-  ['factory', 'A factory, or a trading company that says so openly'],
-  ['escrow', 'Escrow or Trade Assurance payment is available'],
-  ['audit', 'Factory audit or live video tour completed'],
-  ['samples', 'Samples received and inspected'],
-  ['refs', 'References or past export clients to the Gulf, Europe or US'],
-  ['terms', 'Deposit of 30% or less, balance after inspection'],
-  ['ip', 'No-copy, tooling and packaging ownership agreed in writing'],
-  ['inspect', 'Third-party inspection accepted before shipment'],
-  ['comms', 'Answers in English within 24 hours'],
 ];
 let tab = 'pipeline';
 

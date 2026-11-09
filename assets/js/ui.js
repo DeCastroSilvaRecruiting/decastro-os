@@ -14,9 +14,14 @@ export function daysUntil(dateStr) {
   const a = new Date(today() + 'T00:00:00'), b = new Date(dateStr + 'T00:00:00');
   return Math.round((b - a) / 86400000);
 }
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 export function addMonths(dateStr, m) {
   const d = new Date(dateStr + 'T00:00:00'); d.setMonth(d.getMonth() + m);
-  return d.toISOString().slice(0, 10);
+  return ymd(d);
+}
+export function addDays(dateStr, n) {
+  const d = new Date((dateStr || today()) + 'T00:00:00'); d.setDate(d.getDate() + Math.round(n));
+  return ymd(d);
 }
 export function fmtDate(d, opts = { day: 'numeric', month: 'short', year: 'numeric' }) {
   if (!d) return '—';
@@ -70,6 +75,7 @@ const P = {
   download: '<path d="M12 4v12M6 10l6 6 6-6M4 20h16"/>',
   upload: '<path d="M12 20V8M6 14l6-6 6 6M4 4h16"/>',
   bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+  box: '<path d="M12 3 3.5 7.5v9L12 21l8.5-4.5v-9z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>',
   cart: '<path d="M3 4h2.5l2 11h10l2-8H7"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/>',
   spark: '<path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/>',
 };

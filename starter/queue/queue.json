@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-08T11:30:00.000Z",
+  "updated": "2026-11-09T04:33:16Z",
   "items": [
     {
       "id": "q_amz_review",
@@ -147,7 +147,7 @@
       "updated": "2026-11-08T08:20:00.000Z",
       "result": {
         "article": "uae-corporate-tax-essentials",
-        "summary": "0% to AED 375k then 9%; Small Business Relief (revenue \u2264 AED 3m) extended to periods ending 31 Dec 2029; sole traders taxable above AED 1m combined turnover; register in 3 months, file/pay in 9, keep records 7 years."
+        "summary": "0% to AED 375k then 9%; Small Business Relief (revenue ≤ AED 3m) extended to periods ending 31 Dec 2029; sole traders taxable above AED 1m combined turnover; register in 3 months, file/pay in 9, keep records 7 years."
       }
     },
     {
@@ -181,7 +181,7 @@
       "updated": "2026-11-08T10:30:00.000Z",
       "result": {
         "article": "venture-dossier-dcs-golf",
-        "summary": "Hand-made bags sell at USD 850\u20131,200, but a UAE full-leather bag leaves ~27% DTC margin and losses via retail, and the home licences are officially for UAE/GCC nationals \u2014 lead with canvas+leather trim and corporate gifting."
+        "summary": "Hand-made bags sell at USD 850–1,200, but a UAE full-leather bag leaves ~27% DTC margin and losses via retail, and the home licences are officially for UAE/GCC nationals — lead with canvas+leather trim and corporate gifting."
       }
     },
     {
@@ -198,7 +198,7 @@
       "updated": "2026-11-08T10:30:00.000Z",
       "result": {
         "article": "venture-dossier-al-ain-ostrich-farm",
-        "summary": "ADAFSA farm rules do not name ostriches, the Farm Licence is for Emirati owners, SA bird imports were banned in 2019, and Ostrich Oasis already runs the model in Al Ain \u2014 resolve permission and supply first and reframe around the visitor experience."
+        "summary": "ADAFSA farm rules do not name ostriches, the Farm Licence is for Emirati owners, SA bird imports were banned in 2019, and Ostrich Oasis already runs the model in Al Ain — resolve permission and supply first and reframe around the visitor experience."
       }
     },
     {
@@ -220,7 +220,7 @@
       "type": "research",
       "priority": "Normal",
       "domain": "Property",
-      "title": "Net yields for 3\u20135 target Dubai communities from DLD open data",
+      "title": "Net yields for 3–5 target Dubai communities from DLD open data",
       "question": "Pull 12 months of DLD sales and Ejari rents plus Service Charge Index figures for shortlisted communities and compute net yield on total cost, versus current investment mortgage rates (EIBOR + margin). Informs the first purchase decision.",
       "venture": "",
       "status": "proposed",
@@ -269,6 +269,76 @@
       "requestedBy": "claude",
       "created": "2026-11-08T10:30:00.000Z",
       "updated": "2026-11-08T10:30:00.000Z",
+      "result": null
+    },
+    {
+      "id": "q_proc_verify",
+      "type": "review",
+      "priority": "High",
+      "domain": "Business & Ventures",
+      "title": "Verify the Incoterms 2020 table, UAE duty and import VAT treatment, and container specifications used in the Procurement engine",
+      "question": "Check the Incoterms table in [[Procurement Fundamentals: Landed Cost, Incoterms and Negotiation]] cell by cell against the ICC's Incoterms 2020 text or an ICC-authored summary. Verify UAE customs duty basis (CIF) and typical rates, import VAT treatment, and Dubai Customs importer-code requirements against Dubai Customs and the Federal Tax Authority. Confirm 20ft, 40ft and 40ft high-cube internal volumes and payloads from a carrier or ISO-based source. Update the article and flag any change. Informs every venture that imports.",
+      "venture": "",
+      "status": "proposed",
+      "requestedBy": "claude",
+      "created": "2026-11-09T04:33:16Z",
+      "updated": "2026-11-09T04:33:16Z",
+      "result": null
+    },
+    {
+      "id": "q_proc_golf",
+      "type": "research",
+      "priority": "Normal",
+      "domain": "Business & Ventures",
+      "title": "Materials and component suppliers for hand-made leather golf bags",
+      "question": "Find reputable sources for full-grain and vegetable-tanned leather, waxed canvas, heavy-duty zips and hardware and rigid frames for a UAE luxury golf-bag maker. Give specification options, typical minimum orders, lead times and indicative price ranges with dates and sources. Cover UAE import duty and certification for leather, and traceability or sustainability claims to ask suppliers for. Label what is unverified.",
+      "venture": "v_dcsgolf",
+      "status": "proposed",
+      "requestedBy": "claude",
+      "created": "2026-11-09T04:33:16Z",
+      "updated": "2026-11-09T04:33:16Z",
+      "result": null
+    },
+    {
+      "id": "q_proc_ostrich",
+      "type": "research",
+      "priority": "Normal",
+      "domain": "Business & Ventures",
+      "title": "Ostrich farm equipment, feed and import rules for the UAE",
+      "question": "Cover fencing, feeders, incubation, veterinary and handling equipment, and feed for a greenfield ostrich farm in Al Ain. Include which items are normally imported (South Africa and elsewhere), the permits and veterinary conditions for importing birds, eggs and equipment into the UAE, and typical suppliers. Cite ADAFSA and Ministry of Climate Change and Environment sources first. A licensed adviser must confirm.",
+      "venture": "v_ostrich",
+      "status": "proposed",
+      "requestedBy": "claude",
+      "created": "2026-11-09T04:33:16Z",
+      "updated": "2026-11-09T04:33:16Z",
+      "result": null
+    },
+    {
+      "id": "q_proc_events",
+      "type": "research",
+      "priority": "Low",
+      "domain": "Business & Ventures",
+      "title": "Event supplier cost benchmarks for corporate golf events in Dubai",
+      "question": "Typical per-head and per-item cost ranges for breakfast catering, branded gifts, signage, trophies, audio-visual hire and photography for a C-suite golf event in the UAE, the supplier types to approach, and what to negotiate for recurring events. Cite sources and dates and say where figures are only indicative.",
+      "venture": "v_wedcircuit",
+      "status": "proposed",
+      "requestedBy": "claude",
+      "created": "2026-11-09T04:33:16Z",
+      "updated": "2026-11-09T04:33:16Z",
+      "result": null
+    },
+    {
+      "id": "q_proc_freight",
+      "type": "research",
+      "priority": "Normal",
+      "domain": "Business & Ventures",
+      "title": "China to UAE freight rates, transit times and forwarder charges: benchmarks",
+      "question": "Structure and indicative ranges (with dates and sources) for sea LCL, full-container and air freight from major Chinese ports to Jebel Ali, usual transit times, common forwarder and customs-broker charges, and what a door-to-door quote should and should not include. Flag what the owner must confirm with a forwarder.",
+      "venture": "v_amazon",
+      "status": "proposed",
+      "requestedBy": "claude",
+      "created": "2026-11-09T04:33:16Z",
+      "updated": "2026-11-09T04:33:16Z",
       "result": null
     }
   ]

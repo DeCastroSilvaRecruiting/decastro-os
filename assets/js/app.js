@@ -6,6 +6,7 @@ import * as K from './knowledge.js';
 import dashboard from './views/dashboard.js';
 import ideas from './views/ideas.js';
 import commerce from './views/commerce.js';
+import procure, { procureCount } from './views/procure.js';
 import ventures from './views/ventures.js';
 import engine from './views/engine3d.js';
 import wiki from './views/wiki.js';
@@ -18,10 +19,10 @@ import legal from './views/legal.js';
 import mathlab from './views/mathlab.js';
 import settings from './views/settings.js';
 
-const ROUTES = { dashboard, ideas, commerce, ventures, engine, wiki, claude, finance, treasury, property, investments, legal, math: mathlab, settings };
+const ROUTES = { dashboard, ideas, commerce, procure, ventures, engine, wiki, claude, finance, treasury, property, investments, legal, math: mathlab, settings };
 const NAV = [
   ['Command', [['dashboard', 'Command Centre', 'dashboard']]],
-  ['Build', [['ideas', 'Idea Scout', 'bulb'], ['ventures', 'Venture Engine', 'ventures'], ['commerce', 'Commerce Lab', 'cart'], ['engine', 'The Tower', 'tower'], ['wiki', 'Knowledge Wiki', 'wiki'], ['claude', 'Claude Desk', 'claude']]],
+  ['Build', [['ideas', 'Idea Scout', 'bulb'], ['ventures', 'Venture Engine', 'ventures'], ['commerce', 'Commerce Lab', 'cart'], ['procure', 'Procurement', 'box'], ['engine', 'The Tower', 'tower'], ['wiki', 'Knowledge Wiki', 'wiki'], ['claude', 'Claude Desk', 'claude']]],
   ['Wealth', [['treasury', 'Treasury', 'treasury'], ['investments', 'Investments', 'investments'], ['property', 'Property', 'property'], ['finance', 'Accounting', 'finance']]],
   ['Govern', [['legal', 'Legal & Entities', 'legal'], ['math', 'Mastermind Lab', 'math']]],
 ];
@@ -40,7 +41,7 @@ function parseHash() {
 
 function renderNav(active) {
   const s = store.get();
-  const counts = { ideas: s.ideas.filter((i) => i.status === 'new' && i.source === 'claude').length, ventures: s.ventures.filter((v) => !['Parked'].includes(v.stage)).length, claude: s.queue.filter((q) => ['queued', 'proposed', 'in-progress'].includes(q.status)).length };
+  const counts = { procure: procureCount(s), ideas: s.ideas.filter((i) => i.status === 'new' && i.source === 'claude').length, ventures: s.ventures.filter((v) => !['Parked'].includes(v.stage)).length, claude: s.queue.filter((q) => ['queued', 'proposed', 'in-progress'].includes(q.status)).length };
   $nav.innerHTML = `
     <div class="brand"><div class="mark">DC</div><div><div class="name">${esc(s.settings.empire)} OS</div><div class="sub">Wealth · Trust · Legacy</div></div></div>
     ${NAV.map(([group, items]) => `<div class="nav-group">${group}</div>${items.map(([k, label, ic]) => `
