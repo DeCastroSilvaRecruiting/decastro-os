@@ -80,6 +80,7 @@ export const SEED = {
     edge: ['network', 'headhunting', 'golf', 'dubai', 'southafrica', 'leather', 'agri', 'research'],
     ecom: { vatRegistered: false, dutyRate: 0.05, vatRate: 0.05, storageRate: 2 },
     procure: { dutyRate: 0.05, vatRate: 0.05, vatRecoverable: true, capitalRate: 0.1, fxChecked: '' },
+    tower: { sky: 'live', layer: 'pipeline' },
   },
   // Units of base currency per 1 unit of currency. USD is the CBUAE peg.
   fx: { AED: 1, USD: 3.6725, CNY: 0.52 },

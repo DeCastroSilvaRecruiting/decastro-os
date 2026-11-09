@@ -1,16 +1,21 @@
 // The Tower — the venture pipeline as a living, high-tech building, rendered in real time with WebGL2.
 // Six stage floors rise from a seed vault in the soil to a lotus crown; every other module of the empire is a
-// pavilion around the base, joined to the floors it powers by glowing sky-bridges.
+// pavilion around the base, joined to the floors it powers by glowing sky-bridges. Layers show what needs you,
+// what is done and how far the empire has come; the sky follows your local clock.
 import * as store from '../store.js';
 import * as K from '../knowledge.js';
-import { esc, icon, compact, fnum, toast, confirmBox, copyText, today } from '../ui.js';
+import { esc, icon, compact, fnum, toast, confirmBox, copyText, today, fmtDate } from '../ui.js';
 import { RUBRIC } from '../seed.js';
-import { FLOW, STAGE_INFO, gates, readiness, nextStage, prevStage } from '../gates.js';
-import { Renderer, environment, M, V, TAU } from '../gl.js';
+import { FLOW, STAGE_INFO, readiness, nextStage, prevStage } from '../gates.js';
+import { Renderer, skyAt, M, V, TAU } from '../gl.js';
 import * as T from '../tower-scene.js';
+import { game, LEVELS } from '../empire-game.js';
+import { fxWarning, procureAlerts } from '../procure-data.js';
 
-const { STAGE_COLOR, STAGE_NAME, GROUPS } = T;
-const MODULES = T.MODULE_DEFS;
+const { STAGE_COLOR, STAGE_NAME, GROUPS, SEV_COLOR } = T;
+const MODULES = T.ALL_DEFS;
+export const LAYERS = [['pipeline', 'Pipeline'], ['attention', 'Needs you'], ['progress', 'Done'], ['game', 'Empire']];
+const SKIES = [['live', 'Live sky'], ['day', 'Day'], ['dusk', 'Dusk'], ['night', 'Night']];
 
 // ---------- Model ----------
 const CAM0 = { base: 0.35, pitch: 0.2, zoom: 1, zoomT: 1, ty: 4.2, auto: true, swayAmp: 0.8, phase: 0 };
@@ -18,6 +23,13 @@ let cam = { ...CAM0, tt: [0, 4.2, 0], tc: [0, 4.2, 0] };
 let selected = { kind: 'core', id: null };
 let loop = null;
 let wikiCount = 0;
+let ptab = 'needs';
+let curSc = null;
+const tw = () => store.get().settings.tower || { sky: 'live', layer: 'pipeline' };
+
+function gameCtx(s) {
+  return { today: today(), deadlines: store.deadlines(14), wealth: store.wealth(), wikiCount, fxWarning: fxWarning(s), procureAlerts: procureAlerts(s) };
+}
 
 function buildScene(s) {
   const ventures = [], perStage = {};
@@ -32,21 +44,52 @@ function buildScene(s) {
     }
     ventures.push({ kind: 'venture', id: v.id, v, stage: st, pos, score: store.ventureScore(v, RUBRIC), ready: readiness(v), color: STAGE_COLOR[st] });
   }
-  const modules = MODULES.map((m) => ({ ...m, kind: 'module', id: m.k, color: GROUPS[m.group].color, base: T.polar(m.deg, T.MOD_R) }));
-  return { ventures, modules, modIdx: Object.fromEntries(modules.map((m) => [m.k, m])), core: { kind: 'core', id: 'core' } };
+  const modules = MODULES.map((m) => ({ ...m, kind: 'module', id: m.k, color: GROUPS[m.group].color, base: T.polar(m.deg, m.r) }));
+  const G = game(s, gameCtx(s));
+  const sc = { ventures, modules, modIdx: Object.fromEntries(modules.map((m) => [m.k, m])), core: { kind: 'core', id: 'core' }, G };
+  sc.stat = (o) => (o.kind === 'module' ? G.module(o.id) : o.kind === 'venture' ? G.venture(o.id) : o.kind === 'stage' ? G.stage(o.id, ventures.filter((x) => x.stage === o.id).map((x) => x.id)) : { needs: G.attention, done: G.events, xp: G.xp });
+  return sc;
 }
 
 /** Links specific to one venture: which modules it touches right now. */
 function ventureLinks(sc, vn) {
   const v = vn.v, s = store.get(), out = [];
-  const add = (k, why) => out.push({ from: vn, to: sc.modIdx[k], why });
+  const add = (k, why) => { if (sc.modIdx[k]) out.push({ from: vn, to: sc.modIdx[k], why }); };
   if (s.queue.some((q) => q.venture === v.id)) add('claude', 'Research commissioned');
   if (v.entity) add('legal', `Entity: ${v.entity}`);
   if (v.entity && s.journal.some((j) => j.entity === v.entity)) add('finance', 'Books open');
   if (s.decisions.some((d) => `${d.title} ${d.context || ''}`.toLowerCase().includes(v.name.toLowerCase()))) add('math', 'Decision logged');
   if (+v.capitalRequired > 0) add('treasury', `Needs ${compact(+v.capitalRequired, store.base())}`);
+  const rf = (s.rfqs || []).filter((r) => r.venture === v.id).length, po = (s.orders || []).filter((o) => o.venture === v.id).length;
+  if (rf || po) add('procure', [rf && `${rf} request${rf === 1 ? '' : 's'}`, po && `${po} order${po === 1 ? '' : 's'}`].filter(Boolean).join(' · '));
+  if (v.id === 'v_amazon' && (s.products || []).length) add('commerce', `${s.products.length} product lead${s.products.length === 1 ? '' : 's'}`);
   return out;
 }
+
+/** Which elements carry a beacon in the current layer, and how urgent each is. */
+function beaconItems(sc, layer) {
+  if (layer !== 'attention' && layer !== 'progress') return [];
+  const out = [], maxSev = (arr) => arr.reduce((a, n) => Math.max(a, n.sev), 0);
+  for (const m of sc.modules) {
+    const st = sc.G.module(m.k);
+    if (layer === 'attention' && st.needs.length) out.push({ kind: 'module', id: m.k, sev: maxSev(st.needs) });
+    if (layer === 'progress' && st.done.length) out.push({ kind: 'module', id: m.k, sev: 0 });
+  }
+  for (const stg of ['Parked', ...FLOW]) {
+    const st = sc.stat({ kind: 'stage', id: stg });
+    if (layer === 'attention' && st.needs.length) out.push({ kind: 'stage', id: stg, sev: maxSev(st.needs) });
+    if (layer === 'progress' && st.done.length) out.push({ kind: 'stage', id: stg, sev: 0 });
+  }
+  for (const vn of sc.ventures) {
+    const st = sc.G.venture(vn.id);
+    if (layer === 'attention' && st.needs.length) out.push({ kind: 'venture', id: vn.id, sev: maxSev(st.needs), pos: vn.pos });
+    if (layer === 'progress' && st.done.length) out.push({ kind: 'venture', id: vn.id, sev: 0, pos: vn.pos });
+  }
+  return out;
+}
+
+const localHour = () => { const d = new Date(); return d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600; };
+const skyHour = (mode) => (mode === 'day' ? 12.5 : mode === 'dusk' ? 17.55 : mode === 'night' ? 22 : localHour());
 
 // ---------- ray picking ----------
 function raySphere(o, d, c, r) { const oc = V.sub(o, c), b = V.dot(oc, d), cc = V.dot(oc, oc) - r * r, h = b * b - cc; if (h < 0) return null; const t = -b - Math.sqrt(h); return t > 0 ? t : (-b + Math.sqrt(h) > 0 ? -b + Math.sqrt(h) : null); }
@@ -66,24 +109,26 @@ function start(canvas, overlay, panel) {
   try { R = new Renderer(canvas); } catch (e) {
     console.warn('The Tower needs WebGL2:', e);
     overlay.remove(); canvas.remove();
-    stage.insertAdjacentHTML('afterbegin', `<div class="eng-fallback"><b>The 3D tower needs WebGL 2.</b><br><span class="small muted">Your browser or device could not start it. Everything else on this page still works — the gates, readiness table and actions.</span></div>`);
-    let sc0 = buildScene(store.get()); panel.innerHTML = panelHTML(sc0);
-    loop = { stop() {}, refresh() { sc0 = buildScene(store.get()); panel.innerHTML = panelHTML(sc0); }, select(s) { selected = s; panel.innerHTML = panelHTML(sc0); } };
+    stage.insertAdjacentHTML('afterbegin', `<div class="eng-fallback"><b>The 3D tower needs WebGL 2.</b><br><span class="small muted">Your browser or device could not start it. Everything else on this page still works: the empire level, what needs you, the gates and the readiness table.</span></div>`);
+    let sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0);
+    loop = { stop() {}, refresh() { sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0); }, select(s) { selected = s; panel.innerHTML = panelHTML(sc0); }, setLayer() { panel.innerHTML = panelHTML(sc0); }, panel() { panel.innerHTML = panelHTML(sc0); } };
     return;
   }
   const reg = T.buildStatic(R);
-  window.__dcTower = { cam: () => cam, select: (x) => loop?.select(x) };
+  window.__dcTower = { cam: () => cam, select: (x) => loop?.select(x), sc: () => curSc, R };
   const ctx = overlay.getContext('2d');
   const root = document.documentElement;
   let sc = buildScene(store.get()), refs = null, vp = new Float32Array(16), view = new Float32Array(16);
+  curSc = sc;
   let W = 0, H = 0, dpr = 1, colW = 168, hits = [], hover = null, running = true, lastInteract = 0;
-  let light = false, env = environment(false), theme = { text: '#e8e6e0', muted: '#8b93a0' };
+  let light = false, env = skyAt(skyHour(tw().sky)), theme = { text: '#e8e6e0', muted: '#8b93a0' };
+  let perks = T.buildPerks(R, sc.G.level.n), perkLevel = sc.G.level.n, beacons = [];
   const t0 = performance.now(); let last = t0;
   const drag = { on: false, x: 0, y: 0, moved: 0, pinch: 0 };
   const pointers = new Map();
 
   function readTheme() {
-    light = root.dataset.theme === 'light'; env = environment(light);
+    light = root.dataset.theme === 'light';
     const cs = getComputedStyle(root);
     theme = { text: cs.getPropertyValue('--text').trim() || (light ? '#1a1a1a' : '#e8e6e0'), muted: cs.getPropertyValue('--muted').trim() || '#8b93a0' };
   }
@@ -103,16 +148,20 @@ function start(canvas, overlay, panel) {
     const links = vn ? ventureLinks(sc, vn).map((L) => ({ from: L.from, to: { k: L.to.k }, why: L.why, mod: L.to })) : [];
     refs = T.buildVentures(R, sc, links);
     refs.linkMeta = links;
+    beacons = T.buildBeacons(R, beaconItems(sc, tw().layer));
+    if (sc.G.level.n !== perkLevel) { perks = T.buildPerks(R, sc.G.level.n); perkLevel = sc.G.level.n; }
   }
   rebuildDynamic();
 
-  const ease = (g, dim, hl, k) => { g.dim += (dim - g.dim) * k; g.hl += (hl - g.hl) * k; };
+  const ease = (g, dim, hl, k) => { if (!g) return; g.dim += (dim - g.dim) * k; g.hl += (hl - g.hl) * k; };
 
   function frame(now) {
     if (!running) return;
     if (!canvas.isConnected) { stop(); return; }
     const dt = Math.max(0, Math.min(64, now - last)); last = now; const t = Math.max(0, now - t0) / 1000, k = 1 - Math.exp(-dt * 0.008);
     if ((root.dataset.theme === 'light') !== light) readTheme();
+    env = skyAt(skyHour(tw().sky));
+    const layer = tw().layer;
 
     // ---- camera
     if (cam.auto && !drag.on && now - lastInteract > 3500) cam.phase += dt * 0.00022;
@@ -120,10 +169,10 @@ function start(canvas, overlay, panel) {
     for (let i = 0; i < 3; i++) cam.tc[i] += (cam.tt[i] - cam.tc[i]) * (1 - Math.exp(-dt * 0.005));
     const yaw = cam.base + Math.sin(cam.phase) * cam.swayAmp * (cam.auto ? 1 : 0);
     const fov = (34 * Math.PI) / 180, aspEff = Math.max(0.3, (W - colW) / H);
-    const fit = Math.max(20 / (2 * Math.tan(fov / 2)), 21 / (2 * Math.tan(fov / 2) * aspEff));
+    const fit = Math.max(21 / (2 * Math.tan(fov / 2)), 23 / (2 * Math.tan(fov / 2) * aspEff));
     const dist = fit * cam.zoom, cp = Math.cos(cam.pitch), eye = [cam.tc[0] + dist * cp * Math.cos(yaw), cam.tc[1] + dist * Math.sin(cam.pitch), cam.tc[2] + dist * cp * Math.sin(yaw)];
     view = M.look(eye, cam.tc, [0, 1, 0]);
-    const proj = M.shiftX(M.persp(fov, W / H, 0.5, 160), -colW / W);
+    const proj = M.shiftX(M.persp(fov, W / H, 0.5, 220), -colW / W);
 
     // ---- focus state and uniforms
     const sel = selected;
@@ -135,8 +184,10 @@ function start(canvas, overlay, panel) {
     const isSel = (o) => sel.kind === o.kind && sel.id === o.id;
     const isHov = (o) => hover && hover.kind === o.kind && hover.id === o.id;
     const hlOf = (o) => (isSel(o) ? 1 : isHov(o) ? 0.55 : 0);
-    const floorFocus = (st) => (focusStage ? (focusStage === st ? 1 : 0.35) : focusMod ? (focusMod.feeds.includes(st) ? 1 : 0.35) : selVenture ? (selVenture.stage === st ? 1 : 0.4) : 1);
-    const modLit = (m) => !any || focusMod === m || (focusStage && m.feeds.includes(focusStage)) || (selVenture && vlinks.some((L) => L.to === m));
+    const flagged = new Set(beacons.map((b) => `${b.kind}:${b.id}`));
+    const layerDim = (kind, id) => ((layer === 'attention' || layer === 'progress') && !any ? (flagged.has(`${kind}:${id}`) ? 1 : 0.5) : 1);
+    const floorFocus = (st) => (focusStage ? (focusStage === st ? 1 : 0.35) : focusMod ? (focusMod.feeds.includes(st) ? 1 : 0.35) : selVenture ? (selVenture.stage === st ? 1 : 0.4) : layerDim('stage', st));
+    const modLit = (m) => (!any ? layerDim('module', m.k) > 0.6 : focusMod === m || (focusStage && m.feeds.includes(focusStage)) || (selVenture && vlinks.some((L) => L.to === m)));
     const count = (st) => sc.ventures.filter((x) => x.stage === st).length;
 
     FLOW.forEach((st, i) => { const o = { kind: 'stage', id: st }, d = floorFocus(st), h = hlOf(o), occ = count(st) > 0 ? 0.9 : 0.1; for (const g of reg.floors[i]) { ease(g, d, h, k); g.occ += (occ - g.occ) * k; } });
@@ -146,11 +197,13 @@ function start(canvas, overlay, panel) {
     for (const m of sc.modules) for (const g of reg.modules[m.k] || []) ease(g, modLit(m) ? 1 : 0.35, hlOf(m), k);
     for (const b of reg.bridges) { const m = sc.modIdx[b.m], on = (focusMod && focusMod === m) || (focusStage && focusStage === b.st); ease(b.g, on ? 1 : any ? 0.12 : 0.55, on ? 1 : 0, k); }
     for (const my of reg.myc) { const on = focusMod && (focusMod.k === my.from || focusMod.k === my.to); ease(my.g, on ? 1 : any ? 0.2 : 0.6, on ? 1 : 0, k); }
-    for (const vn of sc.ventures) { const g = refs.pods[vn.id]; if (g) ease(g, focusMod || (focusStage && vn.stage !== focusStage) ? 0.5 : 1, hlOf(vn), k); }
+    for (const vn of sc.ventures) { const g = refs.pods[vn.id]; if (g) ease(g, focusMod || (focusStage && vn.stage !== focusStage) ? 0.5 : layerDim('venture', vn.id) > 0.6 ? 1 : 0.55, hlOf(vn), k); }
     for (const l of refs.links) ease(l.g, 1, 0.3, k);
+    for (const b of beacons) { const sp = b.sev >= 3 ? 5 : b.sev === 2 ? 3 : 1.6, amp = b.sev >= 3 ? 0.45 : b.sev === 2 ? 0.3 : 0.15; for (const g of b.groups) { g.dim = 1 - amp + amp * Math.sin(t * sp); g.hl = isSel(b) ? 1 : 0; } }
+    if (perks.skyline) perks.skyline.occ = Math.min(1, 0.22 + 0.1 * sc.G.level.n);
 
     try { vp = R.render({ view, proj, eye, t, env, sunTarget: [0, 3, 0] }); } catch (e) { console.error(e); stop(); return; }
-    drawOverlay(t, view, { any, isSel, isHov, floorFocus, modLit, count, focusMod, focusStage, selVenture, vlinks });
+    drawOverlay(t, view, { any, isSel, isHov, floorFocus, modLit, count, focusMod, focusStage, selVenture, vlinks, layer });
     overlay.style.cursor = hover ? 'pointer' : drag.on ? 'grabbing' : 'grab';
     requestAnimationFrame(frame);
   }
@@ -164,6 +217,22 @@ function start(canvas, overlay, panel) {
     ctx.strokeStyle = light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1; ctx.stroke();
     ctx.fillStyle = theme.text; ctx.fillText(text, x, y); ctx.globalAlpha = 1;
     if (hit) hits.push({ o: { kind: hit.kind, id: hit.id }, test: (px, py) => Math.abs(px - x) < w / 2 && Math.abs(py - y) < size });
+    return w;
+  }
+  function badge(x, y, text, color, pulse = 0) {
+    ctx.font = '700 10px Inter, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const w = Math.max(16, ctx.measureText(text).width + 9);
+    if (pulse) { ctx.globalAlpha = 0.35 * pulse; ctx.fillStyle = color; rrect(x - w / 2 - 3, y - 11, w + 6, 22, 11); ctx.fill(); ctx.globalAlpha = 1; }
+    ctx.fillStyle = color; rrect(x - w / 2, y - 8, w, 16, 8); ctx.fill();
+    ctx.fillStyle = '#0b0f16'; ctx.fillText(text, x, y + 0.5);
+  }
+  const sevOf = (arr) => arr.reduce((a, n) => Math.max(a, n.sev), 0);
+  function layerBadge(o, x, y, t, layer) {
+    if (layer === 'pipeline') return;
+    const st = sc.stat(o);
+    if (layer === 'attention' && st.needs.length) { const sv = sevOf(st.needs); badge(x, y, String(st.needs.length), SEV_COLOR[sv], sv >= 3 ? 0.5 + 0.5 * Math.sin(t * 5) : 0); }
+    else if (layer === 'progress' && st.done.length) badge(x, y, `✓ ${st.done.length}`, SEV_COLOR[0]);
+    else if (layer === 'game' && st.xp) badge(x, y, `${fnum(st.xp, 0)} XP`, '#e2c477');
   }
   function drawOverlay(t, view, F) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H); hits = [];
@@ -172,19 +241,20 @@ function start(canvas, overlay, panel) {
     {
       const items = [];
       ctx.font = `600 ${W < 620 ? 10 : 11.5}px Inter, system-ui, sans-serif`;
-      for (const m of sc.modules) { const a = P([m.base[0], T.modTopY(m) + 0.9, m.base[2]]); if (!a) continue; items.push({ m, ax: a.x, ay: a.y, x: a.x, y: a.y, w: ctx.measureText(m.label).width + 14, h: 22 }); }
+      for (const m of sc.modules) { const a = P([m.base[0], T.modTopY(m) + 0.9, m.base[2]]); if (!a) continue; items.push({ m, ax: a.x, ay: a.y, x: a.x, y: a.y, w: ctx.measureText(m.label).width + 14 + (F.layer !== 'pipeline' ? 26 : 0), h: 22 }); }
       for (let it = 0; it < 60; it++) for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
         const a = items[i], b = items[j], ox = (a.w + b.w) / 2 - Math.abs(a.x - b.x), oy = a.h + 3 - Math.abs(a.y - b.y);
         if (ox > 0 && oy > 0) { const d = (a.y <= b.y ? 1 : -1) * oy / 2; a.y -= d; b.y += d; }
       }
       for (const a of items) {
-        a.x = Math.max(a.w / 2 + 6, Math.min(W - colW - 8 - a.w / 2, a.x)); a.y = Math.max(52, Math.min(H - 20, a.y));
+        a.x = Math.max(a.w / 2 + 6, Math.min(W - colW - 8 - a.w / 2, a.x)); a.y = Math.max(122, Math.min(H - 54, a.y));
         const moved = Math.hypot(a.x - a.ax, a.y - a.ay) > 10;
         if (moved) { ctx.strokeStyle = a.m.color; ctx.globalAlpha = 0.5; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a.ax, a.ay + 6); ctx.lineTo(a.x, a.y + 4); ctx.stroke(); ctx.fillStyle = a.m.color; ctx.beginPath(); ctx.arc(a.ax, a.ay + 6, 2.4, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
-        pill(a.m.label, a.x, a.y, { size: W < 620 ? 10 : 11.5, alpha: F.modLit(a.m) ? 1 : 0.45, hit: a.m });
+        const pw = pill(a.m.label, a.x - (F.layer !== 'pipeline' ? 12 : 0), a.y, { size: W < 620 ? 10 : 11.5, alpha: F.modLit(a.m) ? 1 : 0.45, hit: a.m });
+        layerBadge(a.m, a.x - 12 + pw / 2 + 14, a.y, t, F.layer);
       }
     }
-    // venture link captions
+    // venture link captions and pod badges
     for (const L of F.vlinks) { const a = P(L.from.pos), b = P([L.to.base[0], T.modBodyTop(L.to) + 0.2, L.to.base[2]]); if (a && b) pill(L.why, (a.x + b.x) / 2, (a.y + b.y) / 2 - 10, { size: 10, weight: 500 }); }
     // stage column
     const right = [view[0], view[4], view[8]], order = ['Parked', ...FLOW], colX = W - colW + 4, rows = [];
@@ -193,7 +263,7 @@ function start(canvas, overlay, panel) {
       const a = P([0, midY, 0]), e = P([right[0] * rr, midY, right[2] * rr]); if (!a || !e) continue;
       rows.push({ st, vs, desired: a.y, h: 20 + vs.length * 14, edge: e });
     }
-    { const g = ctx.createLinearGradient(colX - 30, 0, colX + 40, 0); g.addColorStop(0, 'rgba(6,10,18,0)'); g.addColorStop(1, light ? 'rgba(255,255,255,0.5)' : 'rgba(6,10,18,0.62)'); ctx.fillStyle = g; ctx.fillRect(colX - 30, 0, W - colX + 30, H); }
+    { const g = ctx.createLinearGradient(colX - 30, 0, colX + 40, 0); g.addColorStop(0, 'rgba(6,10,18,0)'); g.addColorStop(1, light ? 'rgba(255,255,255,0.5)' : env.uNight < 0.3 ? 'rgba(8,13,22,0.4)' : 'rgba(6,10,18,0.62)'); ctx.fillStyle = g; ctx.fillRect(colX - 30, 0, W - colX + 30, H); }
     let yPrev = H - 8;
     for (const rw of rows) { rw.y = Math.min(rw.desired, yPrev - rw.h + 8); yPrev = rw.y - 12; }
     const shift = rows.length ? Math.max(0, 16 - (rows[rows.length - 1].y - 8)) : 0; if (shift) rows.forEach((rw) => { rw.y += shift; });
@@ -204,25 +274,44 @@ function start(canvas, overlay, panel) {
       const head = `${st === 'Parked' ? '' : String(FLOW.indexOf(st) + 1).padStart(2, '0') + '  '}${st === 'Parked' ? 'SEED VAULT' : st.toUpperCase()}`;
       ctx.font = '700 11px Inter, system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = col; ctx.fillText(head, colX + 4, rw.y);
       const hw = ctx.measureText(head).width; ctx.font = '500 10px Inter, system-ui, sans-serif'; ctx.fillStyle = theme.muted;
-      if (W >= 620) ctx.fillText(st === 'Parked' ? 'parked' : STAGE_NAME[st], colX + 4 + hw + 6, rw.y);
+      if (W >= 620 && F.layer === 'pipeline') ctx.fillText(st === 'Parked' ? 'parked' : STAGE_NAME[st], colX + 4 + hw + 6, rw.y);
       ctx.globalAlpha = 1;
+      if (F.layer !== 'pipeline') { const sv = sc.stat(o); if ((F.layer === 'attention' && sv.needs.length) || (F.layer === 'progress' && sv.done.length) || (F.layer === 'game' && sv.xp)) layerBadge(o, Math.min(W - 24, colX + 4 + hw + 22), rw.y, t, F.layer); }
       hits.push({ o, test: (x, y) => x >= colX - 8 && x <= W - 2 && Math.abs(y - rw.y) < 9 });
       rw.vs.forEach((vn, i) => {
         const y = rw.y + 15 + i * 14, ov = { kind: 'venture', id: vn.id }, s2 = F.isSel(vn) || F.isHov(vn);
-        ctx.globalAlpha = al; ctx.fillStyle = '#e2c477'; ctx.beginPath(); ctx.arc(colX + 8, y, s2 ? 3.2 : 2.4, 0, TAU); ctx.fill();
+        const needs = F.layer === 'attention' ? sc.G.venture(vn.id).needs : [];
+        ctx.globalAlpha = al; ctx.fillStyle = needs.length ? SEV_COLOR[sevOf(needs)] : '#e2c477'; ctx.beginPath(); ctx.arc(colX + 8, y, s2 ? 3.2 : 2.4, 0, TAU); ctx.fill();
         ctx.font = `${s2 ? 700 : 500} 11px Inter, system-ui, sans-serif`; ctx.fillStyle = s2 ? theme.text : theme.muted; ctx.fillText(fitText(vn.v.name, W - colX - 28), colX + 16, y); ctx.globalAlpha = 1;
         hits.push({ o: ov, test: (x, yy) => x >= colX && x <= W - 2 && Math.abs(yy - y) < 7 });
       });
     }
-    // HUD
-    const ink = light ? 'rgba(30,30,30,0.5)' : 'rgba(210,230,240,0.45)', m = 10, L = 14;
+    // HUD frame corners
+    const ink = light ? 'rgba(30,30,30,0.5)' : 'rgba(210,230,240,0.45)', m = 10, Lc = 14;
     ctx.strokeStyle = ink; ctx.lineWidth = 1.2;
-    for (const [x, y, dx, dy] of [[m, m, 1, 1], [W - m, m, -1, 1], [m, H - m, 1, -1], [W - m, H - m, -1, -1]]) { ctx.beginPath(); ctx.moveTo(x, y + dy * L); ctx.lineTo(x, y); ctx.lineTo(x + dx * L, y); ctx.stroke(); }
+    for (const [x, y, dx, dy] of [[m, m, 1, 1], [W - m, m, -1, 1], [m, H - m, 1, -1], [W - m, H - m, -1, -1]]) { ctx.beginPath(); ctx.moveTo(x, y + dy * Lc); ctx.lineTo(x, y); ctx.lineTo(x + dx * Lc, y); ctx.stroke(); }
     const live = sc.ventures.filter((x) => x.stage !== 'Parked'), ready = live.filter((x) => x.ready.pct >= 1 && nextStage(x.stage)).length;
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = light ? '#6b5a22' : '#e2c477'; ctx.font = '700 10px Inter, system-ui, sans-serif'; ctx.fillText('DE CASTRO  ·  LIVING TOWER', 22, 20);
-    ctx.fillStyle = theme.muted; ctx.font = '500 10px Inter, system-ui, sans-serif'; ctx.fillText(`${live.length} live · ${ready} ready to rise`, 22, 35);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = '#e2c477'; ctx.font = '700 10px Inter, system-ui, sans-serif'; ctx.fillText('DE CASTRO  ·  LIVING TOWER', 22, 20);
+    ctx.fillStyle = theme.muted; ctx.font = '500 10px Inter, system-ui, sans-serif';
+    const hr = env.hour, clock = `${String(Math.floor(hr)).padStart(2, '0')}:${String(Math.floor((hr % 1) * 60)).padStart(2, '0')}`;
+    ctx.fillText(`${live.length} live · ${ready} ready to rise · ${tw().sky === 'live' ? `sky at ${clock}` : `${tw().sky} sky`}`, 22, 35);
+    // empire level card
+    {
+      const G = sc.G, lv = G.level, x = 18, y = 54, w = Math.min(236, W - colW - 40), h = 58;
+      ctx.fillStyle = light ? 'rgba(255,255,255,0.82)' : 'rgba(8,13,22,0.72)'; rrect(x, y, w, h, 9); ctx.fill();
+      ctx.strokeStyle = 'rgba(226,196,119,0.45)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#e2c477'; ctx.font = '800 15px Inter, system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.fillText(String(lv.n), x + 12, y + 15);
+      ctx.fillStyle = theme.text; ctx.font = '700 11px Inter, system-ui, sans-serif'; ctx.fillText(fitText(`LEVEL ${lv.n} · ${lv.title.toUpperCase()}`, w - 40), x + 30, y + 15);
+      const bx = x + 12, bw = w - 24, by = y + 30;
+      ctx.fillStyle = light ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)'; rrect(bx, by - 3, bw, 6, 3); ctx.fill();
+      const g2 = ctx.createLinearGradient(bx, 0, bx + bw, 0); g2.addColorStop(0, '#c9a54c'); g2.addColorStop(1, '#ffe39a'); ctx.fillStyle = g2; rrect(bx, by - 3, Math.max(6, bw * lv.p), 6, 3); ctx.fill();
+      ctx.font = '500 10px Inter, system-ui, sans-serif'; ctx.fillStyle = theme.muted;
+      ctx.fillText(fitText(`${fnum(G.xp, 0)}${lv.next ? ` / ${fnum(lv.next, 0)}` : ''} XP · ${G.streak.weeks}-week streak · +${fnum(G.weekXP, 0)} this week`, w - 24), x + 12, y + 45);
+      hits.push({ o: { kind: 'core', id: null, game: true }, test: (px, py) => px >= x && px <= x + w && py >= y && py <= y + h });
+    }
     const hdg = ((((-(cam.base + Math.sin(cam.phase) * cam.swayAmp * (cam.auto ? 1 : 0)) * 180) / Math.PI) % 360) + 360) % 360;
-    ctx.textAlign = 'right'; ctx.fillText(`HDG ${String(Math.round(hdg)).padStart(3, '0')}°  ·  ELEV ${Math.round((cam.pitch * 180) / Math.PI)}°`, W - 22, 20); ctx.textAlign = 'left';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillStyle = theme.muted; ctx.font = '500 10px Inter, system-ui, sans-serif';
+    ctx.fillText(`HDG ${String(Math.round(hdg)).padStart(3, '0')}°  ·  ELEV ${Math.round((cam.pitch * 180) / Math.PI)}°`, W - 22, 20); ctx.textAlign = 'left';
   }
 
   // ---------- picking ----------
@@ -236,7 +325,7 @@ function start(canvas, overlay, panel) {
     if (pod) return { kind: 'venture', id: pod.id };
     let best = null, bt = Infinity;
     const consider = (tt, o) => { if (tt && tt < bt) { bt = tt; best = o; } };
-    for (const m of sc.modules) consider(rayCyl(a, d, m.base[0], m.base[2], 1.25, 0, T.modTopY(m) + 0.3), { kind: 'module', id: m.k });
+    for (const m of sc.modules) consider(rayCyl(a, d, m.base[0], m.base[2], m.group === 'operations' ? 0.95 : 1.25, 0, T.modTopY(m) + 0.3), { kind: 'module', id: m.k });
     FLOW.forEach((st, i) => { const y0 = T.floorY(i); consider(rayCyl(a, d, 0, 0, T.rad(y0 + T.FH / 2) + 0.65, y0, y0 + T.FH), { kind: 'stage', id: st }); });
     const vt = raySphere(a, d, T.VAULT_C, T.VAULT_R * 1.05);
     if (vt) { const p = V.add(a, V.mul(d, vt)), deg = (Math.atan2(p[2], p[0]) * 180) / Math.PI; if (Math.abs(deg) < 58 && p[1] < 0) consider(vt, { kind: 'stage', id: 'Parked' }); }
@@ -267,25 +356,47 @@ function start(canvas, overlay, panel) {
     else if (s.kind === 'venture') { const vn = sc.ventures.find((x) => x.id === s.id); cam.tt = vn ? [vn.pos[0] * 0.4, vn.pos[1], vn.pos[2] * 0.4] : [0, 4.2, 0]; cam.zoomT = 0.55; }
     else { cam.tt = [0, 4.2, 0]; cam.zoomT = 1; }
   }
-  function select(s) { selected = s; focusFor(s); rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
-  function refresh() { sc = buildScene(store.get()); rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
+  function select(s) { selected = { kind: s.kind, id: s.id }; ptab = 'needs'; focusFor(s); rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
+  function refresh() { sc = buildScene(store.get()); curSc = sc; rebuildDynamic(); panel.innerHTML = panelHTML(sc); levelCheck(sc); }
+  function setLayer() { rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
   function stop() { running = false; ro.disconnect(); R.dispose(); }
-  loop = { stop, refresh, select };
+  loop = { stop, refresh, select, setLayer, panel() { panel.innerHTML = panelHTML(sc); } };
   focusFor(selected);
   panel.innerHTML = panelHTML(sc);
+  levelCheck(sc);
   requestAnimationFrame(frame);
 }
 const clampZ = (z) => Math.max(0.32, Math.min(1.5, z));
+
+/** Celebrate a level reached since the owner last looked. */
+function levelCheck(sc) {
+  const seen = +(tw().seenLevel || 0), n = sc.G.level.n;
+  if (n > seen) {
+    store.update((s) => { s.settings.tower = { ...(s.settings.tower || {}), seenLevel: n }; }, { render: false });
+    if (seen) toast(`Level ${n}: ${sc.G.level.title}. ${sc.G.level.perk}`, 'ok');
+  }
+}
 
 // ---------- Side panel ----------
 const modLabel = (k) => (k === 'ventures' ? 'Venture Engine' : MODULES.find((m) => m.k === k)?.label || k);
 const modColor = (k) => (k === 'ventures' ? '#c9a54c' : GROUPS[MODULES.find((m) => m.k === k)?.group]?.color || '#888');
 const chip = (txt, color) => `<span class="badge" style="color:${color};border-color:${color}55;background:${color}18">${esc(txt)}</span>`;
+const SEV_LABEL = { 3: 'Act now', 2: 'Soon', 1: 'Worth doing' };
 
 function gateList(g) {
   return `<div class="eng-gates">${g.map((x) => `<a class="eng-gate ${x.ok ? 'ok' : ''}" href="${x.href}">
     <span class="tick">${x.ok ? '✓' : ''}</span><span class="grow"><span>${esc(x.label)}</span>${x.hint && !x.ok ? `<span class="small muted" style="display:block">${esc(x.hint)}</span>` : ''}</span>
     ${chip(modLabel(x.module), modColor(x.module))}</a>`).join('')}</div>`;
+}
+
+/** "Needs you" and "Done" for any element, with the XP each earns. */
+function statusHTML(st, { emptyNeeds = 'Nothing needs you here right now.', emptyDone = 'Nothing recorded here yet. Done work shows up the moment it is in the app.' } = {}) {
+  const needs = st.needs || [], done = st.done || [];
+  const tab = (k, l, n) => `<button class="eng-tab ${ptab === k ? 'on' : ''}" data-act="ptab" data-tab="${k}">${l}<span class="n">${n}</span></button>`;
+  const list = ptab === 'done'
+    ? (done.length ? `<div class="eng-feed">${done.slice(0, 12).map((e) => `<a class="eng-row" href="${esc(e.href || '#/engine')}"><span class="eng-dot" style="background:${SEV_COLOR[0]}"></span><span class="grow"><span>${esc(e.text)}</span><span class="small muted" style="display:block">${e.date ? fmtDate(e.date) : 'undated'}</span></span><span class="eng-xp">+${e.xp}</span></a>`).join('')}${done.length > 12 ? `<div class="small muted" style="padding:6px 2px">and ${done.length - 12} more</div>` : ''}</div>` : `<p class="small muted">${emptyDone}</p>`)
+    : (needs.length ? `<div class="eng-feed">${needs.slice(0, 10).map((n) => `<a class="eng-row" href="${esc(n.href || '#/engine')}"><span class="eng-dot" style="background:${SEV_COLOR[n.sev]}"></span><span class="grow"><span>${esc(n.text)}</span><span class="small muted" style="display:block">${SEV_LABEL[n.sev] || ''}</span></span>${n.xp ? `<span class="eng-xp">+${n.xp}</span>` : ''}</a>`).join('')}</div>` : `<p class="small muted">${emptyNeeds}</p>`);
+  return `<div class="eng-status"><div class="eng-tabs">${tab('needs', 'Needs you', needs.length)}${tab('done', 'Done', done.length)}${st.xp ? `<span class="eng-xp right">${fnum(st.xp, 0)} XP earned</span>` : ''}</div>${list}</div>`;
 }
 
 function moduleStats(k) {
@@ -299,12 +410,36 @@ function moduleStats(k) {
     case 'finance': return `${s.journal.length} journal entries across ${new Set(s.journal.map((j) => j.entity)).size} entities`;
     case 'investments': return `${s.holdings.length} holdings · ${compact(w.invest, b)}`;
     case 'property': return `${s.properties.length} properties · equity ${compact(w.propEquity, b)}`;
+    case 'procure': return `${(s.catalog || []).length} items · ${(s.rfqs || []).filter((r) => ['Draft', 'Open', 'Comparing'].includes(r.status)).length} open requests · ${(s.orders || []).filter((o) => ['Sent', 'Confirmed', 'In production', 'Shipped', 'Customs'].includes(o.status)).length} open orders · ${(s.suppliers || []).length} suppliers`;
+    case 'commerce': return `${(s.products || []).length} product leads · ${(s.suppliers || []).length} suppliers on file`;
     default: return '';
   }
 }
 
+function empireHTML(sc, full) {
+  const G = sc.G, lv = G.level, nextMs = G.milestones.filter((m) => !m.done).sort((a, b) => b.p - a.p);
+  return `<div class="eng-empire">
+      <div class="row" style="gap:12px;align-items:center"><div class="eng-lvl">${lv.n}</div><div class="grow"><div class="eyebrow" style="color:#e2c477">Empire level</div><h2 style="margin:0">${esc(lv.title)}</h2></div>
+        <div style="text-align:right"><div class="eng-big">${fnum(G.xp, 0)}</div><div class="small muted">XP</div></div></div>
+      <div class="bar-track mt"><div class="bar-fill" style="width:${Math.round(lv.p * 100)}%;background:linear-gradient(90deg,#c9a54c,#ffe39a)"></div></div>
+      <div class="small muted" style="margin-top:5px">${lv.next ? `${fnum(lv.next - G.xp, 0)} XP to <b style="color:var(--text)">${esc(lv.nextTitle)}</b>: ${esc(lv.nextPerk)}` : 'Top level reached. The tower is complete.'}</div>
+      <div class="calc-out" style="margin-top:10px"><div class="o"><div class="l">Streak</div><div class="v">${G.streak.weeks} wk</div></div><div class="o"><div class="l">This week</div><div class="v">+${fnum(G.weekXP, 0)}</div></div><div class="o"><div class="l">Milestones</div><div class="v">${G.milestones.filter((m) => m.done).length}/${G.milestones.length}</div></div></div>
+      ${!G.streak.activeThisWeek && G.streak.weeks ? '<div class="callout gold small" style="margin-top:8px">Record one real action this week to keep your streak.</div>' : ''}
+    </div>
+    <h4 class="eng-sub">Orders of the day</h4>
+    ${G.quests.length ? `<div class="eng-feed">${G.quests.map((n) => `<a class="eng-row" href="${esc(n.href || '#/engine')}"><span class="eng-dot" style="background:${SEV_COLOR[n.sev]}"></span><span class="grow small">${esc(n.text)}</span>${n.xp ? `<span class="eng-xp">+${n.xp}</span>` : ''}</a>`).join('')}</div>` : '<p class="small muted">No open orders. Pick the next gate of your most promising venture.</p>'}
+    <h4 class="eng-sub">Next milestones</h4>
+    <div class="eng-ms">${(full ? G.milestones : nextMs.slice(0, 4)).map((m) => `<div class="eng-m ${m.done ? 'done' : ''}"><div class="row" style="gap:8px"><span class="tick">${m.done ? '✓' : ''}</span><b class="grow small">${esc(m.title)}</b><span class="eng-xp">+${m.xp}</span></div><div class="small muted" style="margin:2px 0 5px 24px">${esc(m.desc)}</div>${m.done ? '' : `<div class="bar-track" style="margin-left:24px;height:4px"><div class="bar-fill" style="width:${Math.round(m.p * 100)}%;background:#c9a54c"></div></div>`}</div>`).join('')}</div>
+    ${full ? '' : `<button class="btn sm ghost" data-act="allMilestones" style="margin-top:6px">All ${G.milestones.length} milestones</button>`}
+    <h4 class="eng-sub">Recent activity</h4>
+    ${G.events.filter((e) => e.date).length ? `<div class="eng-feed">${G.events.filter((e) => e.date).slice(0, 6).map((e) => `<a class="eng-row" href="${esc(e.href || '#/engine')}"><span class="eng-dot" style="background:${SEV_COLOR[0]}"></span><span class="grow small">${esc(e.text)}<span class="muted" style="display:block">${fmtDate(e.date)}</span></span><span class="eng-xp">+${e.xp}</span></a>`).join('')}</div>` : '<p class="small muted">Your first recorded action starts the feed.</p>'}
+    <details class="small muted" style="margin-top:10px"><summary>How XP works</summary><p style="margin-top:6px">XP comes only from things recorded in the app with a date or a status: a venture rising a floor (100 XP per floor number), a playbook step, an answered research question, a logged or reviewed decision, a ledger entry, an obligation met, a supplier chosen, goods received, an idea promoted. Milestones add a bonus. Nothing can be ticked just for points, so the level is a fair read of real progress.</p>
+      <p>${LEVELS.map((l, i) => `${i + 1}. ${l.title} (${fnum(l.at, 0)})`).join(' · ')}</p></details>`;
+}
+
+let showAllMs = false;
 function panelHTML(sc) {
-  const sel = selected;
+  const sel = selected, layer = tw().layer;
   if (sel.kind === 'venture') {
     const vn = sc.ventures.find((x) => x.id === sel.id);
     if (!vn) { selected = { kind: 'core', id: null }; return panelHTML(sc); }
@@ -314,7 +449,8 @@ function panelHTML(sc) {
     return `<div class="eng-head"><div class="eyebrow" style="color:${STAGE_COLOR[v.stage]}">${esc(v.stage)} · ${esc(STAGE_NAME[v.stage] || '')}${nxt ? ` → ${nxt}` : ''}</div><h2>${esc(v.name)}</h2><p class="small muted">${esc(v.summary)}</p></div>
       <div class="row"><span class="score-ring" style="font-size:26px">${vn.score}</span><span class="muted small">/100 score</span>
         <span class="right badge ${rd.pct >= 1 ? 'green' : 'gold'}">${rd.met}/${rd.total} gates</span></div>
-      ${v.stage === 'Parked' ? `<p class="small muted">${esc(STAGE_INFO.Parked)}</p>` : nxt ? `<h4 class="eng-sub">To rise into ${nxt}</h4>${gateList(rd.gates)}` : `<h4 class="eng-sub">At the canopy</h4>${gateList(rd.gates)}`}
+      ${statusHTML(sc.stat(vn), { emptyNeeds: 'Nothing urgent. Work the next gate below.' })}
+      ${v.stage === 'Parked' ? `<p class="small muted">${esc(STAGE_INFO.Parked)}</p>` : nxt ? `<h4 class="eng-sub">To rise into ${nxt} <span class="muted">· +${100 * (FLOW.indexOf(nxt) + 1)} XP</span></h4>${gateList(rd.gates)}` : `<h4 class="eng-sub">At the canopy</h4>${gateList(rd.gates)}`}
       <div class="eng-actions">
         ${nxt && v.stage !== 'Parked' ? `<button class="btn ${rd.pct >= 1 ? 'primary' : ''}" data-act="advance" data-id="${v.id}">${icon('arrow')} Advance to ${nxt}</button>` : ''}
         ${v.stage === 'Parked' ? `<button class="btn primary" data-act="revive" data-id="${v.id}">Revive to Idea</button>` : ''}
@@ -329,12 +465,14 @@ function panelHTML(sc) {
   }
   if (sel.kind === 'module') {
     const m = sc.modIdx[sel.id];
+    if (!m) { selected = { kind: 'core', id: null }; return panelHTML(sc); }
     const g = GROUPS[m.group];
-    return `<div class="eng-head"><div class="eyebrow" style="color:${g.color}">${g.label} pavilion</div><h2>${esc(m.label)}</h2></div>
+    return `<div class="eng-head"><div class="eyebrow" style="color:${g.color}">${g.label} ${m.group === 'operations' ? 'outpost' : 'pavilion'}</div><h2>${esc(m.label)}</h2></div>
       <p>${esc(m.role)}</p>
       <div class="callout small">${esc(moduleStats(m.k))}</div>
-      ${m.feeds.length ? `<h4 class="eng-sub">Sky-bridges to these floors</h4><div class="row">${m.feeds.map((st) => `<button class="btn sm" data-act="pickStage" data-id="${st}" style="color:${STAGE_COLOR[st]}">${st}</button>`).join('')}</div>` : ''}
-      ${(m.also || []).length ? `<h4 class="eng-sub">Feeds</h4><div class="row">${m.also.map((o) => `<button class="btn sm" data-act="pickModule" data-id="${o}">${esc(sc.modIdx[o].label)}</button>`).join('')}</div>` : ''}
+      ${statusHTML(sc.stat(m))}
+      ${m.feeds.length ? `<h4 class="eng-sub">${m.group === 'operations' ? 'Feeds these floors' : 'Sky-bridges to these floors'}</h4><div class="row">${m.feeds.map((st) => `<button class="btn sm" data-act="pickStage" data-id="${st}" style="color:${STAGE_COLOR[st]}">${st}</button>`).join('')}</div>` : ''}
+      ${(m.also || []).length ? `<h4 class="eng-sub">Feeds</h4><div class="row">${m.also.map((o) => sc.modIdx[o] ? `<button class="btn sm" data-act="pickModule" data-id="${o}">${esc(sc.modIdx[o].label)}</button>` : '').join('')}</div>` : ''}
       ${gateUses(sc, m.k)}
       <div class="eng-actions"><a class="btn primary" href="${m.href}">Open ${esc(m.label)} ${icon('arrow')}</a></div>`;
   }
@@ -344,6 +482,7 @@ function panelHTML(sc) {
     const feeders = sc.modules.filter((m) => m.feeds.includes(st));
     return `<div class="eng-head"><div class="eyebrow" style="color:${STAGE_COLOR[st]}">${st === 'Parked' ? 'Below ground' : `Floor ${FLOW.indexOf(st) + 1} of 6`} · ${esc(STAGE_NAME[st])}</div><h2>${esc(st)}</h2></div>
       <p>${esc(STAGE_INFO[st])}</p>
+      ${statusHTML(sc.stat({ kind: 'stage', id: st }), { emptyDone: st === 'Parked' ? 'No ventures parked yet. Parking a failed idea is a win: +20 XP.' : `No venture has risen to ${st} yet: +${100 * (FLOW.indexOf(st) + 1)} XP when one does.` })}
       ${feeders.length ? `<h4 class="eng-sub">Powered by</h4><div class="row">${feeders.map((m) => `<button class="btn sm" data-act="pickModule" data-id="${m.k}" style="color:${m.color}">${esc(m.label)}</button>`).join('')}</div>` : ''}
       <h4 class="eng-sub">Ventures ${st === 'Parked' ? 'in the vault' : 'on this floor'}</h4>
       ${vs.length ? `<div class="list">${vs.map((x) => `<a class="list-item" data-act="pickVenture" data-id="${x.id}" style="cursor:pointer"><b class="grow">${esc(x.v.name)}</b><span class="badge ${x.ready.pct >= 1 ? 'green' : ''}">${x.ready.met}/${x.ready.total}</span></a>`).join('')}</div>` : '<p class="small muted">None yet.</p>'}
@@ -352,26 +491,22 @@ function panelHTML(sc) {
   // core / overview
   const live = sc.ventures.filter((x) => x.stage !== 'Parked');
   const readyNow = live.filter((x) => x.ready.pct >= 1 && nextStage(x.stage));
-  const stuck = live.slice().sort((a, b) => a.ready.pct - b.ready.pct)[0];
-  return `<div class="eng-head"><div class="eyebrow">The tower</div><h2>From seed to canopy</h2></div>
-    <p class="small">Every idea is planted in the vault and rises floor by floor — <b style="color:${STAGE_COLOR.Idea}">Idea</b>, <b style="color:${STAGE_COLOR.Validate}">Validate</b>, <b style="color:${STAGE_COLOR.Plan}">Plan</b>, <b style="color:${STAGE_COLOR.Build}">Build</b>, <b style="color:${STAGE_COLOR.Launch}">Launch</b>, <b style="color:${STAGE_COLOR.Scale}">Scale</b>. Each floor is earned by passing its gates, and every gate is satisfied by one of the pavilions around the base.</p>
-    <div class="calc-out" style="margin-top:8px"><div class="o"><div class="l">Live ventures</div><div class="v">${live.length}</div></div><div class="o"><div class="l">Ready to rise</div><div class="v">${readyNow.length}</div></div></div>
+  return `${empireHTML(sc, showAllMs)}
     ${readyNow.length ? `<h4 class="eng-sub">Ready to rise</h4><div class="list">${readyNow.map((x) => `<a class="list-item" data-act="pickVenture" data-id="${x.id}" style="cursor:pointer"><b class="grow">${esc(x.v.name)}</b>${chip(x.v.stage + ' → ' + nextStage(x.v.stage), STAGE_COLOR[nextStage(x.v.stage)])}</a>`).join('')}</div>` : ''}
-    ${stuck ? `<h4 class="eng-sub">Most blocked</h4><a class="list-item" data-act="pickVenture" data-id="${stuck.id}" style="cursor:pointer"><b class="grow">${esc(stuck.v.name)}</b><span class="small muted">${stuck.ready.met}/${stuck.ready.total} gates at ${esc(stuck.v.stage)}</span></a>` : ''}
     <h4 class="eng-sub">Reading the tower</h4>
     <div class="small muted eng-legend">
-      <div><span class="lg-dot" style="background:#e2c477"></span>Gold pods are ventures — size is score, the ring around each is readiness for the next floor.</div>
-      <div><span class="lg-dot" style="background:${GROUPS.knowledge.color}"></span>Crystal towers — Knowledge. <span class="lg-dot" style="background:${GROUPS.capital.color};margin-left:6px"></span>Domed vaults — Capital. <span class="lg-dot" style="background:${GROUPS.governance.color};margin-left:6px"></span>Green-roofed blocks — Governance.</div>
-      <div>Glowing sky-bridges carry each pavilion's power to the floors it feeds; dashed mycelium on the ground links the pavilions to each other.</div>
-      <div><span class="lg-dot" style="background:${STAGE_COLOR.Parked}"></span>Parked ideas rest as seeds in the vault beneath the tower, roots feeding upward.</div>
-      <div style="margin-top:6px">Drag to orbit · scroll or pinch to zoom · click a floor, pod or pavilion.</div>
+      <div><b style="color:var(--text)">Layers.</b> ${layer === 'attention' ? 'Needs you: red beacons need action now, amber soon, blue are worth doing.' : layer === 'progress' ? 'Done: green rings mark everything with recorded work, with the count beside each label.' : layer === 'game' ? 'Empire: the XP each part of the tower has earned you.' : 'Pipeline: the plain building. Switch layers at the bottom left of the view.'}</div>
+      <div><span class="lg-dot" style="background:#e2c477"></span>Gold pods are ventures. Size is score; the ring around each is readiness for the next floor.</div>
+      <div><span class="lg-dot" style="background:${GROUPS.knowledge.color}"></span>Crystal towers: Knowledge. <span class="lg-dot" style="background:${GROUPS.capital.color};margin-left:6px"></span>Domed vaults: Capital. <span class="lg-dot" style="background:${GROUPS.governance.color};margin-left:6px"></span>Green-roofed blocks: Governance. <span class="lg-dot" style="background:${GROUPS.operations.color};margin-left:6px"></span>Outposts on the outer ring: Operations.</div>
+      <div>The skyline on the horizon grows with your level, and the crane stays until the tower is complete. The sky follows your clock unless you fix it.</div>
+      <div style="margin-top:6px">Drag to orbit · scroll or pinch to zoom · click a floor, pod, pavilion or the level card.</div>
     </div>`;
 }
 
 function gateUses(sc, k) {
   const uses = sc.ventures.flatMap((x) => x.ready.gates.filter((g) => g.module === k && !g.ok).map((g) => ({ x, g })));
   if (!uses.length) return '';
-  return `<h4 class="eng-sub">Blocking right now</h4><div class="list">${uses.slice(0, 6).map(({ x, g }) => `<a class="list-item" href="${g.href}"><span class="grow small"><b>${esc(x.v.name)}</b> — ${esc(g.label)}</span></a>`).join('')}</div>`;
+  return `<h4 class="eng-sub">Blocking right now</h4><div class="list">${uses.slice(0, 6).map(({ x, g }) => `<a class="list-item" href="${g.href}"><span class="grow small"><b>${esc(x.v.name)}</b>: ${esc(g.label)}</span></a>`).join('')}</div>`;
 }
 
 // ---------- View ----------
@@ -382,6 +517,7 @@ function moveStage(id, to) {
     v.stage = to; v.updated = today();
   });
 }
+const setTower = (patch) => store.update((s) => { s.settings.tower = { ...(s.settings.tower || {}), ...patch }; }, { render: false });
 
 export default {
   title: 'The Tower',
@@ -389,13 +525,15 @@ export default {
     try { wikiCount = (await K.loadIndex()).articles.length; } catch { wikiCount = 0; }
     const live = s.ventures.filter((v) => v.stage !== 'Parked');
     const rows = live.map((v) => ({ v, r: readiness(v) })).sort((a, b) => FLOW.indexOf(b.v.stage) - FLOW.indexOf(a.v.stage) || b.r.pct - a.r.pct);
+    const t = s.settings.tower || {};
     return `
     <div class="page-head"><div><div class="eyebrow">Build</div><h1>The Tower</h1>
-      <p>Your pipeline as a living building. Ideas are planted in the seed vault and rise floor by floor from idea to scale; every other tool in the empire is a pavilion at its base, bridged to the floors it powers. Click a pod to see exactly what stands between it and the next floor.</p></div>
+      <p>Your empire as a living building. Ideas rise floor by floor from the seed vault to the crown; every tool is a pavilion at the base. Switch layers to see what needs you and what is done, and watch the skyline grow as real work earns XP.</p></div>
       <div class="actions"><button class="btn" data-act="resetCam">${icon('sync')} Reset view</button><button class="btn" data-act="toggleSpin">${cam.auto ? 'Pause rotation' : 'Rotate'}</button><a class="btn primary" href="#/ventures" data-act="newVenture">${icon('plus')} New idea</a></div></div>
     <div class="eng-wrap">
-      <div class="eng-stage card flush"><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="3D model of the venture tower: stage floors, the seed vault and the connected module pavilions"></canvas>
-        <div class="eng-hint small">Drag to orbit · scroll to zoom · click to inspect</div></div>
+      <div class="eng-stage card flush"><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="3D model of the venture tower: stage floors, the seed vault, the connected pavilions and outposts"></canvas>
+        <div class="eng-layers" role="toolbar" aria-label="Tower layers">${LAYERS.map(([k, l]) => `<button class="eng-layer ${(t.layer || 'pipeline') === k ? 'on' : ''}" data-act="layer" data-id="${k}" aria-pressed="${(t.layer || 'pipeline') === k}">${l}</button>`).join('')}
+          <select class="eng-sky" data-change="sky" aria-label="Sky">${SKIES.map(([k, l]) => `<option value="${k}" ${(t.sky || 'live') === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
       <aside class="eng-panel card" id="eng-panel"></aside>
     </div>
     <div class="card flush mt"><div class="card-head"><h3>Pipeline readiness</h3><div class="right small muted">Gates met for each venture's next floor</div></div>
@@ -416,6 +554,16 @@ export default {
       else { cam.phase = 0; cam.auto = true; }
       el.textContent = cam.auto ? 'Pause rotation' : 'Rotate';
     },
+    layer(el) {
+      setTower({ layer: el.dataset.id });
+      el.parentElement.querySelectorAll('.eng-layer').forEach((b) => { const on = b.dataset.id === el.dataset.id; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+      if (el.dataset.id === 'game') selected = { kind: 'core', id: null };
+      ptab = el.dataset.id === 'progress' ? 'done' : 'needs';
+      loop?.setLayer();
+    },
+    sky(el) { setTower({ sky: el.value }); },
+    ptab(el) { ptab = el.dataset.tab; loop?.panel(); },
+    allMilestones() { showAllMs = true; loop?.panel(); },
     pickVenture(el) { loop?.select({ kind: 'venture', id: el.dataset.id }); if (window.innerWidth < 1100) document.getElementById('eng-panel')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); },
     pickModule(el) { loop?.select({ kind: 'module', id: el.dataset.id }); },
     pickStage(el) { loop?.select({ kind: 'stage', id: el.dataset.id }); },
@@ -424,7 +572,7 @@ export default {
       const v = store.byId('ventures', el.dataset.id); const nxt = nextStage(v.stage); if (!nxt) return;
       const r = readiness(v);
       if (r.pct < 1 && !(await confirmBox(`${v.name} has met ${r.met} of ${r.total} gates for ${nxt}. Advance anyway? Skipping gates is how capital gets lost.`, `Advance to ${nxt}`))) return;
-      selected = { kind: 'venture', id: v.id }; moveStage(v.id, nxt); toast(`${v.name} moved to ${nxt}`, 'ok');
+      selected = { kind: 'venture', id: v.id }; moveStage(v.id, nxt); toast(`${v.name} rose to ${nxt}: +${100 * (FLOW.indexOf(nxt) + 1)} XP`, 'ok');
     },
     back(el) { const v = store.byId('ventures', el.dataset.id); const p = prevStage(v.stage); if (p) { selected = { kind: 'venture', id: v.id }; moveStage(v.id, p); } },
     async park(el) { const v = store.byId('ventures', el.dataset.id); if (await confirmBox(`Park ${v.name}? It will rest in the seed vault beneath the tower until you revive it.`, 'Park')) { selected = { kind: 'venture', id: v.id }; moveStage(v.id, 'Parked'); } },

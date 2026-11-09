@@ -4,6 +4,8 @@ import { esc, money, compact, pct, fmtDate, lineChart, barsHTML, icon, today } f
 import { RUBRIC, STAGES } from '../seed.js';
 import { allIdeas } from './ideas.js';
 import { playbookProgress } from '../playbooks.js';
+import { game } from '../empire-game.js';
+import { fxWarning, procureAlerts } from '../procure-data.js';
 
 function greeting() {
   const h = new Date().getHours();
@@ -26,6 +28,8 @@ export default {
     const nextTasks = s.ventures.flatMap((v) => v.tasks.filter((t) => !t.done).map((t) => ({ ...t, v }))).sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999')).slice(0, 6);
     const topIdeas = allIdeas(s).filter((i) => i.kind !== 'product' && i.status === 'new').sort((a, b) => b.calc.total - a.calc.total).slice(0, 3);
     const isEmpty = !s.cash.length && !s.holdings.length && !s.properties.length;
+    const G = game(s, { today: today(), deadlines: store.deadlines(14), wealth: w, wikiCount: idx.articles.length, fxWarning: fxWarning(s), procureAlerts: procureAlerts(s) });
+    const urgent = G.attention.filter((n) => n.sev >= 2).length;
 
     const setup = [
       [s.cash.length > 0, 'Add your bank and cash accounts', '#/treasury'],
@@ -45,6 +49,13 @@ export default {
       <h1>${greeting()}, ${esc(first)}.</h1>
       <p>Every decision either compounds or erodes the empire. Here is where things stand.</p></div>
     </div>
+
+    <a class="card empire-strip" href="#/engine" style="display:flex;gap:14px;align-items:center;margin-bottom:16px;color:inherit;text-decoration:none">
+      <div class="eng-lvl">${G.level.n}</div>
+      <div style="flex:1;min-width:0"><div class="row" style="gap:8px;flex-wrap:wrap"><b>Level ${G.level.n} · ${esc(G.level.title)}</b><span class="small muted">${G.xp.toLocaleString('en-GB')} XP · ${G.streak.weeks}-week streak · +${G.weekXP.toLocaleString('en-GB')} this week</span></div>
+        <div class="bar-track" style="margin-top:6px"><div class="bar-fill" style="width:${Math.round(G.level.p * 100)}%;background:linear-gradient(90deg,#c9a54c,#ffe39a)"></div></div>
+        <div class="small muted" style="margin-top:4px">${G.level.next ? `${(G.level.next - G.xp).toLocaleString('en-GB')} XP to ${esc(G.level.nextTitle)}` : 'The tower is complete.'}${urgent ? ` · <span style="color:var(--gold)">${urgent} thing${urgent === 1 ? '' : 's'} need${urgent === 1 ? 's' : ''} you</span>` : ''}</div></div>
+      <span class="small muted" style="white-space:nowrap">Open the Tower →</span></a>
 
     <div class="grid g4">
       <div class="card kpi hero"><div class="label">Net worth</div><div class="value gold">${compact(w.netWorth, b)}</div>

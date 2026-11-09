@@ -4,7 +4,7 @@ import { Mesh, surface, lathe, sector, sphere, frustum, box, card, tube, circleP
 export const FLOW = ['Idea', 'Validate', 'Plan', 'Build', 'Launch', 'Scale'];
 export const STAGE_COLOR = { Idea: '#8f9bb0', Validate: '#6fa0d8', Plan: '#a18ad6', Build: '#c9a54c', Launch: '#e39a4f', Scale: '#4fb286', Parked: '#e0705c' };
 export const STAGE_NAME = { Idea: 'Seed', Validate: 'Sprout', Plan: 'Sapling', Build: 'Growth', Launch: 'Bloom', Scale: 'Canopy', Parked: 'Seed Vault' };
-export const GROUPS = { knowledge: { label: 'Knowledge', color: '#6fa0d8' }, capital: { label: 'Capital', color: '#4fb286' }, governance: { label: 'Governance', color: '#a18ad6' } };
+export const GROUPS = { knowledge: { label: 'Knowledge', color: '#6fa0d8' }, capital: { label: 'Capital', color: '#4fb286' }, governance: { label: 'Governance', color: '#a18ad6' }, operations: { label: 'Operations', color: '#e39a4f' } };
 
 // geometry constants
 export const FH = 1.6, NF = FLOW.length, B = 0.55, TOP = B + NF * FH;
@@ -35,8 +35,17 @@ export const MODULE_DEFS = [
     role: 'Income-producing assets. Net rental cash flow feeds Treasury, which funds the next venture.' },
 ].map((m, i) => ({ ...m, deg: 70 + (i * 220) / 7, also: m.also || [] }));
 
-export const modBodyTop = (m) => (m.group === 'knowledge' ? 2.5 : m.group === 'capital' ? 1.67 : 1.6);
-export const modTopY = (m) => (m.group === 'knowledge' ? 3.5 : m.group === 'capital' ? 1.75 : 1.6);
+/** Outposts on the outer ring: the operating tools that move goods and money. */
+export const OUTPOST_DEFS = [
+  { k: 'procure', label: 'Procurement Yard', group: 'operations', href: '#/procure', feeds: ['Build', 'Launch'], also: ['finance'], deg: 117, r: 7.5,
+    role: 'Where the empire buys. Every item, quote, purchase order and shipment, costed to the door: landed cost, not unit price, decides who wins the order.' },
+  { k: 'commerce', label: 'Commerce Hub', group: 'operations', href: '#/commerce', feeds: ['Launch', 'Scale'], also: ['procure'], deg: 243, r: 7.5,
+    role: 'Where the empire sells. Product leads, Amazon economics, supplier vetting and the cash forecast for the online store.' },
+].map((m) => ({ ...m }));
+export const ALL_DEFS = [...MODULE_DEFS.map((m) => ({ ...m, r: MOD_R })), ...OUTPOST_DEFS];
+export const modBodyTop = (m) => (m.group === 'knowledge' ? 2.5 : m.group === 'capital' ? 1.67 : m.group === 'operations' ? 0.85 : 1.6);
+export const modTopY = (m) => (m.group === 'knowledge' ? 3.5 : m.group === 'capital' ? 1.75 : m.group === 'operations' ? 1.25 : 1.6);
+const nearOutpost = (p, pad = 1.6) => OUTPOST_DEFS.some((o) => { const q = polar(o.deg, o.r); return Math.hypot(q[0] - p[0], q[2] - p[2]) < pad; });
 export const inWedge = (deg, pad = 0) => { const d = ((deg % 360) + 540) % 360 - 180; return Math.abs(d) < 58 + pad; };   // deg measured from +x; wedge centred on +x
 
 const W = (n) => [n, n, n];
@@ -208,6 +217,7 @@ function groundworks(R, reg) {
   // lamps along the rim
   for (let a = 64; a < 300; a += 12) {
     const p = polar(a, ISLAND_R - 0.55);
+    if (nearOutpost(p, 1.25)) continue;
     lathe(m, [[0.035, 0], [0.035, 1.15]], 8, { cx: p[0], cz: p[2], col: hex('#1b1e24'), mat: mt(0.4, 0.8, 0, 0) });
     sphere(m, [p[0], 1.22, p[2]], 0.095, 8, { col: hex('#ffd9a0'), mat: mt(0.3, 0, 3.4, 11) });
   }
@@ -222,7 +232,7 @@ function planting(R) {
   while (placed.length < 15 && guard++ < 500) {
     const deg = rnd() * 360, r = 6.9 + rnd() * 1.0, p = polar(deg, r);
     if (inWedge(deg, 9)) continue;
-    if (placed.some((q) => Math.hypot(q[0] - p[0], q[2] - p[2]) < 1.5)) continue;
+    if (placed.some((q) => Math.hypot(q[0] - p[0], q[2] - p[2]) < 1.5) || nearOutpost(p, 1.9)) continue;
     placed.push(p);
   }
   placed.forEach((p, idx) => {
@@ -252,7 +262,7 @@ function planting(R) {
   let n = 0; guard = 0;
   while (n < 22 && guard++ < 500) {
     const deg = rnd() * 360, r = 4.9 + rnd() * 2.3, p = polar(deg, r);
-    if (inWedge(deg, 8) || mods.some((q) => Math.hypot(q[0] - p[0], q[2] - p[2]) < 2.3)) continue;
+    if (inWedge(deg, 8) || mods.some((q) => Math.hypot(q[0] - p[0], q[2] - p[2]) < 2.3) || nearOutpost(p, 1.5)) continue;
     n++;
     for (let q = 0; q < 46; q++) { const o = [(rnd() - 0.5) * 0.9, rnd() * 0.45, (rnd() - 0.5) * 0.9]; leafCard(leaf, V.add(p, [o[0], o[1] + 0.12, o[2]]), 0.14 + rnd() * 0.08, rnd, [0.08 + rnd() * 0.1, 0.28 + rnd() * 0.2, 0.08 + rnd() * 0.06], 0.9); }
     const fc = [[0.95, 0.5, 0.65], [1, 0.85, 0.35], [0.95, 0.95, 0.95], [0.75, 0.55, 0.95]][Math.floor(rnd() * 4)];
@@ -344,7 +354,7 @@ export function buildStatic(R) {
   const base = new Mesh(); island(base); plinthAndFoundation(base);
   R.addGroup(base, { pass: 'opaque', shadow: true, tag: 'static' });
   floorsOf(R, reg); exoskeleton(R, reg); terraces(R); atriumAndCrown(R, reg); vault(R, reg); roots(R);
-  groundworks(R, reg); planting(R); modules(R, reg);
+  groundworks(R, reg); planting(R); modules(R, reg); outposts(R, reg);
   const rnd = rng(77), fl = [];
   for (let i = 0; i < 70; i++) fl.push(rnd() * TAU, 2.2 + rnd() * 5.8, 0.4 + rnd() * 5.5, 0.04 + rnd() * 0.08);
   R.addParticles(fl, { mode: 0, col: [0.85, 1, 0.55], int: 1.4 });
@@ -365,9 +375,171 @@ export function buildVentures(R, sc, links) {
     refs.pods[vn.id] = R.addGroup(m, { pass: 'opaque', tag: 'dyn' });
   }
   for (const L of links) {
-    const mod = MODULE_DEFS.find((x) => x.k === L.to.k), top = modBodyTop(mod), b = polar(mod.deg, MOD_R), start = [b[0] * 0.85, top - 0.1, b[2] * 0.85];
+    const mod = ALL_DEFS.find((x) => x.k === L.to.k), top = modBodyTop(mod), b = polar(mod.deg, mod.r), start = [b[0] * 0.85, top - 0.1, b[2] * 0.85];
     const m = new Mesh(); tube(m, bezier3(start, L.from.pos, 1.2, 48), 0.055, 7, { col: hex(GROUPS[mod.group].color), mat: mt(0.4, 0.55, 2.6, 5) });
     refs.links.push({ L, g: R.addGroup(m, { pass: 'opaque', tag: 'dyn' }) });
   }
   return refs;
+}
+
+// ---------------------------------------------------------------- outposts: Procurement Yard and Commerce Hub
+function outposts(R, reg) {
+  for (const o of OUTPOST_DEFS) {
+    const base = polar(o.deg, o.r), bx = base[0], bz = base[2], face = Math.atan2(bz, bx) + Math.PI, col = hex(GROUPS[o.group].color);
+    const L = (x, z, y = 0) => { const [dx, dz] = rot2(x, z, face); return [bx + dx, y, bz + dz]; };
+    const solid = new Mesh(), glass = new Mesh(), glow = new Mesh(), spin = new Mesh(), yellow = { col: hex('#e0a92e'), mat: mt(0.5, 0.35, 0, 0) };
+    box(solid, [bx, 0.04, bz], 1.6, 0.08, 1.25, face, { col: hex('#a7a196'), mat: mt(0.85, 0, 0, 2) });
+    tube(solid, [[-0.8, -0.625], [0.8, -0.625], [0.8, 0.625], [-0.8, 0.625], [-0.8, -0.625]].map(([x, z]) => L(x, z, 0.09)), 0.016, 4, { col, mat: mt(0.4, 0, 1.7, 11) });
+    // light mast
+    const mp = L(-0.72, 0.56); lathe(solid, [[0.02, 0.08], [0.015, 1.25]], 8, { cx: mp[0], cz: mp[2], col: hex('#2a2e35'), mat: mt(0.4, 0.8, 0, 0) });
+    box(solid, [mp[0], 1.27, mp[2]], 0.12, 0.04, 0.06, face, { col: hex('#fff0cc'), mat: mt(0.3, 0, 3, 11) });
+    if (o.k === 'procure') {
+      const C = ['#1f5f8b', '#a8392e', '#2f6e4a', '#c98a2b', '#6b7480', '#24507a', '#8a2f4f', '#3f7f7a'];
+      const slots = [[-0.42, -0.36, 0], [-0.42, -0.08, 0], [-0.42, 0.2, 0], [0.2, -0.36, 0], [0.2, -0.08, 0], [-0.42, -0.36, 1], [-0.42, -0.08, 1], [0.2, -0.36, 1], [0.2, 0.3, 0]];
+      slots.forEach(([x, z, lv], i) => {
+        const c = L(x, z, 0.08 + 0.13 + lv * 0.26), cc = hex(C[i % C.length]);
+        box(solid, c, 0.25, 0.26, 0.6, face, { col: cc, mat: mt(0.55, 0.35, 0, 0) });
+        for (let r = -4; r <= 4; r++) box(solid, L(x + 0.126, z + r * 0.065, c[1]), 0.006, 0.24, 0.02, face, { col: cc.map((q) => q * 0.7), mat: mt(0.6, 0.3, 0, 0) });   // corrugation
+        box(solid, L(x, z - 0.302, c[1]), 0.23, 0.24, 0.008, face, { col: cc.map((q) => q * 0.55), mat: mt(0.6, 0.3, 0, 0) });                                    // doors
+      });
+      // straddle gantry over the stacks
+      for (const [x, z] of [[-0.7, -0.6], [-0.7, 0.42], [0.48, -0.6], [0.48, 0.42]]) tube(solid, [L(x, z, 0.08), L(x, z, 0.95)], 0.022, 6, yellow);
+      for (const z of [-0.6, 0.42]) tube(solid, [L(-0.7, z, 0.95), L(0.48, z, 0.95)], 0.026, 6, yellow);
+      for (const x of [-0.7, 0.48]) tube(solid, [L(x, -0.6, 0.95), L(x, 0.42, 0.95)], 0.02, 6, yellow);
+      box(solid, L(-0.12, -0.1, 0.92), 0.16, 0.08, 1.06, face, yellow);
+      tube(solid, [L(-0.12, -0.1, 0.9), L(-0.12, -0.1, 0.72)], 0.006, 4, { col: hex('#222222'), mat: mt(0.5, 0.6, 0, 0) });
+      box(solid, L(-0.12, -0.1, 0.7), 0.06, 0.04, 0.12, face, yellow);
+    } else {
+      // parcel hub: warehouse, roof lights, loading doors, parcels, a van and a delivery drone circling the roof
+      box(solid, L(-0.12, 0, 0.29), 0.95, 0.42, 0.78, face, { col: hex('#dcd6ca'), mat: mt(0.8, 0, 0, 2) });
+      box(solid, L(-0.12, 0, 0.515), 1.0, 0.03, 0.83, face, { col: hex('#3a3f46'), mat: mt(0.5, 0.5, 0, 0) });
+      for (const z of [-0.24, 0, 0.24]) card(glass, L(-0.12, z, 0.54), V.mul([Math.cos(face), 0, Math.sin(face)], 0.4), [0, 0.012, 0], { col: [0.75, 0.9, 1, 0.5], mat: mt(0.05, 0, 0.4, 3) }, [0, 1, 0]);
+      for (const z of [-0.24, 0, 0.24]) {
+        box(solid, L(0.357, z, 0.22), 0.012, 0.26, 0.17, face, { col: hex('#4a4f57'), mat: mt(0.5, 0.6, 0, 0) });
+        box(solid, L(0.362, z, 0.37), 0.01, 0.02, 0.17, face, { col: hex('#ffb35c'), mat: mt(0.3, 0, 2.2, 11) });
+      }
+      const rnd = rng(9);
+      for (let i = 0; i < 8; i++) { const s = 0.07 + rnd() * 0.05; box(solid, L(0.5 + (i % 3) * 0.1 - 0.1, 0.3 + Math.floor(i / 3) * 0.02, 0.08 + s / 2 + (i > 4 ? 0.09 : 0)), s, s, s * 1.2, face + rnd() * 0.5, { col: hex('#b48a5a'), mat: mt(0.95, 0, 0, 0) }); }
+      // van
+      box(solid, L(0.5, -0.42, 0.2), 0.36, 0.17, 0.16, face + Math.PI / 2, { col: hex('#f2f2f0'), mat: mt(0.35, 0.2, 0, 0) });
+      box(solid, L(0.5, -0.24, 0.17), 0.14, 0.12, 0.155, face + Math.PI / 2, { col: hex('#f2f2f0'), mat: mt(0.35, 0.2, 0, 0) });
+      for (const [x, z] of [[0.43, -0.53], [0.57, -0.53], [0.43, -0.25], [0.57, -0.25]]) { const p = L(x, z, 0.1); sphere(solid, p, 0.035, 6, { col: hex('#1a1a1a'), mat: mt(0.9, 0, 0, 0) }); }
+      // roof pad and drone (kind 13 orbits the pivot stored in uv)
+      const pad = L(-0.12, 0, 0.535); lathe(solid, [[0, 0.535], [0.17, 0.535], [0.17, 0.545], [0, 0.545]], 24, { cx: pad[0], cz: pad[2], col: hex('#2b2f36'), mat: mt(0.6, 0.3, 0, 0) });
+      tube(solid, circlePts(0.15, 0.55, 32, pad[0], pad[2]), 0.008, 4, { col, mat: mt(0.4, 0, 2, 11) });
+      const dr = 0.42, dc = [pad[0] + Math.cos(face) * dr, 1.02, pad[2] + Math.sin(face) * dr];
+      const S = (m) => ({ col: [...hex(m.c), 0.55], mat: mt(m.r ?? 0.4, m.m ?? 0.5, m.e ?? 0, 13) }), pv = [pad[0], pad[2]];
+      const dv = (p, n, c, m) => spin.vert(p, n, c, m, pv);
+      const sbox = (c, sx, sy, sz, o) => { const tmp = new Mesh(); box(tmp, c, sx, sy, sz, face, o); for (let i = 0; i < tmp.n; i++) { const q = tmp.v.slice(i * 16, i * 16 + 16); dv([q[0], q[1], q[2]], [q[3], q[4], q[5]], [q[6], q[7], q[8], q[9]], [q[10], q[11], q[12], q[13]]); } const off = spin.n - tmp.n; for (const ix of tmp.idx) spin.idx.push(ix + off); };
+      sbox(dc, 0.08, 0.03, 0.08, S({ c: '#2a2e35' }));
+      for (const [ax, az] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) { sbox([dc[0] + ax * 0.06, dc[1] + 0.012, dc[2] + az * 0.06], 0.07, 0.006, 0.07, S({ c: '#8c939c', m: 0.2 })); }
+      sbox([dc[0], dc[1] - 0.03, dc[2]], 0.05, 0.04, 0.05, S({ c: '#b48a5a', r: 0.95, m: 0 }));
+      sbox([dc[0], dc[1] + 0.02, dc[2]], 0.02, 0.012, 0.02, S({ c: '#7dfcff', e: 3 }));
+    }
+    const top = modTopY(o); lathe(glow, [[0.07, top + 0.1], [0.012, top + 2.6]], 10, { cx: bx, cz: bz, col, mat: mt(1, 0, 0.5, 8) });
+    reg.modules[o.k] = [R.addGroup(solid, { pass: 'opaque', shadow: true, tag: 'static' }), R.addGroup(glass, { pass: 'glass', center: [bx, 0.5, bz], tag: 'static' }), R.addGroup(glow, { pass: 'additive', tag: 'static' }), R.addGroup(spin, { pass: 'opaque', tag: 'static' })].filter(Boolean);
+    for (const to of o.also) {
+      const t = ALL_DEFS.find((x) => x.k === to); if (!t) continue;
+      const a = polar(o.deg, o.r - 0.7, 0.07), b = polar(t.deg, t.r, 0.07), mid = V.lerp(a, b, 0.5); mid[0] *= 0.82; mid[2] *= 0.82;
+      const pts = []; for (let i = 0; i <= 40; i++) { const u = i / 40, w = 1 - u; pts.push([w * w * a[0] + 2 * w * u * mid[0] + u * u * b[0], 0.07, w * w * a[2] + 2 * w * u * mid[2] + u * u * b[2]]); }
+      const mm = new Mesh(); tube(mm, pts, 0.04, 5, { col, mat: mt(0.5, 0.25, 1.4, 5) });
+      reg.myc.push({ from: o.k, to, g: R.addGroup(mm, { pass: 'opaque', tag: 'static' }) });
+    }
+  }
+}
+
+// ---------------------------------------------------------------- perks that grow with the empire level
+/** A skyscraper with a lit curtain-wall facade (kind 9) whose window cells are sized in world units. */
+function skyscraper(m, cx, cz, w, d, h, rot, y0, seed, col) {
+  const ca = Math.cos(rot), sa = Math.sin(rot), P = (x, z, y) => [cx + x * ca - z * sa, y, cz + x * sa + z * ca];
+  const hw = w / 2, hd = d / 2, sides = [[[-hw, -hd], [hw, -hd], [0, -1], w], [[hw, -hd], [hw, hd], [1, 0], d], [[hw, hd], [-hw, hd], [0, 1], w], [[-hw, hd], [-hw, -hd], [-1, 0], d]];
+  const fm = mt(0.05, seed, 0, 9);
+  for (const [a, b, n, len] of sides) {
+    const nn = [n[0] * ca - n[1] * sa, 0, n[0] * sa + n[1] * ca], cu = Math.max(2, Math.round(len / 0.34)), cv = Math.max(3, Math.round(h / 0.42));
+    const ids = [P(a[0], a[1], y0), P(b[0], b[1], y0), P(b[0], b[1], y0 + h), P(a[0], a[1], y0 + h)].map((p, i) => m.vert(p, nn, col, fm, [i === 1 || i === 2 ? cu : 0, i >= 2 ? cv : 0]));
+    m.quad(ids[0], ids[1], ids[2], ids[3]);
+  }
+  box(m, [cx, y0 + h + 0.06, cz], w * 1.02, 0.12, d * 1.02, rot, { col: hex('#22262c'), mat: mt(0.6, 0.4, 0, 0) });
+}
+
+export const SKYLINE = [0, 6, 11, 17, 25, 34, 46, 60];
+export function buildPerks(R, level) {
+  R.removeTag('perk');
+  const refs = { skyline: null, blink: null, crane: null };
+  // skyline: the empire's city on the horizon
+  const n = SKYLINE[Math.max(0, Math.min(SKYLINE.length - 1, level - 1))], sky = new Mesh(), blink = new Mesh(), rnd = rng(101), placed = [];
+  const tones = ['#7f9bb8', '#9aa8b6', '#6f8aa6', '#b7c2cc', '#8fa6a0', '#a59b8a'];
+  let guard = 0;
+  while (placed.length < n && guard++ < 2000) {
+    const behind = placed.length % 4 !== 3, deg = behind ? 120 + rnd() * 200 : rnd() * 360, r = 30 + rnd() * 26, p = polar(deg, r);
+    if (placed.some((q) => Math.hypot(q[0] - p[0], q[2] - p[2]) < 3.2)) continue;
+    placed.push(p);
+    const k = placed.length, landmark = level >= 5 && k === 1, h = landmark ? 20 : 4 + rnd() * (6 + level * 1.1), w = landmark ? 2.4 : 1.2 + rnd() * 1.6, d = landmark ? 2.4 : 1.2 + rnd() * 1.6, y0 = -3.8;
+    skyscraper(sky, p[0], p[2], w, d, h, rnd() * Math.PI, y0, k, hex(tones[k % tones.length]));
+    if (h > 9) { lathe(sky, [[0.06, y0 + h + 0.12], [0.01, y0 + h + (landmark ? 5 : 1.4)]], 6, { cx: p[0], cz: p[2], col: hex('#40454d'), mat: mt(0.4, 0.8, 0, 0) }); sphere(blink, [p[0], y0 + h + (landmark ? 5 : 1.4), p[2]], landmark ? 0.25 : 0.16, 6, { col: hex('#ff3b30'), mat: mt(0.3, 0, 4, 12) }); }
+  }
+  refs.skyline = R.addGroup(sky, { pass: 'opaque', tag: 'perk' });
+  // aviation warning lights: crown always, pavilion spires from level 3
+  sphere(blink, [0, TOP + 3.38, 0], 0.07, 8, { col: hex('#ff3b30'), mat: mt(0.3, 0, 4, 12) });
+  if (level >= 3) for (const m of ALL_DEFS) { const b = polar(m.deg, m.r); sphere(blink, [b[0], modTopY(m) + (m.group === 'knowledge' ? 0.15 : 0.05), b[2]], 0.05, 6, { col: hex('#ff3b30'), mat: mt(0.3, 0, 3.6, 12) }); }
+  // the tower crane stays on site until the tower is complete (level 8)
+  if (level < LEVEL_DONE) {
+    const crane = new Mesh(), jib = new Mesh(), Y = { col: hex('#e0a92e'), mat: mt(0.5, 0.35, 0, 0) }, mp = polar(206, 3.74), top = TOP + 4.3, hw = 0.1;
+    const corners = [[1, 1], [1, -1], [-1, -1], [-1, 1]].map(([a, b]) => [mp[0] + a * hw, mp[2] + b * hw]);
+    for (const [x, z] of corners) tube(crane, [[x, 0, z], [x, top, z]], 0.014, 4, Y);
+    for (let y = 0, i = 0; y < top - 0.3; y += 0.3, i++) for (let f = 0; f < 4; f++) { const A = corners[f], Bc = corners[(f + 1) % 4], up = i % 2; tube(crane, [[A[0], y + (up ? 0 : 0.3), A[1]], [Bc[0], y + (up ? 0.3 : 0), Bc[1]]], 0.008, 3, Y); }
+    box(crane, [mp[0], 0.05, mp[2]], 0.5, 0.1, 0.5, 0, { col: hex('#7d7a72'), mat: mt(0.9, 0, 0, 2) });
+    sphere(blink, [mp[0], top + 0.95, mp[2]], 0.05, 6, { col: hex('#ff3b30'), mat: mt(0.3, 0, 4, 12) });
+    // slewing part: built along +dir, rotated in the vertex shader about the mast
+    const dir = V.norm([-mp[0], 0, -mp[2]]), side = [-dir[2], 0, dir[0]], pv = [mp[0], mp[2]];
+    const at = (s, y, o = 0) => [mp[0] + dir[0] * s + side[0] * o, y, mp[2] + dir[2] * s + side[2] * o];
+    const tmp = new Mesh(), Ys = { col: [...hex('#e0a92e'), 0.035], mat: mt(0.5, 0.35, 0, 13) };
+    const jl = 5.2, cj = 1.7, y0 = top + 0.05, y1 = top + 0.32;
+    for (const o of [-0.08, 0.08]) tube(tmp, [at(-cj, y0, o), at(jl, y0, o)], 0.014, 4, Ys);
+    tube(tmp, [at(-cj, y1, 0), at(jl, y1 - 0.12, 0)], 0.014, 4, Ys);
+    for (let s = -cj, i = 0; s < jl - 0.2; s += 0.32, i++) { const o = i % 2 ? 0.08 : -0.08; tube(tmp, [at(s, y0, o), at(s + 0.32, y1 - 0.12 * ((s + 0.32 + cj) / (jl + cj)), 0)], 0.007, 3, Ys); }
+    tube(tmp, [at(0, top, 0), at(0, top + 0.95, 0)], 0.02, 4, Ys);                                              // cat head
+    tube(tmp, [at(0, top + 0.95, 0), at(jl * 0.7, y1 - 0.1, 0)], 0.006, 3, Ys); tube(tmp, [at(0, top + 0.95, 0), at(-cj, y1, 0)], 0.006, 3, Ys);
+    box(tmp, at(-cj + 0.3, y0 - 0.12, 0), 0.5, 0.3, 0.32, Math.atan2(dir[2], dir[0]), { col: [...hex('#8d8a82'), 0.035], mat: mt(0.9, 0, 0, 13) });   // counterweight
+    box(tmp, at(0.18, top - 0.12, 0.14), 0.22, 0.2, 0.16, Math.atan2(dir[2], dir[0]), { col: [...hex('#e8e4da'), 0.035], mat: mt(0.4, 0.2, 0, 13) });   // cab
+    const tr = 3.1; box(tmp, at(tr, y0 - 0.04, 0), 0.16, 0.06, 0.2, Math.atan2(dir[2], dir[0]), Ys);
+    tube(tmp, [at(tr, y0 - 0.06, 0), at(tr, y0 - 2.6, 0)], 0.004, 3, { col: [0.12, 0.12, 0.12, 0.035], mat: mt(0.5, 0.6, 0, 13) });
+    box(tmp, at(tr, y0 - 2.68, 0), 0.08, 0.12, 0.06, 0, { col: [...hex('#d23b2a'), 0.035], mat: mt(0.4, 0.2, 0, 13) });
+    sphere(tmp, at(jl, y0, 0), 0.045, 6, { col: [...hex('#ff3b30'), 0.035], mat: mt(0.3, 0, 3.2, 13) });
+    for (let i = 0; i < tmp.n; i++) { const q = tmp.v.slice(i * 16, i * 16 + 16); jib.vert([q[0], q[1], q[2]], [q[3], q[4], q[5]], [q[6], q[7], q[8], q[9]], [q[10], q[11], q[12], q[13]], pv); }
+    jib.idx = tmp.idx.slice();
+    refs.crane = [R.addGroup(crane, { pass: 'opaque', shadow: true, tag: 'perk' }), R.addGroup(jib, { pass: 'opaque', tag: 'perk' })];
+  }
+  refs.blink = R.addGroup(blink, { pass: 'opaque', tag: 'perk' });
+  return refs;
+}
+export const LEVEL_DONE = 8;
+
+// ---------------------------------------------------------------- attention beacons
+export const SEV_COLOR = { 3: '#ff4d4d', 2: '#ffb547', 1: '#7fb2ff', 0: '#4fe39a' };
+/** items: [{ kind: 'module'|'stage'|'venture', id, sev, pos?, r? }] */
+export function buildBeacons(R, items) {
+  R.removeTag('beacon');
+  const out = [];
+  for (const it of items) {
+    const m = new Mesh(), add = new Mesh(), col = hex(SEV_COLOR[it.sev] || SEV_COLOR[1]);
+    const em = mt(0.3, 0, 2.8, 11);
+    const diamond = (c, s) => { frustum(m, c[0], c[2], 0.001, s, 4, c[1] - s * 1.3, c[1], 0, { col, mat: em }); frustum(m, c[0], c[2], s, 0.001, 4, c[1], c[1] + s * 1.3, 0, { col, mat: em }); };
+    if (it.kind === 'module') {
+      const d = ALL_DEFS.find((x) => x.k === it.id); if (!d) continue;
+      const b = polar(d.deg, d.r), top = modTopY(d) + (d.group === 'knowledge' ? 0.75 : 0.65);
+      diamond([b[0], top, b[2]], 0.13);
+      tube(m, circlePts(d.group === 'operations' ? 1.0 : 1.72, 0.12, 64, b[0], b[2]), 0.03, 5, { col, mat: mt(0.4, 0, 2.4, 5) });
+      lathe(add, [[0.16, top + 0.2], [0.02, top + 3.2]], 10, { cx: b[0], cz: b[2], col, mat: mt(1, 0, 0.9, 8) });
+    } else if (it.kind === 'stage') {
+      const i = FLOW.indexOf(it.id), y = it.id === 'Parked' ? -0.15 : floorY(i) + 0.52, r = it.id === 'Parked' ? 1.1 : rad(y) + 0.78;
+      if (it.id === 'Parked') tube(m, circlePts(VAULT_R + 0.12, VAULT_C[1], 64, 0, 0), 0.03, 5, { col, mat: mt(0.4, 0, 2.4, 5) });
+      else { tube(m, circlePts(r, y, 120), 0.03, 5, { col, mat: mt(0.4, 0, 2.6, 5) }); for (let k = 0; k < 6; k++) { const a = (k / 6) * TAU; diamond([Math.cos(a) * r, y + 0.22, Math.sin(a) * r], 0.06); } }
+    } else if (it.kind === 'venture' && it.pos) {
+      diamond([it.pos[0], it.pos[1] + 0.55, it.pos[2]], 0.07);
+    }
+    const g = R.addGroup(m, { pass: 'opaque', tag: 'beacon' }), ga = R.addGroup(add, { pass: 'additive', tag: 'beacon' });
+    out.push({ ...it, groups: [g, ga].filter(Boolean) });
+  }
+  return out;
 }

@@ -185,7 +185,13 @@ out vec3 vPos; out vec3 vNrm; out vec4 vCol; out vec4 vMat; out vec2 vUV; out ve
 void main(){
   vec3 p = aPos;
   if (aMat.w > 6.5 && aMat.w < 7.5) { float w = aCol.a; p.x += sin(uTime*1.4 + p.x*0.8 + p.z*0.6)*0.05*w; p.z += cos(uTime*1.1 + p.z*0.7 + p.y)*0.04*w; p.y += sin(uTime*2.0 + p.x)*0.012*w; }
-  vPos = p; vNrm = aNrm; vCol = aCol; vMat = aMat; vUV = aUV; vSh = uSVP*vec4(p,1.);
+  vec3 n = aNrm;
+  if (aMat.w > 12.5 && aMat.w < 13.5) {   // slewing / orbiting parts: rotate about the pivot stored in uv
+    float sp = aCol.a; float a = sp < 0.1 ? 0.75*sin(uTime*sp*3.1) + uTime*sp*0.5 : uTime*sp;
+    float c = cos(a), s = sin(a); vec2 q = p.xz - aUV; p.xz = aUV + vec2(q.x*c - q.y*s, q.x*s + q.y*c); n.xz = vec2(n.x*c - n.z*s, n.x*s + n.z*c);
+    if (sp >= 0.1) p.y += sin(uTime*2.3)*0.035;
+  }
+  vPos = p; vNrm = n; vCol = aCol; vMat = aMat; vUV = aUV; vSh = uSVP*vec4(p,1.);
   gl_Position = uVP*vec4(p,1.);
 }`;
 
@@ -312,7 +318,7 @@ void main(){
     float spand = step(fc.y,0.16)*(mod(cell.y,2.)<0.5 ? 1. : 0.35);
     float frame = clamp(mull+spand,0.,1.);
     float h = h21(cell + vMat.y*13.1);
-    float litP = 0.14 + 0.42*uOcc + 0.22*uHL;
+    float litP = 0.14 + 0.42*uOcc + 0.22*uHL + 0.22*uNight;
     float lit = step(1.-litP, h) * (1.-frame);
     float flick = 0.85+0.15*sin(uTime*(0.5+h*2.)+h*30.);
     vec3 warm = mix(vec3(1.0,0.7,0.36), vec3(0.72,0.86,1.0), h21(cell.yx+3.));
@@ -333,6 +339,10 @@ void main(){
   }
   else if (kind == 11) {                  // solid emissive strips and lamps
     col = shade(vec3(0.03), N, V, 0.4, 0.5, sh, 1.)*0.4 + base*emis*uDim*(1.+uHL*1.2);
+  }
+  else if (kind == 12) {                  // aviation warning lights: slow red blink
+    float ph = h21(floor(vPos.xz*2.) + floor(vPos.y)); float on = smoothstep(0.55, 0.6, fract(uTime*0.5 + ph)) * (1. - smoothstep(0.9, 0.95, fract(uTime*0.5 + ph)));
+    col = base*emis*(0.06 + 0.94*on)*(0.65 + 0.35*uDim);
   }
   else if (kind == 3) {                   // plain glass
     vec3 env = skyCol(reflect(-V,N));
@@ -363,7 +373,17 @@ uniform mat4 uInvVP; uniform vec3 uCam; uniform float uGroundY, uIslandR;
 void main(){
   vec4 p = uInvVP*vec4(vN,1.,1.); vec3 d = normalize(p.xyz/p.w - uCam);
   vec3 c;
-  if (d.y > -0.002) c = skyCol(d);
+  if (d.y > -0.002) {
+    c = skyCol(d);
+    // drifting cumulus layer, lit by the sun (and dimmed at night)
+    vec2 cuv = d.xz/(d.y + 0.11)*1.25 + vec2(uTime*0.006, uTime*0.0025);
+    float cn = fbm(cuv*0.8)*0.62 + fbm(cuv*2.4 + 3.1)*0.38;
+    float cov = smoothstep(0.5, 0.8, cn)*smoothstep(0.0, 0.16, d.y);
+    float sl = clamp(dot(d, uSunDir)*0.5 + 0.55, 0., 1.);
+    vec3 cl = mix(uAmbSky*2.2 + uFogCol*0.35, uSunCol*0.6 + uSkyHor*0.35, sl*sl);
+    cl += uSunCol*pow(max(dot(d, uSunDir), 0.), 8.)*0.6;
+    c = mix(c, cl, cov*0.82);
+  }
   else {
     float t = (uGroundY - uCam.y)/d.y; vec3 g = uCam + d*t; vec2 q = g.xz;
     vec2 qs = vec2(q.x*0.05+q.y*0.02, q.y*0.07-q.x*0.02);
@@ -580,6 +600,30 @@ export class Renderer {
   dispose() {
     try { this.gl.getExtension('WEBGL_lose_context')?.loseContext(); } catch { /* ignore */ }
   }
+}
+
+const L_ = (h, k = 1) => lin(hex(h)).map((x) => x * k);
+const PRESET = {
+  night: { uSunCol: [0.3, 0.36, 0.52], uSkyTop: L_('#02050d'), uSkyHor: L_('#18213b'), uAmbSky: [0.035, 0.05, 0.1], uAmbGnd: [0.03, 0.025, 0.03], uFogCol: L_('#101828'), uSand: [0.14, 0.13, 0.16], uFog: 0.005, uNight: 1, fireflies: 1.2, exposure: 1.25, bloom: 1.0, bloomThresh: 0.8, grade: [0.98, 1.0, 1.08] },
+  dawn: { uSunCol: [2.1, 1.35, 1.0], uSkyTop: L_('#35558a'), uSkyHor: L_('#f2a67c'), uAmbSky: [0.17, 0.19, 0.31], uAmbGnd: [0.14, 0.1, 0.09], uFogCol: L_('#9d8f9f'), uSand: [0.55, 0.42, 0.33], uFog: 0.004, uNight: 0.12, fireflies: 0.4, exposure: 1.0, bloom: 0.6, bloomThresh: 1.05, grade: [1.04, 1.0, 1.0] },
+  day: { uSunCol: [2.7, 2.42, 2.0], uSkyTop: L_('#2f6fcf'), uSkyHor: L_('#b9d0e6'), uAmbSky: [0.3, 0.39, 0.56], uAmbGnd: [0.26, 0.21, 0.16], uFogCol: L_('#a9bccd'), uSand: [0.62, 0.48, 0.32], uFog: 0.0024, uNight: 0, fireflies: 0.25, exposure: 0.86, bloom: 0.28, bloomThresh: 1.35, grade: [1.03, 1.0, 0.97] },
+  dusk: { uSunCol: [2.3, 1.25, 0.7], uSkyTop: L_('#0b1a3d'), uSkyHor: L_('#dc7f52', 0.9), uAmbSky: [0.08, 0.13, 0.29], uAmbGnd: [0.09, 0.06, 0.05], uFogCol: L_('#2c3752'), uSand: [0.4, 0.31, 0.25], uFog: 0.0042, uNight: 0.65, fireflies: 1, exposure: 1.05, bloom: 0.85, bloomThresh: 0.95, grade: [1.04, 1.0, 1.06] },
+};
+const KEYS = [[0, 'night'], [5.4, 'night'], [6.4, 'dawn'], [8.2, 'day'], [16.3, 'day'], [17.6, 'dusk'], [18.7, 'night'], [24, 'night']];
+const MOON = V.norm([-0.35, 0.62, -0.7]);
+/** Sky, sun and light for a local clock hour (0–24): sunrise about 06:15, sunset about 17:45, a moon at night. */
+export function skyAt(hour) {
+  const h = ((hour % 24) + 24) % 24;
+  let k = 0; while (k < KEYS.length - 2 && h >= KEYS[k + 1][0]) k++;
+  const [h0, a] = KEYS[k], [h1, b] = KEYS[k + 1], f = h1 > h0 ? Math.min(1, Math.max(0, (h - h0) / (h1 - h0))) : 0, s = f * f * (3 - 2 * f);
+  const A = PRESET[a], B = PRESET[b], out = {};
+  for (const key of Object.keys(A)) out[key] = Array.isArray(A[key]) ? A[key].map((x, i) => x + (B[key][i] - x) * s) : A[key] + (B[key] - A[key]) * s;
+  const nightW = (a === 'night' ? 1 - s : 0) + (b === 'night' ? s : 0);
+  const t = Math.min(1, Math.max(0, (h - 6.2) / (17.8 - 6.2))), elev = 0.07 + 0.86 * Math.sin(Math.PI * t), az = ((-125 + 130 * t) * Math.PI) / 180;
+  const sun = [Math.cos(elev) * Math.cos(az), Math.sin(elev), Math.cos(elev) * Math.sin(az)];
+  out.uSunDir = V.norm(V.lerp(sun, MOON, nightW));
+  out.groundY = -3.8; out.islandR = 8.4; out.hour = h; out.isNight = nightW > 0.5;
+  return out;
 }
 
 /** environment presets, colours supplied in sRGB and converted to linear here */

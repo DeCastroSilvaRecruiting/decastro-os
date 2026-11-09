@@ -159,3 +159,19 @@ export const KITS = [
     ['Product photography', 'Services', 'event', 'Main images and lifestyle images'],
   ] },
 ];
+
+/** Procurement problems that are not dated deadlines: low stock, price rises, weak suppliers. */
+export function procureAlerts(s) {
+  const out = [];
+  s.catalog.forEach((i) => {
+    if (belowReorder(i)) out.push({ tone: 'gold', text: `${i.name} is at or below its reorder point`, href: `#/procure/items/${i.id}` });
+    const st = itemStats(s, i.id);
+    if (st.n >= 2 && st.changePct > 0.1) out.push({ tone: 'gold', text: `${i.name}: latest price up ${Math.round(st.changePct * 100)}% on the one before`, href: `#/procure/items/${i.id}` });
+  });
+  s.suppliers.forEach((x) => {
+    const st = M.supplierStats(s.orders.filter((o) => o.supplier === x.id), today());
+    if (st.received >= 2 && Number.isFinite(st.onTimePct) && st.onTimePct < 0.7) out.push({ tone: 'gold', text: `${x.name} is on time only ${Math.round(st.onTimePct * 100)}% of the time`, href: '#/procure/suppliers' });
+    if (st.lateOpen) out.push({ tone: 'red', text: `${x.name} has ${st.lateOpen} late open order${st.lateOpen === 1 ? '' : 's'}`, href: '#/procure/orders' });
+  });
+  return out;
+}
