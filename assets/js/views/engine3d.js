@@ -7,6 +7,7 @@ import * as K from '../knowledge.js';
 import { esc, icon, compact, fnum, toast, confirmBox, copyText, today, fmtDate, uid, openForm } from '../ui.js';
 import { addAvatar, DEFAULT_AVATARS, SKIN, HAIR, HAIR_STYLES, FACIAL, TOPS, ACCESSORIES } from '../avatar.js';
 import * as GW from '../game-world.js';
+import * as WI from '../world-islands.js';
 import { RUBRIC } from '../seed.js';
 import { FLOW, STAGE_INFO, readiness, nextStage, prevStage } from '../gates.js';
 import { Renderer, skyAt, M, V, TAU } from '../gl.js';
@@ -123,6 +124,7 @@ function start(canvas, overlay, panel) {
     console.warn('The Tower needs WebGL2:', e);
     overlay.remove(); canvas.remove();
     stage.insertAdjacentHTML('afterbegin', `<div class="eng-fallback"><b>The 3D tower needs WebGL 2.</b><br><span class="small muted">Your browser or device could not start it. Everything else on this page still works: the empire level, what needs you, the gates and the readiness table.</span></div>`);
+    GW.setIslands(WI.islandSlots(store.get()));
     let sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0);
     loop = { stop() {}, refresh() { sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0); }, select(s) { selected = s; panel.innerHTML = panelHTML(sc0); }, setLayer() { panel.innerHTML = panelHTML(sc0); }, panel() { panel.innerHTML = panelHTML(sc0); },
       walkTo(k) { gameRT.at = k; panel.innerHTML = panelHTML(sc0); }, setPlay() { panel.innerHTML = panelHTML(sc0); } };
@@ -130,6 +132,7 @@ function start(canvas, overlay, panel) {
   }
   const reg = T.buildStatic(R);
   GW.buildHQ(R);
+  const slots = WI.buildIslands(R, store.get()); GW.setIslands(slots);
   ensureChars();
   const avs = { matthew: addAvatar(R, avatarCfg('matthew'), 'avatar'), lizzie: addAvatar(R, avatarCfg('lizzie'), 'avatar') };
   window.__dcTower = { cam: () => cam, select: (x) => loop?.select(x), sc: () => curSc, R, game: gameRT, walk: (k) => loop?.walkTo(k) };
@@ -183,7 +186,7 @@ function start(canvas, overlay, panel) {
     for (const id of ['matthew', 'lizzie']) {
       const c = gameRT.chars[id];
       if (c.path.length) {
-        const tg = c.path[0], dx = tg[0] - c.pos[0], dz = tg[2] - c.pos[2], dist = Math.hypot(dx, dz), sp = (id === activeId() ? 1.25 : 1.4) * dt;
+        const tg = c.path[0], dx = tg[0] - c.pos[0], dz = tg[2] - c.pos[2], dist = Math.hypot(dx, dz), end = c.path[c.path.length - 1], far = Math.hypot(end[0] - c.pos[0], end[2] - c.pos[2]), sp = (id === activeId() ? 1.25 : 1.45) * (1 + Math.min(1.6, far / 5)) * dt;
         if (dist <= sp) { c.pos = tg.slice(); c.path.shift(); } else { c.pos = [c.pos[0] + (dx / dist) * sp, c.pos[1] + (tg[1] - c.pos[1]) * Math.min(1, sp / dist), c.pos[2] + (dz / dist) * sp]; }
         if (dist > 1e-4) { let d = Math.atan2(dx, dz) - c.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); c.yaw += d * Math.min(1, dt * 10); }
         c.phase += Math.min(dist, sp) * 17; c.walk += (1 - c.walk) * Math.min(1, dt * 8);
@@ -196,7 +199,7 @@ function start(canvas, overlay, panel) {
     const g = c.goal; c.goal = null;
     if (!g) { c.faceYaw = null; return; }
     if (g.faceTo) { c.faceYaw = Math.atan2(g.faceTo.pos[0] - c.pos[0], g.faceTo.pos[2] - c.pos[2]); return; }
-    const centre = g.k === 'hq' ? [0, 0, 0] : T.polar(g.deg, (MODULES.find((m) => m.k === g.k) || {}).r || 5.7);
+    const centre = g.k === 'hq' ? [0, 0, 0] : g.island ? T.polar(g.deg, WI.ISLAND_DIST + 1) : T.polar(g.deg, (MODULES.find((m) => m.k === g.k) || {}).r || 5.7);
     c.faceYaw = Math.atan2(centre[0] - c.pos[0], centre[2] - c.pos[2]);
     if (id === activeId()) { c.waveAt = t; gameRT.at = g.k; gameRT.wtab = 'learn'; selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc); }
   }
@@ -225,7 +228,7 @@ function start(canvas, overlay, panel) {
     if (P) {
       const a = gameRT.chars[activeId()].pos;
       cam.tt = [a[0], a[1] + 0.38, a[2]];
-      if (!drag.on && now - lastInteract > 2500) { const want = Math.atan2(a[2], a[0]) + (GW.toPolar(a).r < 5.2 ? 0.55 : 0.12); let d = want - cam.base; d = Math.atan2(Math.sin(d), Math.cos(d)); cam.base += d * (1 - Math.exp(-dt * 0.0016)); }
+      if (!drag.on && now - lastInteract > 2500) { const ar = GW.toPolar(a).r, want = Math.atan2(a[2], a[0]) + (ar > WI.RIM + 1 ? Math.PI + 0.35 : ar < 5.2 ? 0.55 : 0.12); let d = want - cam.base; d = Math.atan2(Math.sin(d), Math.cos(d)); cam.base += d * (1 - Math.exp(-dt * 0.0016)); }
     }
     // ---- camera
     if (cam.auto && !P && !drag.on && now - lastInteract > 3500) cam.phase += dt * 0.00022;
@@ -305,7 +308,7 @@ function start(canvas, overlay, panel) {
     {
       const items = [];
       ctx.font = `600 ${W < 620 ? 10 : 11.5}px Inter, system-ui, sans-serif`;
-      for (const m of sc.modules) { const a = P([m.base[0], T.modTopY(m) + 0.9, m.base[2]]); if (!a) continue; items.push({ m, ax: a.x, ay: a.y, x: a.x, y: a.y, w: ctx.measureText(m.label).width + 14 + (F.layer !== 'pipeline' ? 26 : 0), h: 22 }); }
+      for (const m of sc.modules) { if (cam.zoom > 1.7 && !F.play) break; const a = P([m.base[0], T.modTopY(m) + 0.9, m.base[2]]); if (!a) continue; items.push({ m, ax: a.x, ay: a.y, x: a.x, y: a.y, w: ctx.measureText(m.label).width + 14 + (F.layer !== 'pipeline' ? 26 : 0), h: 22 }); }
       for (let it = 0; it < 60; it++) for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
         const a = items[i], b = items[j], ox = (a.w + b.w) / 2 - Math.abs(a.x - b.x), oy = a.h + 3 - Math.abs(a.y - b.y);
         if (ox > 0 && oy > 0) { const d = (a.y <= b.y ? 1 : -1) * oy / 2; a.y -= d; b.y += d; }
@@ -320,6 +323,15 @@ function start(canvas, overlay, panel) {
     }
     // venture link captions and pod badges
     for (const L of F.vlinks) { const a = P(L.from.pos), b = P([L.to.base[0], T.modBodyTop(L.to) + 0.2, L.to.base[2]]); if (a && b) pill(L.why, (a.x + b.x) / 2, (a.y + b.y) / 2 - 10, { size: 10, weight: 500 }); }
+    // venture islands
+    for (const isle of GW.islands()) {
+      if (F.play && Math.hypot(gameRT.chars[activeId()].pos[0] - isle.c[0], gameRT.chars[activeId()].pos[2] - isle.c[2]) < WI.ISLAND_RAD + 0.5) continue;
+      const q = P([isle.c[0], 2.6, isle.c[2]]); if (!q || q.x > W - colW - 20) continue;
+      const th = WI.THEMES[isle.theme];
+      pill(isle.label, q.x, q.y, { size: W < 620 ? 10 : 11.5, hit: F.play ? { kind: 'place', id: isle.k } : { kind: 'venture', id: isle.id } });
+      ctx.font = '600 9.5px Inter, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = th.color; ctx.fillText(`${th.title.toUpperCase()} · ${isle.level < 0 ? 'PARKED' : WI.BUILD_STEPS[isle.level].toUpperCase()}`, q.x, q.y + 17);
+    }
+    if (F.play) drawMinimap(t);
     // play mode: Venture HQ sign and name tags
     if (F.play) {
       const hp = GW.toXYZ(GW.HQ.deg, 3.45), a = P([hp[0], 1.15, hp[2]]);
@@ -390,7 +402,27 @@ function start(canvas, overlay, panel) {
     }
     const hdg = ((((-(cam.base + Math.sin(cam.phase) * cam.swayAmp * (cam.auto ? 1 : 0)) * 180) / Math.PI) % 360) + 360) % 360;
     ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillStyle = theme.muted; ctx.font = '500 10px Inter, system-ui, sans-serif';
-    ctx.fillText(`HDG ${String(Math.round(hdg)).padStart(3, '0')}°  ·  ELEV ${Math.round((cam.pitch * 180) / Math.PI)}°`, W - 22, 20); ctx.textAlign = 'left';
+    if (!F.play) ctx.fillText(`HDG ${String(Math.round(hdg)).padStart(3, '0')}°  ·  ELEV ${Math.round((cam.pitch * 180) / Math.PI)}°`, W - 22, 20); ctx.textAlign = 'left';
+  }
+
+  function drawMinimap(t) {
+    const R0 = W < 620 ? 50 : 66, cx = W - R0 - 16, cy = 16 + R0 + 4, k = R0 / 26.5, to = (p) => [cx + p[0] * k, cy + p[2] * k];
+    ctx.fillStyle = 'rgba(8,13,22,0.72)'; ctx.beginPath(); ctx.arc(cx, cy, R0 + 6, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(226,196,119,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = 'rgba(79,140,70,0.85)'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, 8.4 * k, (58 * Math.PI) / 180, (302 * Math.PI) / 180); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(46,166,160,0.9)'; ctx.beginPath(); ctx.arc(cx, cy, 5 * k, 0, TAU); ctx.fill(); ctx.fillStyle = '#c9a54c'; ctx.beginPath(); ctx.arc(cx, cy, 2.6 * k, 0, TAU); ctx.fill();
+    for (const isle of GW.islands()) {
+      const a = to(T.polar(isle.deg, 8.4)), b = to(T.polar(isle.deg, WI.BRIDGE_END)), c = to(isle.c), th = WI.THEMES[isle.theme];
+      ctx.strokeStyle = th.color; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      ctx.fillStyle = isle.theme === 'farm' ? '#c8a46a' : isle.theme === 'port' ? '#8d96a0' : '#4f8c46'; ctx.beginPath(); ctx.arc(c[0], c[1], WI.ISLAND_RAD * k, 0, TAU); ctx.fill();
+      ctx.strokeStyle = th.color; ctx.stroke();
+      hits.push({ o: { kind: 'place', id: isle.k }, test: (px, py) => Math.hypot(px - c[0], py - c[1]) < WI.ISLAND_RAD * k + 3 });
+    }
+    for (const m of sc.modules) { const p = to(m.base); ctx.fillStyle = m.color; ctx.beginPath(); ctx.arc(p[0], p[1], 2.2, 0, TAU); ctx.fill(); hits.push({ o: { kind: 'place', id: m.k }, test: (px, py) => Math.hypot(px - p[0], py - p[1]) < 5 }); }
+    const hq = to(GW.toXYZ(GW.HQ.deg, 3.6)); ctx.fillStyle = '#ffe39a'; ctx.fillRect(hq[0] - 2.5, hq[1] - 2.5, 5, 5); hits.push({ o: { kind: 'place', id: 'hq' }, test: (px, py) => Math.hypot(px - hq[0], py - hq[1]) < 6 });
+    for (const id of [otherId(), activeId()]) { const c = gameRT.chars[id], p = to(c.pos), on = id === activeId(); ctx.fillStyle = on ? '#ffe39a' : '#f4f4f2'; ctx.beginPath(); ctx.arc(p[0], p[1], on ? 3.6 + Math.sin(t * 5) * 0.8 : 2.6, 0, TAU); ctx.fill(); if (on) { ctx.strokeStyle = '#11151c'; ctx.lineWidth = 1; ctx.stroke(); } }
+    ctx.font = '700 9px Inter, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#e2c477'; ctx.fillText('WORLD MAP', cx, cy + R0 + 16);
+    ctx.textAlign = 'left';
   }
 
   // ---------- picking ----------
@@ -409,6 +441,7 @@ function start(canvas, overlay, panel) {
     let best = null, bt = Infinity;
     const consider = (tt, o) => { if (tt && tt < bt) { bt = tt; best = o; } };
     for (const m of sc.modules) consider(rayCyl(a, d, m.base[0], m.base[2], m.group === 'operations' ? 0.95 : 1.25, 0, T.modTopY(m) + 0.3), { kind: 'module', id: m.k });
+    for (const isle of GW.islands()) consider(rayCyl(a, d, isle.c[0], isle.c[2], WI.ISLAND_RAD, -0.5, 1.6), isPlay() ? { kind: 'place', id: isle.k } : { kind: 'venture', id: isle.id });
     FLOW.forEach((st, i) => { const y0 = T.floorY(i); consider(rayCyl(a, d, 0, 0, T.rad(y0 + T.FH / 2) + 0.65, y0, y0 + T.FH), { kind: 'stage', id: st }); });
     const vt = raySphere(a, d, T.VAULT_C, T.VAULT_R * 1.05);
     if (vt) { const p = V.add(a, V.mul(d, vt)), deg = (Math.atan2(p[2], p[0]) * 180) / Math.PI; if (Math.abs(deg) < 58 && p[1] < 0) consider(vt, { kind: 'stage', id: 'Parked' }); }
@@ -435,7 +468,7 @@ function start(canvas, overlay, panel) {
           else if (h && h.kind === 'stage') walkTo('hq');
           else if (h && h.kind === 'char') { if (h.id !== activeId()) { store.update((s) => { s.settings.game = { ...(s.settings.game || {}), active: h.id }; }, { render: false }); gameRT.at = null; panel.innerHTML = panelHTML(sc); toast(`Playing as ${avatarCfg(h.id).name}`, 'ok'); } }
           else if (h && h.kind === 'venture') select(h);
-          else { const gp = ground(p.x, p.y), spot = gp && GW.spotFromGround(gp); if (spot) walkTo(null, spot); }
+          else { const gp = ground(p.x, p.y), spot = gp && GW.spotFromGround(gp); if (spot && spot.k) walkTo(spot.k); else if (spot) walkTo(null, spot); }
         } else select(h && h.kind !== 'char' && h.kind !== 'place' ? h : h && h.kind === 'place' ? { kind: 'stage', id: 'Idea' } : { kind: 'core', id: null });
       }
     }
@@ -466,7 +499,7 @@ function start(canvas, overlay, panel) {
   levelCheck(sc);
   requestAnimationFrame(frame);
 }
-const clampZ = (z) => Math.max(isPlay() ? 0.1 : 0.32, Math.min(1.5, z));
+const clampZ = (z) => Math.max(isPlay() ? 0.1 : 0.32, Math.min(isPlay() ? 0.9 : 2.8, z));
 
 /** Celebrate a level reached since the owner last looked. */
 function levelCheck(sc) {
@@ -608,7 +641,7 @@ function panelHTML(sc) {
 
 // ---------- Game panels ----------
 const placeStat = (sc, k) => (k === 'hq' ? { needs: sc.G.attention.filter((n) => n.k === 'ventures' || n.k === 'core'), done: sc.G.events.filter((e) => e.k === 'ventures'), xp: sc.G.events.filter((e) => e.k === 'ventures').reduce((a, e) => a + e.xp, 0) } : sc.stat({ kind: 'module', id: k }));
-const questPlace = (n) => (n.k === 'ventures' || n.k === 'core' || !GW.placeOf(n.k) ? 'hq' : n.k);
+const questPlace = (n) => (n.venture && GW.placeOf(`v:${n.venture}`) ? `v:${n.venture}` : n.k === 'ventures' || n.k === 'core' || !GW.placeOf(n.k) ? 'hq' : n.k);
 function liveVentures() { return store.get().ventures.filter((v) => v.stage !== 'Parked'); }
 function tasksAt(k) {
   const s = store.get(), out = [];
@@ -620,16 +653,41 @@ function tasksAt(k) {
 function playHomeHTML(sc) {
   const act = activeId(), c = gameRT.chars[act], walking = c && c.path.length && c.goal;
   const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}"><span style="background:${a.hair}"></span></div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
-  return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">The Tower · game</div><h2>${walking ? `Walking to ${esc(c.goal.label)}…` : 'Where to next?'}</h2><p class="small muted">Tap a building to walk there, or tap the garden to roam. Each building is a workshop: learn, do the work, and set tasks without leaving the game.</p></div>
+  return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">The Tower · game</div><h2>${walking ? `Walking to ${esc(c.goal.label)}…` : 'Where to next?'}</h2><p class="small muted">Tap a building, an island or the world map to travel. Each building is a workshop, and every venture has its own island across a sky-bridge that builds itself up as the venture rises the tower.</p></div>
     <div class="gm-chars">${card('matthew')}${card('lizzie')}</div>
     <h4 class="eng-sub">Workshops</h4>
     <div class="gm-places">${GW.PLACES.map((p) => { const st = placeStat(sc, p.k), sv = st.needs.reduce((a, n) => Math.max(a, n.sev), 0), W = GW.WORKSHOPS[p.k]; return `<button class="gm-place" data-act="goto" data-id="${p.k}"><span class="gm-pin" style="background:${p.k === 'hq' ? '#e2c477' : GROUPS[p.group]?.color || '#888'}"></span><span class="grow"><b>${esc(W?.title || p.label)}</b></span>${st.needs.length ? `<span class="gm-n" style="background:${SEV_COLOR[sv]}">${st.needs.length}</span>` : ''}</button>`; }).join('')}</div>
+    <h4 class="eng-sub">Venture islands</h4>
+    <div class="gm-places">${GW.islands().map((p) => { const th = WI.THEMES[p.theme], n = sc.G.venture(p.id).needs.length; return `<button class="gm-place" data-act="goto" data-id="${p.k}"><span class="gm-pin" style="background:${th.color}"></span><span class="grow"><b>${esc(p.label)}</b><span class="small muted" style="display:block">${esc(th.title)} · ${p.level < 0 ? 'parked' : esc(WI.BUILD_STEPS[p.level].toLowerCase())}</span></span>${n ? `<span class="gm-n" style="background:${SEV_COLOR[2]}">${n}</span>` : ''}</button>`; }).join('') || '<p class="small muted">Plant a venture and its island appears.</p>'}</div>
     <h4 class="eng-sub">Orders of the day</h4>
     ${sc.G.quests.length ? `<div class="eng-feed">${sc.G.quests.map((n) => `<button class="eng-row gm-btnrow" data-act="goto" data-id="${questPlace(n)}"><span class="eng-dot" style="background:${SEV_COLOR[n.sev]}"></span><span class="grow small">${esc(n.text)}</span>${n.xp ? `<span class="eng-xp">+${n.xp}</span>` : ''}</button>`).join('')}</div>` : '<p class="small muted">No open orders. Visit Venture HQ and write the next section of a plan.</p>'}
     ${empireHTML(sc, false).split('<h4 class="eng-sub">Orders of the day</h4>')[0]}`;
 }
 
+function districtHTML(sc, k) {
+  const isle = GW.placeOf(k), v = isle && store.byId('ventures', isle.id), who = avatarCfg(activeId()).name;
+  if (!v) { gameRT.at = null; return playHomeHTML(sc); }
+  const th = WI.THEMES[isle.theme], lv = v.stage === 'Parked' ? -1 : FLOW.indexOf(v.stage), rd = readiness(v), nxt = nextStage(v.stage), st = sc.G.venture(v.id);
+  if (!['build', 'plan', 'tasks', 'needs'].includes(gameRT.wtab)) gameRT.wtab = 'build';
+  const tab = (id, l, n) => `<button class="eng-tab ${gameRT.wtab === id ? 'on' : ''}" data-act="wtab" data-tab="${id}">${l}${n != null ? `<span class="n">${n}</span>` : ''}</button>`;
+  const tasks = (v.tasks || []).slice().sort((a, b) => (a.done - b.done) || String(a.due || '9').localeCompare(String(b.due || '9')));
+  let body = '';
+  if (gameRT.wtab === 'build') {
+    body = `<div class="gm-steps">${WI.BUILD_STEPS.map((s, i) => `<div class="gm-step ${i <= lv ? 'done' : i === lv + 1 ? 'next' : ''}"><span class="tick">${i <= lv ? '✓' : i + 1}</span><span class="grow"><b>${esc(s)}</b><span class="small muted" style="display:block">${i <= lv ? `Built at ${FLOW[i]}` : `Unlocks when ${esc(v.name)} rises to ${FLOW[i]}`}</span></span></div>`).join('')}</div>
+      ${v.stage === 'Parked' ? `<p class="small muted">${esc(STAGE_INFO.Parked)}</p><button class="btn primary" data-act="revive" data-id="${v.id}">Revive to Idea</button>` : nxt ? `<h4 class="eng-sub">To build the next stage <span class="muted">· +${100 * (FLOW.indexOf(nxt) + 1)} XP</span></h4>${gateList(rd.gates)}<div class="eng-actions"><button class="btn ${rd.pct >= 1 ? 'primary' : ''}" data-act="advance" data-id="${v.id}">${icon('arrow')} Rise to ${nxt}</button></div>` : '<p class="small muted">Fully built. This venture is at the canopy.</p>'}`;
+  } else if (gameRT.wtab === 'plan') { gameRT.planV = v.id; body = planStudioHTML(); }
+  else if (gameRT.wtab === 'tasks') {
+    body = `<div class="row" style="margin:6px 0 10px"><button class="btn primary sm" data-act="gameTaskNew" data-ws="hq" data-venture="${v.id}">${icon('plus')} New task</button><span class="small muted right">+10 XP each when done</span></div>
+      ${tasks.length ? tasks.slice(0, 20).map((x) => `<div class="check-item ${x.done ? 'done' : ''}"><input type="checkbox" ${x.done ? 'checked' : ''} data-change="gameTaskDone" data-id="${esc(x.id)}" data-src="${esc(v.id)}" aria-label="Done"><div class="txt">${esc(x.text)}<div class="small muted">${x.due ? `due ${fmtDate(x.due)}` : 'no date'}${x.done && x.doneOn ? ` · done ${fmtDate(x.doneOn)}` : ''}</div></div></div>`).join('') : '<p class="small muted">No tasks for this venture yet.</p>'}`;
+  } else body = statusHTML(st);
+  return `<div class="eng-head"><div class="eyebrow" style="color:${th.color}">${esc(who)} is visiting · ${esc(th.title)}</div><h2>${esc(v.name)}</h2><p class="small muted">${esc(th.blurb)}</p></div>
+    <div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><button class="btn sm ghost" data-act="leavePlace">← Leave</button><a class="btn sm ghost" href="#/ventures/${v.id}">Open the venture</a><span class="badge right" style="color:${STAGE_COLOR[v.stage]}">${esc(v.stage)} · ${rd.met}/${rd.total} gates</span></div>
+    <div class="eng-tabs gm-tabs">${tab('build', 'Build', null)}${tab('plan', 'Plan', `${GW.planProgress(v).done}/${GW.PLAN.length}`)}${tab('tasks', 'Tasks', tasks.filter((x) => !x.done).length)}${tab('needs', 'Needs you', st.needs.length)}</div>
+    <div class="gm-body">${body}</div>`;
+}
+
 function workshopHTML(sc, k) {
+  if (String(k).startsWith('v:')) return districtHTML(sc, k);
   const W = GW.WORKSHOPS[k], place = GW.placeOf(k), who = avatarCfg(activeId()).name;
   if (!W) { gameRT.at = null; return playHomeHTML(sc); }
   const st = placeStat(sc, k), tasks = tasksAt(k), open = tasks.filter((x) => !x.done);
@@ -751,7 +809,7 @@ export default {
     learn(el) { const id = el.dataset.id; store.update((s) => { s.settings.game = { ...(s.settings.game || {}) }; s.settings.game.learned = { ...(s.settings.game.learned || {}), [id]: today() }; }, { render: false }); toast(`Lesson learned: +${GW.LESSON_XP} XP`, 'ok'); loop?.refresh(); },
     gameTaskNew(el) {
       const ws = el.dataset.ws || gameRT.at || 'hq';
-      openForm({ title: `New task · ${GW.WORKSHOPS[ws]?.title || 'Workshop'}`, values: { ws, venture: ws === 'hq' ? gameRT.planV || '' : '' }, fields: [
+      openForm({ title: `New task · ${GW.WORKSHOPS[ws]?.title || 'Workshop'}`, values: { ws, venture: el.dataset.venture || (ws === 'hq' ? gameRT.planV || '' : '') }, fields: [
         { k: 'text', label: 'What needs doing?', required: true, full: true },
         { k: 'venture', label: 'Venture', type: 'select', options: () => [{ v: '', l: 'General (the empire)' }, ...liveVentures().map((v) => ({ v: v.id, l: v.name }))] },
         { k: 'due', label: 'Due date', type: 'date', hint: 'Dated tasks reach your deadlines' },

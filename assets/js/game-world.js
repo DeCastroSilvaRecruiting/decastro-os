@@ -2,6 +2,7 @@
 // the Venture HQ footbridge, workshop lessons, quick actions and the business-plan sections.
 import { Mesh, box, tube, card, circlePts, lathe, sphere, V, TAU, hex, mt } from './gl.js';
 import { ALL_DEFS, OUTPOST_DEFS, polar } from './tower-scene.js';
+import { ISLAND_DIST, ISLAND_RAD, RIM, BRIDGE_END, bridgeY, THEMES } from './world-islands.js';
 
 // ---------------------------------------------------------------- places and routes
 export const RING = 7.62;
@@ -12,21 +13,31 @@ export function ringR(deg) {
   return r;
 }
 export const PLACES = [HQ, ...ALL_DEFS.map((m) => ({ k: m.k, label: m.label, deg: m.deg, doorR: m.group === 'operations' ? 6.3 : 7.36, group: m.group }))];
-export const placeOf = (k) => PLACES.find((p) => p.k === k);
+let ISLES = [];
+/** Register the venture islands built this session so the game can walk to them. */
+export function setIslands(slots) { ISLES = slots.map((sl) => ({ k: sl.k, label: sl.v.name, deg: sl.deg, doorR: ISLAND_DIST - 2.5, island: true, theme: sl.theme, id: sl.id, level: sl.level, c: sl.c })); }
+export const islands = () => ISLES;
+export const placeOf = (k) => PLACES.find((p) => p.k === k) || ISLES.find((p) => p.k === k);
 const clampDeg = (d) => Math.max(62, Math.min(298, d));
-export const yAt = (r) => (r <= 5.12 && r >= 3.45 ? 0.125 : 0.02);
+export const yAt = (r) => { const b = bridgeY(r); return b != null ? b : r <= 5.12 && r >= 3.45 ? 0.125 : 0.02; };
 export const toXYZ = (deg, r) => { const p = polar(deg, r); return [p[0], yAt(r), p[2]]; };
 export const toPolar = (p) => { let deg = (Math.atan2(p[2], p[0]) * 180) / Math.PI; if (deg < 0) deg += 360; return { deg, r: Math.hypot(p[0], p[2]) }; };
 
 /** Waypoints from a position to a place (or to a free spot { deg, r } on the walkway). */
+const radial = (deg, r0, r1) => { const n = Math.max(1, Math.ceil(Math.abs(r1 - r0) / 0.35)), out = []; for (let i = 1; i <= n; i++) out.push(toXYZ(deg, r0 + ((r1 - r0) * i) / n)); return out; };
 export function route(fromPos, to) {
   const f = toPolar(fromPos), pts = [];
   const fd = clampDeg(f.deg), td = clampDeg(to.deg);
+  if (f.r > RIM - 0.2) {                                                  // on a bridge or an island: walk home along the bridge
+    if (to.island && Math.abs(to.deg - f.deg) < 0.5) { pts.push(...radial(to.deg, f.r, to.doorR)); return pts; }
+    pts.push(...radial(f.deg, f.r, ringR(fd)));
+  }
   if (f.r < 5.15) pts.push(toXYZ(fd, 5.2));                               // step off the HQ footbridge first
   pts.push(toXYZ(fd, ringR(fd)));
   const steps = Math.max(1, Math.ceil(Math.abs(td - fd) / 3));
   for (let i = 1; i <= steps; i++) { const d = fd + ((td - fd) * i) / steps; pts.push(toXYZ(d, ringR(d))); }
   const door = to.doorR ?? to.r;
+  if (to.island) { pts.push(...radial(td, ringR(td), door)); return pts; }
   if (to.k === 'hq') { pts.push(toXYZ(td, 5.2)); pts.push(toXYZ(td, door)); }
   else if (Math.abs(door - ringR(td)) > 0.02) pts.push(toXYZ(td, door));
   return pts;
@@ -34,6 +45,8 @@ export function route(fromPos, to) {
 /** Free roam: a clicked ground point becomes a walkable spot on the garden ring. */
 export function spotFromGround(p) {
   const q = toPolar(p);
+  const isle = ISLES.find((s) => Math.hypot(p[0] - s.c[0], p[2] - s.c[2]) < ISLAND_RAD + 0.2);
+  if (isle) return { k: isle.k };
   if (q.deg < 60 || q.deg > 300 || q.r < 5.3 || q.r > 8.25) return null;
   return { deg: q.deg, r: Math.max(5.35, Math.min(8.05, q.r)) };
 }
@@ -157,3 +170,5 @@ export function planMarkdown(v) {
   const p = v.plan || {};
   return `# Business plan: ${v.name}\n\n${v.summary || ''}\n\n${PLAN.map(([k, t]) => `## ${t}\n\n${(p[k]?.text || '_Not written yet._').trim()}\n`).join('\n')}`;
 }
+
+export { THEMES as ISLAND_THEMES };

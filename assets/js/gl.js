@@ -188,7 +188,7 @@ void main(){
   if (aMat.w > 6.5 && aMat.w < 7.5) { float w = aCol.a; p.x += sin(uTime*1.4 + p.x*0.8 + p.z*0.6)*0.05*w; p.z += cos(uTime*1.1 + p.z*0.7 + p.y)*0.04*w; p.y += sin(uTime*2.0 + p.x)*0.012*w; }
   vec3 n = mat3(uModel)*aNrm;
   if (aMat.w > 12.5 && aMat.w < 13.5) {   // slewing / orbiting parts: rotate about the pivot stored in uv
-    float sp = aCol.a; float a = sp < 0.1 ? 0.75*sin(uTime*sp*3.1) + uTime*sp*0.5 : uTime*sp;
+    float sp = aCol.a; float a = sp < 0.1 ? 0.75*sin(uTime*sp*3.1) + uTime*sp*0.5 : uTime*(sp - 0.1);
     float c = cos(a), s = sin(a); vec2 q = p.xz - aUV; p.xz = aUV + vec2(q.x*c - q.y*s, q.x*s + q.y*c); n.xz = vec2(n.x*c - n.z*s, n.x*s + n.z*c);
     if (sp >= 0.1) p.y += sin(uTime*2.3)*0.035;
   }
@@ -265,6 +265,13 @@ void main(){
     float ndl = max(dot(N,uSunDir),0.);
     float trans = pow(max(dot(-V,uSunDir),0.), 3.);
     col = a*(hemi*0.9 + uSunCol*(0.3+0.7*ndl)*sh) + a*uSunCol*trans*0.5*sh;
+  }
+  else if (kind == 14) {                  // venture-island ground: grass to desert by vMat.y
+    vec2 p = vPos.xz; float n1 = fbm(p*1.3), n2 = fbm(p*0.45 + 7.);
+    vec3 grass = mix(vec3(0.075,0.19,0.07), vec3(0.2,0.34,0.11), n1);
+    vec3 sand = mix(vec3(0.56,0.42,0.26), vec3(0.74,0.61,0.41), n1);
+    alb = mix(grass, sand, smoothstep(0.25, 0.75, vMat.y + (n2 - 0.5)*0.45));
+    col = shade(alb, N, V, 0.92, 0., sh, 1.);
   }
   else if (kind == 1) {                   // ground: grass, sand, paving
     vec2 p = vPos.xz; float r = length(p);
@@ -547,7 +554,7 @@ export class Renderer {
     const vp = M.mul(F.proj, F.view);
     // sun shadow matrix: ortho box around the model
     const sc = F.sunTarget || [0, 3, 0], sunEye = V.add(sc, V.mul(env.uSunDir, 40));
-    const svp = M.mul(M.ortho(-15, 15, -15, 15, 5, 85), M.look(sunEye, sc, Math.abs(env.uSunDir[1]) > 0.98 ? [1, 0, 0] : [0, 1, 0]));
+    const svp = M.mul(M.ortho(-27, 27, -27, 27, 5, 105), M.look(sunEye, sc, Math.abs(env.uSunDir[1]) > 0.98 ? [1, 0, 0] : [0, 1, 0]));
 
     // 1. shadow pass
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFbo); gl.viewport(0, 0, this.shadowSize, this.shadowSize);
@@ -614,10 +621,10 @@ export class Renderer {
 
 const L_ = (h, k = 1) => lin(hex(h)).map((x) => x * k);
 const PRESET = {
-  night: { uSunCol: [0.3, 0.36, 0.52], uSkyTop: L_('#02050d'), uSkyHor: L_('#18213b'), uAmbSky: [0.035, 0.05, 0.1], uAmbGnd: [0.03, 0.025, 0.03], uFogCol: L_('#101828'), uSand: [0.14, 0.13, 0.16], uFog: 0.005, uNight: 1, fireflies: 1.2, exposure: 1.25, bloom: 1.0, bloomThresh: 0.8, grade: [0.98, 1.0, 1.08] },
-  dawn: { uSunCol: [2.1, 1.35, 1.0], uSkyTop: L_('#35558a'), uSkyHor: L_('#f2a67c'), uAmbSky: [0.17, 0.19, 0.31], uAmbGnd: [0.14, 0.1, 0.09], uFogCol: L_('#9d8f9f'), uSand: [0.55, 0.42, 0.33], uFog: 0.004, uNight: 0.12, fireflies: 0.4, exposure: 1.0, bloom: 0.6, bloomThresh: 1.05, grade: [1.04, 1.0, 1.0] },
-  day: { uSunCol: [2.7, 2.42, 2.0], uSkyTop: L_('#2f6fcf'), uSkyHor: L_('#b9d0e6'), uAmbSky: [0.3, 0.39, 0.56], uAmbGnd: [0.26, 0.21, 0.16], uFogCol: L_('#a9bccd'), uSand: [0.62, 0.48, 0.32], uFog: 0.0024, uNight: 0, fireflies: 0.25, exposure: 0.86, bloom: 0.28, bloomThresh: 1.35, grade: [1.03, 1.0, 0.97] },
-  dusk: { uSunCol: [2.3, 1.25, 0.7], uSkyTop: L_('#0b1a3d'), uSkyHor: L_('#dc7f52', 0.9), uAmbSky: [0.08, 0.13, 0.29], uAmbGnd: [0.09, 0.06, 0.05], uFogCol: L_('#2c3752'), uSand: [0.4, 0.31, 0.25], uFog: 0.0042, uNight: 0.65, fireflies: 1, exposure: 1.05, bloom: 0.85, bloomThresh: 0.95, grade: [1.04, 1.0, 1.06] },
+  night: { uSunCol: [0.3, 0.36, 0.52], uSkyTop: L_('#02050d'), uSkyHor: L_('#18213b'), uAmbSky: [0.035, 0.05, 0.1], uAmbGnd: [0.03, 0.025, 0.03], uFogCol: L_('#101828'), uSand: [0.14, 0.13, 0.16], uFog: 0.0028, uNight: 1, fireflies: 1.2, exposure: 1.25, bloom: 1.0, bloomThresh: 0.8, grade: [0.98, 1.0, 1.08] },
+  dawn: { uSunCol: [2.1, 1.35, 1.0], uSkyTop: L_('#35558a'), uSkyHor: L_('#f2a67c'), uAmbSky: [0.17, 0.19, 0.31], uAmbGnd: [0.14, 0.1, 0.09], uFogCol: L_('#9d8f9f'), uSand: [0.55, 0.42, 0.33], uFog: 0.002, uNight: 0.12, fireflies: 0.4, exposure: 1.0, bloom: 0.6, bloomThresh: 1.05, grade: [1.04, 1.0, 1.0] },
+  day: { uSunCol: [2.7, 2.42, 2.0], uSkyTop: L_('#2f6fcf'), uSkyHor: L_('#b9d0e6'), uAmbSky: [0.3, 0.39, 0.56], uAmbGnd: [0.26, 0.21, 0.16], uFogCol: L_('#a9bccd'), uSand: [0.62, 0.48, 0.32], uFog: 0.0011, uNight: 0, fireflies: 0.25, exposure: 0.86, bloom: 0.28, bloomThresh: 1.35, grade: [1.03, 1.0, 0.97] },
+  dusk: { uSunCol: [2.3, 1.25, 0.7], uSkyTop: L_('#0b1a3d'), uSkyHor: L_('#dc7f52', 0.9), uAmbSky: [0.08, 0.13, 0.29], uAmbGnd: [0.09, 0.06, 0.05], uFogCol: L_('#2c3752'), uSand: [0.4, 0.31, 0.25], uFog: 0.0022, uNight: 0.65, fireflies: 1, exposure: 1.05, bloom: 0.85, bloomThresh: 0.95, grade: [1.04, 1.0, 1.06] },
 };
 const KEYS = [[0, 'night'], [5.4, 'night'], [6.4, 'dawn'], [8.2, 'day'], [16.3, 'day'], [17.6, 'dusk'], [18.7, 'night'], [24, 'night']];
 const MOON = V.norm([-0.35, 0.62, -0.7]);

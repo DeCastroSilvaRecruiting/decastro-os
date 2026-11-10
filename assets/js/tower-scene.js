@@ -428,7 +428,7 @@ function outposts(R, reg) {
       const pad = L(-0.12, 0, 0.535); lathe(solid, [[0, 0.535], [0.17, 0.535], [0.17, 0.545], [0, 0.545]], 24, { cx: pad[0], cz: pad[2], col: hex('#2b2f36'), mat: mt(0.6, 0.3, 0, 0) });
       tube(solid, circlePts(0.15, 0.55, 32, pad[0], pad[2]), 0.008, 4, { col, mat: mt(0.4, 0, 2, 11) });
       const dr = 0.42, dc = [pad[0] + Math.cos(face) * dr, 1.02, pad[2] + Math.sin(face) * dr];
-      const S = (m) => ({ col: [...hex(m.c), 0.55], mat: mt(m.r ?? 0.4, m.m ?? 0.5, m.e ?? 0, 13) }), pv = [pad[0], pad[2]];
+      const S = (m) => ({ col: [...hex(m.c), 0.65], mat: mt(m.r ?? 0.4, m.m ?? 0.5, m.e ?? 0, 13) }), pv = [pad[0], pad[2]];
       const dv = (p, n, c, m) => spin.vert(p, n, c, m, pv);
       const sbox = (c, sx, sy, sz, o) => { const tmp = new Mesh(); box(tmp, c, sx, sy, sz, face, o); for (let i = 0; i < tmp.n; i++) { const q = tmp.v.slice(i * 16, i * 16 + 16); dv([q[0], q[1], q[2]], [q[3], q[4], q[5]], [q[6], q[7], q[8], q[9]], [q[10], q[11], q[12], q[13]]); } const off = spin.n - tmp.n; for (const ix of tmp.idx) spin.idx.push(ix + off); };
       sbox(dc, 0.08, 0.03, 0.08, S({ c: '#2a2e35' }));
