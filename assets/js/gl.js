@@ -209,6 +209,7 @@ in vec3 vPos; in vec3 vNrm; in vec4 vCol; in vec4 vMat; in vec2 vUV; in vec4 vSh
 uniform vec3 uCam; uniform float uDim, uHL, uOcc, uPassBack, uShadowTexel;
 uniform vec3 uFocus; uniform float uCut;
 uniform sampler2DShadow uShadow;
+uniform sampler2D uPortrait; uniform float uPortraitReady;
 out vec4 oCol;
 
 vec3 shade(vec3 alb, vec3 N, vec3 V, float rough, float metal, float sh, float ao){
@@ -227,6 +228,13 @@ vec3 shade(vec3 alb, vec3 N, vec3 V, float rough, float metal, float sh, float a
   return col;
 }
 
+// Derivative bump mapping is filtered by pixel footprint to avoid distant shimmer.
+vec3 materialNormal(vec3 N, float height, float strength){
+  vec3 px=dFdx(vPos), py=dFdy(vPos), r1=cross(py,N), r2=cross(N,px);
+  float det=dot(px,r1);
+  vec3 gradient=sign(det)*(dFdx(height)*r1+dFdy(height)*r2);
+  return normalize(max(abs(det),1e-7)*N-gradient*strength);
+}
 void main(){
   if (uCut > 0.5 && vPos.y > uFocus.y + 0.06) {          // see-through: fade whatever stands between the camera and the player
     vec3 ab = uFocus - uCam; float L = length(ab); vec3 dir = ab / max(L, 1e-4);
@@ -256,7 +264,69 @@ void main(){
   }
   vec3 col = vec3(0.);
 
-  if (kind == 7) {                       // foliage cards
+  if (kind >= 15 && kind <= 25) {
+    float distanceFade=1.-smoothstep(4.,22.,length(uCam-vPos));
+    float detail=0.; float strength=0.004;
+    if(kind==15 || kind==24 || kind==25){ // skin: pores, subtle mottling and warm light transmission
+      float pores=vn(vUV*180.);
+      alb=base*mix(0.96,1.035,vn(vUV*18.)); detail=pores; strength=0.0008;
+      rough=0.48+pores*0.09;
+      if(kind>=24 && uPortraitReady>0.5){
+        vec3 photo=pow(texture(uPortrait,vUV).rgb,vec3(2.2));
+        vec3 reference=pow(kind==24?vec3(0.863,0.639,0.490):vec3(0.933,0.757,0.631),vec3(2.2));
+        alb=mix(alb,photo*clamp(base/reference,vec3(0.45),vec3(1.7)),smoothstep(0.15,0.68,vMat.y));
+      }
+      if(kind>=24 && uPortraitReady<0.5){
+        float center=kind==24?.281:.765;
+        vec2 face=vec2((vUV.x-center)/.095,(vUV.y-.4)/.29);
+        float eyes=exp(-pow((abs(face.x)-.34)*16.,2.)-pow((face.y+.16)*27.,2.));
+        float mouth=exp(-pow(face.x*5.,2.)-pow((face.y-.36)*30.,2.));
+        alb=mix(alb,alb*.14,clamp((eyes+mouth)*smoothstep(.4,.75,vMat.y),0.,.85));
+      }
+      vec3 Ns=materialNormal(N,detail,strength*distanceFade);
+      col=shade(alb,Ns,V,rough,0.,sh,1.);
+      float wrap=pow(clamp((dot(Ns,uSunDir)+0.35)/1.35,0.,1.),1.5);
+      col+=alb*vec3(1.,0.45,0.31)*uSunCol*wrap*(1.-ndl0)*0.14*sh;
+    }else{
+      if(kind==16){ // linen and woven cotton
+        float warp=sin(vUV.x*560.)*sin(vUV.y*460.);
+        detail=vn(vUV*100.)*0.4+warp*0.12;strength=0.0006;
+        alb=base*(0.92+0.12*vn(vUV*25.));rough=0.86;
+      }else if(kind==17){ // timber: long grain, darker seams
+        vec2 grain=vec2(vPos.x+vPos.z,vPos.y)*vec2(3.5,1.2);
+        float g=sin(grain.x*8.+vn(grain*0.8)*7.);
+        detail=vn(grain*vec2(4.,0.7));strength=0.008;
+        alb=base*(0.8+0.17*g+0.22*detail);rough=0.83;
+      }else if(kind==18){ // lime plaster and rough stone
+        detail=vn(vPos.xz*25.+vPos.y*12.);strength=0.001;
+        alb=base*(0.88+0.16*vn(vPos.xz*4.+vPos.y));rough=0.94;
+      }else if(kind==19){ // staggered terracotta tiles
+        vec2 tile=vec2(vPos.x*11.,vPos.z*10.);tile.x+=mod(floor(tile.y),2.)*0.5;
+        vec2 edge=abs(fract(tile)-0.5);float joint=smoothstep(0.43,0.49,max(edge.x,edge.y));
+        detail=sin(fract(tile.x)*3.14159)*0.65-joint*0.3;strength=0.004;
+        alb=base*(0.76+0.35*h21(floor(tile)))*(1.-joint*0.26);rough=0.85;
+      }else if(kind==20){ // compacted gravel
+        vec2 q=vPos.xz*22.;detail=vn(q);
+        alb=base*(0.8+0.34*vn(q*.2)+0.1*detail);strength=0.002;rough=0.98;
+      }else if(kind==21){ // meadow: mottled grasses, worn soil, fine surface relief
+        float meadowPatch=fbm(vPos.xz*.55);detail=vn(vPos.xz*18.);strength=0.002;
+        alb=base*mix(vec3(.58,.66,.42),vec3(1.12,1.13,.84),meadowPatch);
+        alb=mix(alb,base*vec3(1.15,.91,.64),smoothstep(.63,.83,fbm(vPos.xz*.12+9.)));rough=1.;
+      }else if(kind==22){ // leaves and bark silhouettes keep their geometry at distance
+        detail=vn(vUV*45.);strength=0.001;alb=base*(.86+.24*detail);rough=.8;
+      }else if(kind==23){ // hair: fine directional strands rather than plastic highlights
+        detail=sin(vUV.x*560.+vn(vUV*30.)*4.);strength=.0005;
+        alb=base*(.72+.24*vn(vUV*70.));rough=.58;
+      }
+      vec3 Nm=materialNormal(N,detail,strength*distanceFade);
+      col=shade(alb,Nm,V,rough,metal,sh,ao);
+      if(kind==16)col+=alb*uAmbSky*pow(1.-max(dot(Nm,V),0.),4.)*.12;
+      if(kind==22)col+=alb*uSunCol*pow(max(dot(-V,uSunDir),0.),4.)*.12*sh;
+    }
+    col*=mix(.55,1.,uDim);
+    col+=base*uHL*.08;
+  }
+  else if (kind == 7) {                       // foliage cards
     int lt = int(vMat.y + 0.5); vec2 uv = vUV;
     if (lt == 0) { vec2 q = uv*2.-1.; q.y *= 0.85; if (dot(q,q) > 1. - 0.3*smoothstep(-1.,1.,q.x*q.y)) discard; }
     else { float cy = abs(uv.y-0.5)*2.; float len = uv.x; float wmax = 0.98*(1.-len*0.7); float teeth = fract(len*17. - cy*3.2); if (cy > wmax || (teeth > 0.62 && cy > 0.07)) discard; }
@@ -466,6 +536,8 @@ export class Renderer {
     const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true });
     if (!gl) throw new Error('WebGL2 is not available');
     this.gl = gl; this.canvas = canvas;
+    const debug=gl.getExtension('WEBGL_debug_renderer_info');
+    this.softwareRenderer=!!debug&&/swiftshader|llvmpipe|software/i.test(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL));
     this.hdr = !!gl.getExtension('EXT_color_buffer_float');
     this.groups = []; this.particles = []; this.W = 0; this.H = 0; this.dpr = 1;
     this.P = {
@@ -474,6 +546,29 @@ export class Renderer {
     };
     this.emptyVao = gl.createVertexArray();
     this.initShadow();
+    this.initPortrait();
+  }
+
+  initPortrait() {
+    const gl=this.gl;this.portraitReady=0;this.disposed=false;
+    this.portraitTex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this.portraitTex);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([215,170,140,255]));
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    const image=new Image();this.portraitImage=image;
+    image.onload=()=>{
+      if(this.disposed)return;
+      gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.portraitTex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);
+      gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+      this.portraitReady=1;gl.activeTexture(gl.TEXTURE0);
+    };
+    // Keep the shaded geometric face when the optional local texture cannot load.
+    image.onerror=()=>{this.portraitReady=0;};
+    image.src=new URL('../art/farm-portraits.png',import.meta.url).href;
   }
 
   prog(vs, fs) {
@@ -489,7 +584,7 @@ export class Renderer {
   ui(p, n, v) { const loc = this.gl.getUniformLocation(p.id, n); if (loc !== null) this.gl.uniform1i(loc, v); }
 
   initShadow() {
-    const gl = this.gl, S = (this.shadowSize = 2048);
+    const gl = this.gl, S = (this.shadowSize = this.softwareRenderer ? 1024 : 2048);
     this.shadowTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, this.shadowTex);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, S, S, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -517,7 +612,7 @@ export class Renderer {
     this.W = W; this.H = H; this.canvas.width = W; this.canvas.height = H;
     for (const k of ['msaaFbo', 'msaaColor', 'msaaDepth']) if (this[k]) { k === 'msaaFbo' ? gl.deleteFramebuffer(this[k]) : gl.deleteRenderbuffer(this[k]); }
     for (const r of ['scene', 'bA', 'bB', 'cA', 'cB']) if (this[r]) { gl.deleteTexture(this[r].t); gl.deleteFramebuffer(this[r].f); }
-    const samples = Math.min(4, gl.getParameter(gl.MAX_SAMPLES));
+    const samples = this.softwareRenderer ? 1 : Math.min(4, gl.getParameter(gl.MAX_SAMPLES));
     this.msaaFbo = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, this.msaaFbo);
     this.msaaColor = gl.createRenderbuffer(); gl.bindRenderbuffer(gl.RENDERBUFFER, this.msaaColor);
     gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, this.hdr ? gl.RGBA16F : gl.RGBA8, W, H); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, this.msaaColor);
@@ -577,6 +672,7 @@ export class Renderer {
     gl.useProgram(P.main.id); setEnv(P.main);
     this.u(P.main, 'uVP', vp); this.u(P.main, 'uSVP', svp); this.u(P.main, 'uCam', F.eye); this.u(P.main, 'uFocus', F.focus || [0, -99, 0]); this.u(P.main, 'uCut', F.focus ? 1 : 0); this.u(P.main, 'uShadowTexel', 1 / this.shadowSize);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.shadowTex); this.ui(P.main, 'uShadow', 0);
+    gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.portraitTex);this.ui(P.main,'uPortrait',1);this.u(P.main,'uPortraitReady',this.portraitReady);gl.activeTexture(gl.TEXTURE0);
     const draw = (g, back) => { this.u(P.main, 'uModel', g.model); this.u(P.main, 'uDim', g.dim); this.u(P.main, 'uHL', g.hl); this.u(P.main, 'uOcc', g.occ); this.u(P.main, 'uPassBack', back); gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); };
     gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND);
     for (const g of this.groups) if (g.pass === 'opaque' || g.pass === 'foliage') draw(g, 0);
@@ -615,6 +711,7 @@ export class Renderer {
   }
 
   dispose() {
+    this.disposed=true;if(this.portraitImage){this.portraitImage.onload=null;this.portraitImage.onerror=null;}this.gl.deleteTexture(this.portraitTex);
     try { this.gl.getExtension('WEBGL_lose_context')?.loseContext(); } catch { /* ignore */ }
   }
 }

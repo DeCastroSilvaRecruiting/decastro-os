@@ -76,3 +76,9 @@ Extending it: add a view in `assets/js/views/`, register it in `ROUTES` and `NAV
 The `#/engine` route now opens an interactive, grounded nature farm. Venture stages appear as six planted growth beds, departments occupy farm workshops, and neighbouring venture plots connect by ground-level paths. The scene includes an orchard, vineyard, pond, greenhouse and distant hills. Existing tasks, lessons, stage gates, progress layers and wardrobe settings remain available.
 
 Matthew and Lizzie use generated portraits based on supplied reference photos; the original photos are not included. Their procedural 3D avatars have matching broad styling, while the photographic likeness appears in dashboard, department and game portraits.
+
+### Detailed 3D characters and materials
+
+In play mode, **Character view** brings Matthew or Lizzie close to the camera; **Back to farm** restores the walking view. The 3D heads project the existing generated reference portraits onto the face geometry. Skin, linen, hair, timber, plaster, terracotta, gravel, meadow and water use distinct shading. Skin choices and existing wardrobe settings remain available. Trees have leaf canopies; farmhouses include window trim, gutters, foundations and planters, and the pond has reflective water and shoreline details.
+
+The face atlas loads locally from `assets/art/farm-portraits.png` and falls back to shaded features if unavailable. No new network service or dependency is required. Software renderers use reduced shadow resolution and sampling; hardware WebGL retains the higher quality settings. These are detailed procedural models with projected likenesses, not scanned human models.

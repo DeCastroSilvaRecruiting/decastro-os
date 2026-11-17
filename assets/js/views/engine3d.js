@@ -39,6 +39,7 @@ const activeId = () => (gs().active === 'lizzie' ? 'lizzie' : 'matthew');
 const otherId = () => (activeId() === 'matthew' ? 'lizzie' : 'matthew');
 const avatarCfg = (id) => ({ ...DEFAULT_AVATARS[id], ...((gs().avatars || {})[id] || {}) });
 let wikiArticles = [];
+let characterView = false;
 function ensureChars() {
   for (const [id, deg] of [['matthew', 92], ['lizzie', 97]]) if (!gameRT.chars[id]) { const pos = GW.toXYZ(deg, GW.ringR(deg)); gameRT.chars[id] = { pos, yaw: Math.atan2(pos[0], pos[2]), path: [], goal: null, walk: 0, phase: 0, waveAt: 0 }; }
 }
@@ -120,9 +121,9 @@ function start(canvas, overlay, panel) {
   const stage = canvas.parentElement;
   let R;
   try { R = new Renderer(canvas); } catch (e) {
-    console.warn('The Tower needs WebGL2:', e);
+    console.warn('The Nature Farm needs WebGL2:', e);
     overlay.remove(); canvas.remove();
-    stage.insertAdjacentHTML('afterbegin', `<div class="eng-fallback"><b>The 3D tower needs WebGL 2.</b><br><span class="small muted">Your browser or device could not start it. Everything else on this page still works: the empire level, what needs you, the gates and the readiness table.</span></div>`);
+    stage.insertAdjacentHTML('afterbegin', `<div class="eng-fallback"><b>The 3D farm needs WebGL 2.</b><br><span class="small muted">Your browser or device could not start it. Everything else on this page still works: the empire level, what needs you, the gates and the readiness table.</span></div>`);
     GW.setIslands(WI.islandSlots(store.get()));
     let sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0);
     loop = { stop() {}, refresh() { sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0); }, select(s) { selected = s; panel.innerHTML = panelHTML(sc0); }, setLayer() { panel.innerHTML = panelHTML(sc0); }, panel() { panel.innerHTML = panelHTML(sc0); },
@@ -157,7 +158,7 @@ function start(canvas, overlay, panel) {
     const r = stage.getBoundingClientRect();
     W = Math.max(2, r.width); H = Math.max(2, r.height); dpr = Math.min(window.devicePixelRatio || 1, 1.6);
     colW = isPlay() ? 0 : W < 620 ? 112 : 168;
-    R.resize(W, H, dpr);
+    R.resize(W, H, R.softwareRenderer ? Math.min(dpr,.85) : dpr);
     overlay.width = Math.floor(W * dpr); overlay.height = Math.floor(H * dpr);
   }
   const ro = new ResizeObserver(resize); ro.observe(stage); resize();
@@ -205,6 +206,7 @@ function start(canvas, overlay, panel) {
   function walkTo(k, spot) {
     const c = gameRT.chars[activeId()], place = k ? GW.placeOf(k) : null;
     if (k && !place) return;
+    characterView=false;cam.zoomT=.24;cam.pitch=.78;
     c.path = GW.route(c.pos, place || spot); c.goal = place; c.faceYaw = null;
     gameRT.at = null; selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc);
   }
@@ -212,14 +214,16 @@ function start(canvas, overlay, panel) {
   function frame(now) {
     if (!running) return;
     if (!canvas.isConnected) { stop(); return; }
-    const dt = Math.max(0, Math.min(64, now - last)); last = now; const t = Math.max(0, now - t0) / 1000, k = 1 - Math.exp(-dt * 0.008);
+    const elapsed=Math.max(0,now-last);const dt = Math.min(64,elapsed); last = now; const t = Math.max(0, now - t0) / 1000, k = 1 - Math.exp(-dt * 0.008);
     if ((root.dataset.theme === 'light') !== light) readTheme();
     env = skyAt(skyHour(tw().sky)); env.groundY = -0.32; env.islandR = 0; env.uSand = [0.28, 0.34, 0.22]; env.bloom *= 0.35;
     const layer = tw().layer;
 
     // ---- characters
     const P = isPlay();
-    stepChars(dt / 1000, t);
+    // Substeps preserve walking speed on slower renderers without jumping after tab suspension.
+    let simulation=Math.min(elapsed/1000,.5);
+    while(simulation>0.000001){const step=Math.min(simulation,.04);stepChars(step,t);simulation-=step;}
     for (const id of ['matthew', 'lizzie']) {
       const c = gameRT.chars[id], wave = Math.max(0, 1 - Math.abs(t - c.waveAt - 0.9) / 0.9) * (c.waveAt ? 1 : 0);
       avs[id].pose(c.pos, c.yaw, { walk: c.walk, phase: c.phase, wave: Math.min(1, wave * 1.6), t });
@@ -227,7 +231,8 @@ function start(canvas, overlay, panel) {
     if (P) {
       const a = gameRT.chars[activeId()].pos;
       cam.tt = [a[0], a[1] + 0.38, a[2]];
-      if (!drag.on && now - lastInteract > 2500) { const ar = GW.toPolar(a).r, want = Math.atan2(a[2], a[0]) + (ar > WI.RIM + 1 ? Math.PI + 0.35 : ar < 5.2 ? 0.55 : 0.12); let d = want - cam.base; d = Math.atan2(Math.sin(d), Math.cos(d)); cam.base += d * (1 - Math.exp(-dt * 0.0016)); }
+      if (characterView && !drag.on) { cam.base = Math.PI/2-gameRT.chars[activeId()].yaw; }
+      if (!characterView && !drag.on && now - lastInteract > 2500) { const ar = GW.toPolar(a).r, want = Math.atan2(a[2], a[0]) + (ar > WI.RIM + 1 ? Math.PI + 0.35 : ar < 5.2 ? 0.55 : 0.12); let d = want - cam.base; d = Math.atan2(Math.sin(d), Math.cos(d)); cam.base += d * (1 - Math.exp(-dt * 0.0016)); }
     }
     // ---- camera
     if (cam.auto && !P && !drag.on && now - lastInteract > 3500) cam.phase += dt * 0.00022;
@@ -268,7 +273,7 @@ function start(canvas, overlay, panel) {
     for (const b of beacons) { const sp = b.sev >= 3 ? 5 : b.sev === 2 ? 3 : 1.6, amp = b.sev >= 3 ? 0.45 : b.sev === 2 ? 0.3 : 0.15; for (const g of b.groups) { g.dim = 1 - amp + amp * Math.sin(t * sp); g.hl = isSel(b) ? 1 : 0; } }
     if (perks.skyline) perks.skyline.occ = Math.min(1, 0.22 + 0.1 * sc.G.level.n);
 
-    try { vp = R.render({ view, proj, eye, t, env, sunTarget: [0, 3, 0], focus: P ? [gameRT.chars[activeId()].pos[0], gameRT.chars[activeId()].pos[1] + 0.3, gameRT.chars[activeId()].pos[2]] : null }); } catch (e) { console.error(e); stop(); return; }
+    try { vp = R.render({ view, proj, eye, t, env, sunTarget: [0, 3, 0], focus: P && !characterView ? [gameRT.chars[activeId()].pos[0], gameRT.chars[activeId()].pos[1] + 0.3, gameRT.chars[activeId()].pos[2]] : null }); } catch (e) { console.error(e); stop(); return; }
     drawOverlay(t, view, { any, isSel, isHov, floorFocus, modLit, count, focusMod, focusStage, selVenture, vlinks, layer, play: P });
     overlay.style.cursor = hover || P ? 'pointer' : drag.on ? 'grabbing' : 'grab';
     requestAnimationFrame(frame);
@@ -307,7 +312,7 @@ function start(canvas, overlay, panel) {
     {
       const items = [];
       ctx.font = `600 ${W < 620 ? 10 : 11.5}px Inter, system-ui, sans-serif`;
-      for (const m of sc.modules) { if (cam.zoom > 1.7 && !F.play) break; const a = P([m.base[0], T.modTopY(m) + 0.9, m.base[2]]); if (!a) continue; items.push({ m, ax: a.x, ay: a.y, x: a.x, y: a.y, w: ctx.measureText(m.label).width + 14 + (F.layer !== 'pipeline' ? 26 : 0), h: 22 }); }
+      for (const m of sc.modules) { if(characterView)break; if (cam.zoom > 1.7 && !F.play) break; const a = P([m.base[0], T.modTopY(m) + 0.9, m.base[2]]); if (!a) continue; items.push({ m, ax: a.x, ay: a.y, x: a.x, y: a.y, w: ctx.measureText(m.label).width + 14 + (F.layer !== 'pipeline' ? 26 : 0), h: 22 }); }
       for (let it = 0; it < 60; it++) for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
         const a = items[i], b = items[j], ox = (a.w + b.w) / 2 - Math.abs(a.x - b.x), oy = a.h + 3 - Math.abs(a.y - b.y);
         if (ox > 0 && oy > 0) { const d = (a.y <= b.y ? 1 : -1) * oy / 2; a.y -= d; b.y += d; }
@@ -325,16 +330,16 @@ function start(canvas, overlay, panel) {
     // venture islands
     for (const isle of GW.islands()) {
       if (F.play && Math.hypot(gameRT.chars[activeId()].pos[0] - isle.c[0], gameRT.chars[activeId()].pos[2] - isle.c[2]) < WI.ISLAND_RAD + 0.5) continue;
-      const q = P([isle.c[0], 2.6, isle.c[2]]); if (!q || q.x > W - colW - 20) continue;
+      const q = P([isle.c[0], 2.6, isle.c[2]]); if (!q || q.x < 40 || q.x > W - colW - 20 || q.y < 135 || q.y > H-55) continue;
       const th = WI.THEMES[isle.theme];
       pill(isle.label, q.x, q.y, { size: W < 620 ? 10 : 11.5, hit: F.play ? { kind: 'place', id: isle.k } : { kind: 'venture', id: isle.id } });
       ctx.font = '600 9.5px Inter, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = th.color; ctx.fillText(`${th.title.toUpperCase()} · ${isle.level < 0 ? 'PARKED' : WI.BUILD_STEPS[isle.level].toUpperCase()}`, q.x, q.y + 17);
     }
-    if (F.play) drawMinimap(t);
+    if (F.play && !characterView) drawMinimap(t);
     // play mode: Venture HQ sign and name tags
     if (F.play) {
       const hp = GW.toXYZ(GW.HQ.deg, 3.45), a = P([hp[0], 1.15, hp[2]]);
-      if (a) { pill('Venture HQ', a.x, a.y, { size: W < 620 ? 10 : 11.5, hit: { kind: 'place', id: 'hq' } }); }
+      if (a && !characterView) { pill('Venture HQ', a.x, a.y, { size: W < 620 ? 10 : 11.5, hit: { kind: 'place', id: 'hq' } }); }
       for (const id of ['matthew', 'lizzie']) {
         const c = gameRT.chars[id], q = P([c.pos[0], c.pos[1] + 0.8, c.pos[2]]); if (!q) continue;
         const on = id === activeId();
@@ -488,6 +493,7 @@ function start(canvas, overlay, panel) {
   function setLayer() { rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
   function stop() { running = false; ro.disconnect(); R.dispose(); }
   function setPlay(on) {
+    characterView=false;
     resize();
     if (on) { cam.zoomT = 0.24; cam.pitch = 0.78; cam.auto = false; } else { cam.tt = [0, 0.5, 0]; cam.zoomT = 1; cam.pitch = CAM0.pitch; gameRT.at = null; }
     selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc);
@@ -651,7 +657,7 @@ function tasksAt(k) {
 
 function playHomeHTML(sc) {
   const act = activeId(), c = gameRT.chars[act], walking = c && c.path.length && c.goal;
-  const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}">${personaPortrait(PERSONAS.find(p => p.id === id))}</div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
+  const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}">${personaPortrait(PERSONAS.find(p => p.id === id))}</div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="inspectChar" data-id="${id}">${characterView && on ? 'Back to farm' : 'Character view'}</button><button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
   return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">Nature Farm · explore</div><h2>${walking ? `Walking to ${esc(c.goal.label)}…` : 'Where to next?'}</h2><p class="small muted">Follow the paths to a farm workshop or use the map to visit a venture plot. Garden beds track the stages of your ventures, from first seeds to a mature harvest.</p></div>
     <div class="gm-chars">${card('matthew')}${card('lizzie')}</div>
     <h4 class="eng-sub">Workshops</h4>
@@ -805,6 +811,14 @@ export default {
     leavePlace() { gameRT.at = null; selected = { kind: 'core', id: null }; loop?.panel(); },
     wtab(el) { gameRT.wtab = el.dataset.tab; loop?.panel(); },
     playAs(el) { store.update((s) => { s.settings.game = { ...(s.settings.game || {}), active: el.dataset.id }; }, { render: false }); gameRT.at = null; loop?.panel(); toast(`Playing as ${avatarCfg(el.dataset.id).name}`, 'ok'); },
+    inspectChar(el) {
+      const same=activeId()===el.dataset.id;
+      characterView=!(characterView&&same);
+      store.update(s=>{s.settings.game={...(s.settings.game||{}),active:el.dataset.id};},{render:false});
+      cam.zoomT=characterView?.045:.24;cam.zoom=cam.zoomT;cam.pitch=characterView?.16:.78;cam.auto=false;
+      const c=gameRT.chars[el.dataset.id];if(characterView&&c){cam.base=Math.PI/2-c.yaw;cam.tt=[c.pos[0],c.pos[1]+.38,c.pos[2]];cam.tc=cam.tt.slice();}
+      gameRT.at=null;loop?.panel();
+    },
     wardrobe(el) { wardrobeForm(el.dataset.id); },
     learn(el) { const id = el.dataset.id; store.update((s) => { s.settings.game = { ...(s.settings.game || {}) }; s.settings.game.learned = { ...(s.settings.game.learned || {}), [id]: today() }; }, { render: false }); toast(`Lesson learned: +${GW.LESSON_XP} XP`, 'ok'); loop?.refresh(); },
     gameTaskNew(el) {

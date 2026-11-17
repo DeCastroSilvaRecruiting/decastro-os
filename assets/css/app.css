@@ -586,3 +586,6 @@ a:focus-visible,button:focus-visible,select:focus-visible { outline: 2px solid v
 .persona-card > .persona-portrait { aspect-ratio: 1; }
 .department-persona > .persona-matthew,.department-persona > .persona-lizzie { height: 76px; }
 @media(max-width:650px) { .department-persona > .persona-matthew,.department-persona > .persona-lizzie { height: 60px; } }
+.gm-char { flex-wrap: wrap; }
+.gm-char > .grow { min-width: 80px; }
+.gm-char > .btn { flex-shrink: 0; }
