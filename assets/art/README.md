@@ -24,7 +24,11 @@ Drop a PNG with one of these exact file names into this folder and De Castro OS 
 | `island-port.png` | Global Trend Store island (Trade Port) | 1536x640 |
 | `island-generic.png` | Any other venture island | 1536x640 |
 
-## Three ways to add art
+Every slot starts with a placeholder illustration drawn by Claude (`placeholders.json` records their sizes so the Art Studio can tell them apart from your own art).
+
+## Ways to add art
+
+0. **Art Studio in the app (no credits).** Open **Art Studio**, copy a slot's prompt into ChatGPT on your normal plan, then tap **Upload** on the slot.
 
 1. **Upload by hand.** Make the image in ChatGPT, save it as PNG with the file name above, then on github.com open this folder, choose **Add file → Upload files** and commit.
 2. **Generate art (automatic).** In the repository's **Actions** tab choose **Generate art → Run workflow**, pick a slot, optionally type your own description, and run. It paints the image with OpenAI's image model, commits it here and republishes the site. Needs the repository secret `OPENAI_API_KEY` (an OpenAI API key, billed by OpenAI per image).

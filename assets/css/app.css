@@ -470,3 +470,12 @@ pre.prompt { background: var(--bg-2); border: 1px solid var(--line); border-radi
 .gm-face { overflow: hidden; }
 .art-face { width: 100%; height: 100%; object-fit: cover; display: block; }
 .gm-face:has(.art-face[style=""]) { border-width: 2px; }
+
+/* Art Studio */
+.art-card { display: flex; flex-direction: column; }
+.art-thumb { aspect-ratio: 12 / 5; border-radius: 10px; overflow: hidden; background: var(--panel-2); border: 1px solid var(--line); }
+.art-thumb.sq { aspect-ratio: 1; max-width: 220px; }
+.art-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.art-empty { height: 100%; display: grid; place-items: center; color: var(--muted); }
+.art-empty svg { width: 34px; height: 34px; opacity: 0.6; }
+.art-next { border-color: rgba(226, 196, 119, 0.55); }

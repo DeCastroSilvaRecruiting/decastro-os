@@ -1,0 +1,24 @@
+{
+ "note": "Byte sizes of the placeholder art Claude drew. A slot whose file still has this size shows as a placeholder in the Art Studio.",
+ "sizes": {
+  "title.png": 135668,
+  "ws-hq.png": 129118,
+  "ws-wiki.png": 131193,
+  "ws-claude.png": 135372,
+  "ws-math.png": 117356,
+  "ws-legal.png": 110840,
+  "ws-treasury.png": 126612,
+  "ws-finance.png": 115386,
+  "ws-investments.png": 126348,
+  "ws-property.png": 117354,
+  "ws-procure.png": 113504,
+  "ws-commerce.png": 114593,
+  "island-atelier.png": 118300,
+  "island-course.png": 118036,
+  "island-farm.png": 128712,
+  "island-port.png": 114257,
+  "island-generic.png": 114064,
+  "matthew.png": 131354,
+  "lizzie.png": 116914
+ }
+}

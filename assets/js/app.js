@@ -18,11 +18,12 @@ import investments from './views/investments.js';
 import legal from './views/legal.js';
 import mathlab from './views/mathlab.js';
 import settings from './views/settings.js';
+import art from './views/art.js';
 
-const ROUTES = { dashboard, ideas, commerce, procure, ventures, engine, wiki, claude, finance, treasury, property, investments, legal, math: mathlab, settings };
+const ROUTES = { dashboard, ideas, commerce, procure, ventures, engine, art, wiki, claude, finance, treasury, property, investments, legal, math: mathlab, settings };
 const NAV = [
   ['Command', [['dashboard', 'Command Centre', 'dashboard']]],
-  ['Build', [['ideas', 'Idea Scout', 'bulb'], ['ventures', 'Venture Engine', 'ventures'], ['commerce', 'Commerce Lab', 'cart'], ['procure', 'Procurement', 'box'], ['engine', 'The Tower', 'tower'], ['wiki', 'Knowledge Wiki', 'wiki'], ['claude', 'Claude Desk', 'claude']]],
+  ['Build', [['ideas', 'Idea Scout', 'bulb'], ['ventures', 'Venture Engine', 'ventures'], ['commerce', 'Commerce Lab', 'cart'], ['procure', 'Procurement', 'box'], ['engine', 'The Tower', 'tower'], ['art', 'Art Studio', 'spark'], ['wiki', 'Knowledge Wiki', 'wiki'], ['claude', 'Claude Desk', 'claude']]],
   ['Wealth', [['treasury', 'Treasury', 'treasury'], ['investments', 'Investments', 'investments'], ['property', 'Property', 'property'], ['finance', 'Accounting', 'finance']]],
   ['Govern', [['legal', 'Legal & Entities', 'legal'], ['math', 'Mastermind Lab', 'math']]],
 ];

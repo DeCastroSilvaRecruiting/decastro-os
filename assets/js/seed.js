@@ -82,6 +82,7 @@ export const SEED = {
     procure: { dutyRate: 0.05, vatRate: 0.05, vatRecoverable: true, capitalRate: 0.1, fxChecked: '' },
     tower: { sky: 'live', layer: 'pipeline', play: false },
     game: { active: 'matthew', avatars: null, learned: {} },
+    art: { repo: '' },   // site repo for Art Studio uploads; blank = <github owner>/decastro-os
   },
   // Units of base currency per 1 unit of currency. USD is the CBUAE peg.
   fx: { AED: 1, USD: 3.6725, CNY: 0.52 },
