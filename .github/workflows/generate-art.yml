@@ -1,0 +1,88 @@
+# Generate art: paints one artwork slot with OpenAI's image model and commits it into assets/art,
+# where the app picks it up automatically. Run it from the Actions tab (works in the GitHub mobile app).
+# One-time setup: add an OpenAI API key as the repository secret OPENAI_API_KEY.
+name: Generate art
+
+on:
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: Which artwork to create (file in assets/art)
+        required: true
+        type: choice
+        options: [title.png, matthew.png, lizzie.png, ws-hq.png, ws-wiki.png, ws-claude.png, ws-math.png, ws-legal.png, ws-treasury.png, ws-finance.png, ws-investments.png, ws-property.png, ws-procure.png, ws-commerce.png, island-atelier.png, island-course.png, island-farm.png, island-port.png, island-generic.png]
+      prompt:
+        description: Your own description (leave blank to use the slot's built-in prompt)
+        required: false
+        type: string
+      quality:
+        description: Image quality (higher costs more)
+        required: false
+        type: choice
+        default: medium
+        options: [low, medium, high]
+      model:
+        description: OpenAI image model
+        required: false
+        type: string
+        default: gpt-image-1
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: generate-art
+  cancel-in-progress: false
+
+jobs:
+  paint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Paint the artwork
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SLOT: ${{ inputs.slot }}
+          PROMPT: ${{ inputs.prompt }}
+          QUALITY: ${{ inputs.quality }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then echo "::error::Add your OpenAI API key as the repository secret OPENAI_API_KEY first."; exit 1; fi
+          node <<'JS'
+          const fs = require('fs');
+          const { style, slots } = JSON.parse(fs.readFileSync('assets/art/slots.json', 'utf8'));
+          const slot = slots.find((s) => s.file === process.env.SLOT);
+          if (!slot) { console.error('Unknown slot', process.env.SLOT); process.exit(1); }
+          const wide = slot.size.startsWith('1536');
+          const portrait = /^(matthew|lizzie)\.png$/.test(slot.file);
+          const prompt = `${(process.env.PROMPT || '').trim() || slot.prompt}. ${style}.`;
+          (async () => {
+            const body = { model: process.env.MODEL || 'gpt-image-1', prompt, n: 1, size: wide ? '1536x1024' : '1024x1024', quality: process.env.QUALITY || 'medium' };
+            if (portrait) body.background = 'transparent';
+            const res = await fetch('https://api.openai.com/v1/images/generations', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENAI_API_KEY}` }, body: JSON.stringify(body) });
+            const json = await res.json();
+            if (!res.ok) { console.error('OpenAI error:', JSON.stringify(json.error || json)); process.exit(1); }
+            const b64 = json.data?.[0]?.b64_json;
+            if (!b64) { console.error('No image returned'); process.exit(1); }
+            fs.writeFileSync(`assets/art/${slot.file}`, Buffer.from(b64, 'base64'));
+            console.log(`Painted assets/art/${slot.file} (${body.size}, ${body.quality}) from prompt: ${prompt}`);
+          })();
+          JS
+
+      - name: Commit into the app
+        env:
+          SLOT: ${{ inputs.slot }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "assets/art/$SLOT"
+          git commit -m "art: generate $SLOT" || { echo "No change"; exit 0; }
+          git push
+
+      - name: Publish the site
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "Pages will rebuild on its own."

@@ -8,6 +8,7 @@ import { esc, icon, compact, fnum, toast, confirmBox, copyText, today, fmtDate, 
 import { addAvatar, DEFAULT_AVATARS, SKIN, HAIR, HAIR_STYLES, FACIAL, TOPS, ACCESSORIES } from '../avatar.js';
 import * as GW from '../game-world.js';
 import * as WI from '../world-islands.js';
+import { artImg } from '../art.js';
 import { RUBRIC } from '../seed.js';
 import { FLOW, STAGE_INFO, readiness, nextStage, prevStage } from '../gates.js';
 import { Renderer, skyAt, M, V, TAU } from '../gl.js';
@@ -652,7 +653,7 @@ function tasksAt(k) {
 
 function playHomeHTML(sc) {
   const act = activeId(), c = gameRT.chars[act], walking = c && c.path.length && c.goal;
-  const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}"><span style="background:${a.hair}"></span></div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
+  const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}">${artImg(`${id}.png`, 'art-face', a.name)}</div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
   return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">The Tower · game</div><h2>${walking ? `Walking to ${esc(c.goal.label)}…` : 'Where to next?'}</h2><p class="small muted">Tap a building, an island or the world map to travel. Each building is a workshop, and every venture has its own island across a sky-bridge that builds itself up as the venture rises the tower.</p></div>
     <div class="gm-chars">${card('matthew')}${card('lizzie')}</div>
     <h4 class="eng-sub">Workshops</h4>
@@ -680,7 +681,7 @@ function districtHTML(sc, k) {
     body = `<div class="row" style="margin:6px 0 10px"><button class="btn primary sm" data-act="gameTaskNew" data-ws="hq" data-venture="${v.id}">${icon('plus')} New task</button><span class="small muted right">+10 XP each when done</span></div>
       ${tasks.length ? tasks.slice(0, 20).map((x) => `<div class="check-item ${x.done ? 'done' : ''}"><input type="checkbox" ${x.done ? 'checked' : ''} data-change="gameTaskDone" data-id="${esc(x.id)}" data-src="${esc(v.id)}" aria-label="Done"><div class="txt">${esc(x.text)}<div class="small muted">${x.due ? `due ${fmtDate(x.due)}` : 'no date'}${x.done && x.doneOn ? ` · done ${fmtDate(x.doneOn)}` : ''}</div></div></div>`).join('') : '<p class="small muted">No tasks for this venture yet.</p>'}`;
   } else body = statusHTML(st);
-  return `<div class="eng-head"><div class="eyebrow" style="color:${th.color}">${esc(who)} is visiting · ${esc(th.title)}</div><h2>${esc(v.name)}</h2><p class="small muted">${esc(th.blurb)}</p></div>
+  return `${artImg(`island-${isle.theme}.png`, 'art-banner', th.title)}<div class="eng-head"><div class="eyebrow" style="color:${th.color}">${esc(who)} is visiting · ${esc(th.title)}</div><h2>${esc(v.name)}</h2><p class="small muted">${esc(th.blurb)}</p></div>
     <div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><button class="btn sm ghost" data-act="leavePlace">← Leave</button><a class="btn sm ghost" href="#/ventures/${v.id}">Open the venture</a><span class="badge right" style="color:${STAGE_COLOR[v.stage]}">${esc(v.stage)} · ${rd.met}/${rd.total} gates</span></div>
     <div class="eng-tabs gm-tabs">${tab('build', 'Build', null)}${tab('plan', 'Plan', `${GW.planProgress(v).done}/${GW.PLAN.length}`)}${tab('tasks', 'Tasks', tasks.filter((x) => !x.done).length)}${tab('needs', 'Needs you', st.needs.length)}</div>
     <div class="gm-body">${body}</div>`;
@@ -708,7 +709,7 @@ function workshopHTML(sc, k) {
     body = `<div class="row" style="margin:6px 0 10px"><button class="btn primary sm" data-act="gameTaskNew" data-ws="${k}">${icon('plus')} New task</button><span class="small muted right">+10 XP each when done</span></div>
       ${tasks.length ? tasks.slice(0, 20).map((x) => `<div class="check-item ${x.done ? 'done' : ''}"><input type="checkbox" ${x.done ? 'checked' : ''} data-change="gameTaskDone" data-id="${esc(x.id)}" data-src="${esc(x.src)}" aria-label="Done"><div class="txt">${esc(x.text)}<div class="small muted">${x.vname ? `${esc(x.vname)} · ` : ''}${x.due ? `due ${fmtDate(x.due)}` : 'no date'}${x.done && x.doneOn ? ` · done ${fmtDate(x.doneOn)}` : ''}</div></div></div>`).join('') : '<p class="small muted">No tasks in this workshop yet. Tasks with a date reach your Command Centre deadlines.</p>'}`;
   } else body = statusHTML(st);
-  return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">${esc(who)} is in the workshop</div><h2>${esc(W.title)}</h2><p class="small muted">${esc(W.theme)}</p></div>
+  return `${artImg(`ws-${k}.png`, 'art-banner', W.title)}<div class="eng-head"><div class="eyebrow" style="color:#e2c477">${esc(who)} is in the workshop</div><h2>${esc(W.title)}</h2><p class="small muted">${esc(W.theme)}</p></div>
     <div class="row" style="gap:8px;margin-bottom:8px"><button class="btn sm ghost" data-act="leavePlace">← Leave</button>${k !== 'hq' && place ? `<a class="btn sm ghost" href="${MODULES.find((m) => m.k === k)?.href || '#/engine'}">Open the full module</a>` : ''}</div>
     <div class="eng-tabs gm-tabs">${tab('learn', 'Learn', W.lessons.filter(([id]) => !learned[`${k}.${id}`]).length || null)}${tab('do', k === 'hq' ? 'Plan Studio' : 'Do')}${tab('tasks', 'Tasks', open.length)}${tab('needs', 'Needs you', st.needs.length)}</div>
     <div class="gm-body">${body}</div>`;
@@ -768,6 +769,7 @@ export default {
     <div class="page-head"><div><div class="eyebrow">Build</div><h1>The Tower</h1>
       <p>Your empire as a living building, and a game. Press Play to walk the island as yourself or Lizzie: every building is a workshop where you learn, write your business plans and set tasks. Switch layers to see what needs you and what is done, and watch the skyline grow as real work earns XP.</p></div>
       <div class="actions"><button class="btn" data-act="resetCam">${icon('sync')} Reset view</button><button class="btn" data-act="toggleSpin">${cam.auto ? 'Pause rotation' : 'Rotate'}</button><a class="btn primary" href="#/ventures" data-act="newVenture">${icon('plus')} New idea</a></div></div>
+    ${artImg('title.png', 'art-title', 'The Tower')}
     <div class="eng-wrap">
       <div class="eng-stage card flush"><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="3D model of the venture tower: stage floors, the seed vault, the connected pavilions and outposts"></canvas>
         <div class="eng-layers" role="toolbar" aria-label="Tower layers"><button class="eng-layer eng-play ${t.play ? 'on' : ''}" data-act="playToggle">${t.play ? '■ Exit game' : '▶ Play'}</button>${LAYERS.map(([k, l]) => `<button class="eng-layer ${(t.layer || 'pipeline') === k ? 'on' : ''}" data-act="layer" data-id="${k}" aria-pressed="${(t.layer || 'pipeline') === k}">${l}</button>`).join('')}
