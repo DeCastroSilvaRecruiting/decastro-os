@@ -9,6 +9,7 @@ import { addAvatar, DEFAULT_AVATARS, SKIN, HAIR, HAIR_STYLES, FACIAL, TOPS, ACCE
 import * as GW from '../game-world.js';
 import * as WI from '../world-islands.js';
 import { artImg } from '../art.js';
+import { PERSONAS, personaPortrait } from '../personas.js';
 import { RUBRIC } from '../seed.js';
 import { FLOW, STAGE_INFO, readiness, nextStage, prevStage } from '../gates.js';
 import { Renderer, skyAt, M, V, TAU } from '../gl.js';
@@ -653,7 +654,7 @@ function tasksAt(k) {
 
 function playHomeHTML(sc) {
   const act = activeId(), c = gameRT.chars[act], walking = c && c.path.length && c.goal;
-  const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}">${artImg(`${id}.png`, 'art-face', a.name)}</div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
+  const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}">${personaPortrait(PERSONAS.find(p => p.id === id))}</div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
   return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">The Tower · game</div><h2>${walking ? `Walking to ${esc(c.goal.label)}…` : 'Where to next?'}</h2><p class="small muted">Tap a building, an island or the world map to travel. Each building is a workshop, and every venture has its own island across a sky-bridge that builds itself up as the venture rises the tower.</p></div>
     <div class="gm-chars">${card('matthew')}${card('lizzie')}</div>
     <h4 class="eng-sub">Workshops</h4>
@@ -769,7 +770,7 @@ export default {
     <div class="page-head"><div><div class="eyebrow">Build</div><h1>The Tower</h1>
       <p>Your empire as a living building, and a game. Press Play to walk the island as yourself or Lizzie: every building is a workshop where you learn, write your business plans and set tasks. Switch layers to see what needs you and what is done, and watch the skyline grow as real work earns XP.</p></div>
       <div class="actions"><button class="btn" data-act="resetCam">${icon('sync')} Reset view</button><button class="btn" data-act="toggleSpin">${cam.auto ? 'Pause rotation' : 'Rotate'}</button><a class="btn primary" href="#/ventures" data-act="newVenture">${icon('plus')} New idea</a></div></div>
-    ${artImg('title.png', 'art-title', 'The Tower')}
+    ${artImg('title.png', 'art-title tower-office-image', 'The De Castro team at their Dubai headquarters')}
     <div class="eng-wrap">
       <div class="eng-stage card flush"><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="3D model of the venture tower: stage floors, the seed vault, the connected pavilions and outposts"></canvas>
         <div class="eng-layers" role="toolbar" aria-label="Tower layers"><button class="eng-layer eng-play ${t.play ? 'on' : ''}" data-act="playToggle">${t.play ? '■ Exit game' : '▶ Play'}</button>${LAYERS.map(([k, l]) => `<button class="eng-layer ${(t.layer || 'pipeline') === k ? 'on' : ''}" data-act="layer" data-id="${k}" aria-pressed="${(t.layer || 'pipeline') === k}">${l}</button>`).join('')}

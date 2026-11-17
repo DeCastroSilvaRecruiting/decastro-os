@@ -36,5 +36,9 @@ Every slot starts with a placeholder illustration drawn by Claude (`placeholders
 
 ## Rules
 
-- PNG, no text or logos in the image. Keep one style across all slots: Stylised semi-realistic 3D illustration, soft global illumination, warm Dubai light, gold (#c9a54c) and teal (#2ea6a0) accents, clean composition, no text, no logos, no brand names.
-- This repository is **public**. Never upload personal photos here. Make the portraits of Matthew and Lizzie inside ChatGPT from your photo, and upload only the finished cartoon portrait.
+- PNG, no text or logos in the image. Keep one style across all slots: Photorealistic architectural editorial photography, warm Dubai daylight, travertine, walnut, bronze and olive accents, natural adult proportions, no text or logos.
+- This repository is **public**. Never upload personal photos here. Make the portraits of Matthew and Lizzie inside ChatGPT from your photo, and upload only the finished generated portrait.
+
+## Private office cast
+
+`office-cast.png` is generated artwork showing six fictional personas, ordered Matthew, Lizzie, Researcher, Capital Steward, Counsel and Operator. These are character interpretations, not verified likenesses or live agents. The dashboard, department introductions and playable-character cards use this local asset; no image service or credentials are needed at runtime. `assets/js/personas.js` defines role labels, navigation and portrait positions. Keep the six people equally spaced when replacing this image so the responsive portrait crops remain aligned.

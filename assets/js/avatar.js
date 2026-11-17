@@ -1,4 +1,4 @@
-// avatar.js — chibi cartoon characters built from primitives, posed with per-part transforms.
+// avatar.js — articulated characters built from primitives, posed with per-part transforms.
 // Each character is five render groups (body, two arms, two legs) so it can walk, swing its arms and wave.
 import { Mesh, sphere, lathe, tube, V, M, hex, mt } from './gl.js';
 
@@ -10,8 +10,8 @@ export const TOPS = [['polo', 'Golf polo'], ['shirt', 'Shirt'], ['blazer', 'Blaz
 export const ACCESSORIES = [['none', 'None'], ['cap', 'Golf cap'], ['visor', 'Golf visor'], ['sunglasses', 'Sunglasses'], ['bag', 'DCS golf bag']];
 
 export const DEFAULT_AVATARS = {
-  matthew: { name: 'Matthew', skin: '#dca37d', hair: '#3b2a20', hairStyle: 'side', facial: 'stubble', top: 'polo', topColor: '#1f3a5f', bottomColor: '#d8cbb0', shoes: '#f4f4f2', accent: '#c9a54c', accessory: 'cap', eyes: '#2b1d14' },
-  lizzie: { name: 'Lizzie', skin: '#eec1a1', hair: '#8a5a3b', hairStyle: 'long', facial: 'none', top: 'dress', topColor: '#d9667a', bottomColor: '#f2efe9', shoes: '#f4f4f2', accent: '#ffffff', accessory: 'sunglasses', eyes: '#3a2a20' },
+  matthew: { name: 'Matthew', skin: '#dca37d', hair: '#3b2a20', hairStyle: 'side', facial: 'stubble', top: 'blazer', topColor: '#24354a', bottomColor: '#c4b79d', shoes: '#42392f', accent: '#b8a078', accessory: 'none', eyes: '#2b1d14' },
+  lizzie: { name: 'Lizzie', skin: '#eec1a1', hair: '#8a5a3b', hairStyle: 'long', facial: 'none', top: 'blazer', topColor: '#ddd1b9', bottomColor: '#a1664e', shoes: '#564238', accent: '#c9ad7a', accessory: 'none', eyes: '#3a2a20' },
 };
 
 // ---------- small matrix helpers (column-major, like gl.js) ----------
@@ -39,6 +39,28 @@ function blob(m, c, r, o, { seg = 12, mask = null, hideTo = null } = {}) {
 }
 function merge(m, t) { const off = m.n; for (let i = 0; i < t.v.length; i++) m.v.push(t.v[i]); m.n += t.n; for (const ix of t.idx) m.idx.push(ix + off); }
 const sc = (p) => p.map((x) => x * S);
+// Lengthen legs and reduce the head while keeping every outfit and facial detail
+// in the same continuous coordinate system. Joint pivots use this map as well.
+function adultPoint(p) {
+  const [x, sy, z] = p, y = sy / S;
+  const t = Math.max(0, Math.min(1, (y - 0.39) / 0.06));
+  const width = 1 - 0.35 * t;
+  const height = y <= HIP ? y * 1.6 : y <= 0.415 ? y + HIP * 0.6 : 0.415 + HIP * 0.6 + (y - 0.415) * 0.62;
+  return [x * width, height * S, z * width];
+}
+function adultMesh(m) {
+  for (let i = 0; i < m.n; i++) {
+    const k = i * 16, p = m.v.slice(k, k + 3), y = p[1] / S;
+    const t = Math.max(0, Math.min(1, (y - 0.39) / 0.06)), width = 1 - 0.35 * t;
+    const dy = y <= HIP ? 1.6 : y <= 0.415 ? 1 : 0.62;
+    const dw = y > 0.39 && y < 0.45 ? -0.35 / (0.06 * S) : 0;
+    const nx = m.v[k + 3] / width, nz = m.v[k + 5] / width;
+    const n = V.norm([nx, (m.v[k + 4] - dw * (p[0] * nx + p[2] * nz)) / dy, nz]);
+    const pos = adultPoint(p);
+    for (let j = 0; j < 3; j++) { m.v[k + j] = pos[j]; m.v[k + j + 3] = n[j]; }
+  }
+  return m;
+}
 const shade = (h, k) => { const c = hex(h); return [c[0] * k, c[1] * k, c[2] * k]; };
 
 /** Build the meshes for one character. Returns { body, armL, armR, legL, legR } meshes in local space (feet at y=0, facing +z). */
@@ -70,10 +92,10 @@ export function avatarMeshes(a) {
   for (const s of [-1, 1]) blob(body, [s * HR * 0.97, 0.525, -0.005], [0.022, 0.03, 0.018], skin, { seg: 6 });
   // face
   for (const s of [-1, 1]) {
-    blob(body, [s * 0.045, 0.545, 0.112], [0.019, 0.024, 0.012], dark, { seg: 8 });
-    blob(body, [s * 0.045 + 0.007, 0.553, 0.122], [0.006, 0.006, 0.003], white, { seg: 4 });
+    blob(body, [s * 0.045, 0.545, 0.112], [0.012, 0.014, 0.008], dark, { seg: 8 });
+    blob(body, [s * 0.045 + 0.004, 0.549, 0.119], [0.003, 0.003, 0.002], white, { seg: 4 });
     tube(body, [sc([s * 0.028, 0.584, 0.112]), sc([s * 0.062, 0.588, 0.104])], 0.006 * S, 4, { col: shade(a.hair, 0.9), mat: hair.mat });
-    blob(body, [s * 0.075, 0.507, 0.098], [0.022, 0.014, 0.008], { col: hex('#f19a9a'), mat: mt(0.8, 0, 0.1, 0) }, { seg: 6 });
+    blob(body, [s * 0.075, 0.507, 0.098], [0.022, 0.014, 0.008], { col: shade(a.skin, 0.98), mat: mt(0.8, 0, 0.1, 0) }, { seg: 6 });
   }
   blob(body, [0, 0.52, 0.128], [0.013, 0.011, 0.01], { col: shade(a.skin, 0.92), mat: skin.mat }, { seg: 6 });
   tube(body, Array.from({ length: 9 }, (_, i) => { const x = -0.03 + (i / 8) * 0.06; return sc([x, 0.487 + 220 * x * x * 0.06 * 0.5, 0.118 - Math.abs(x) * 0.25]); }), 0.0055 * S, 4, { col: hex('#7a3b33'), mat: mt(0.5, 0, 0, 0) });
@@ -128,14 +150,14 @@ export function avatarMeshes(a) {
     blob(m, hand, [0.03, 0.03, 0.03], skin, { seg: 8 });
     blob(m, sh, [0.033, 0.033, 0.033], top, { seg: 8 });
   }
-  return { body, armL, armR, legL, legR };
+  return Object.fromEntries(Object.entries({ body, armL, armR, legL, legR }).map(([key, mesh]) => [key, adultMesh(mesh)]));
 }
 
 /** Add a character to the renderer. Returns an object with pose() to place and animate it each frame. */
 export function addAvatar(R, a, tag) {
   const ms = avatarMeshes(a), g = {};
   for (const k of Object.keys(ms)) g[k] = R.addGroup(ms[k], { pass: 'opaque', shadow: true, tag });
-  const hipL = sc([0.05, HIP, 0]), hipR = sc([-0.05, HIP, 0]), shL = sc([0.098, SHOULDER, 0]), shR = sc([-0.098, SHOULDER, 0]);
+  const hipL = adultPoint(sc([0.05, HIP, 0])), hipR = adultPoint(sc([-0.05, HIP, 0])), shL = adultPoint(sc([0.098, SHOULDER, 0])), shR = adultPoint(sc([-0.098, SHOULDER, 0]));
   return {
     groups: Object.values(g),
     /** pos: feet position; yaw: facing; walk: 0..1 blend; phase: stride phase; wave: 0..1; t: seconds */
@@ -154,4 +176,4 @@ export function addAvatar(R, a, tag) {
     set hl(v) { for (const x of Object.values(g)) if (x) x.hl = v; },
   };
 }
-export const AVATAR_HEIGHT = 0.68 * S;
+export const AVATAR_HEIGHT = adultPoint(sc([0, 0.74, 0]))[1];

@@ -2,6 +2,7 @@
 import * as store from './store.js';
 import { icon, esc, toast } from './ui.js';
 import * as K from './knowledge.js';
+import { personaHeader } from './personas.js';
 
 import dashboard from './views/dashboard.js';
 import ideas from './views/ideas.js';
@@ -76,7 +77,7 @@ async function render() {
   try {
     const html = await mod.render(store.get(), params);
     if (token !== renderToken) return;
-    $view.innerHTML = html;
+    $view.innerHTML = personaHeader(name) + html;
     mod.mount?.($view, params);
     window.scrollTo(0, scroll);
   } catch (e) {
