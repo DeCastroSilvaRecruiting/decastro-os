@@ -131,5 +131,5 @@ else if (!store.get().settings.starterQueueLoaded) {
 
 // Embedded fullscreen fallback also exits with Escape.
 document.addEventListener('keydown', e => {
-  if(e.key==='Escape'&&!e.repeat&&!document.querySelector('#modal-root')?.childElementCount){const close=document.querySelector('.farm-immersive [data-act="fullScreen"]')||document.querySelector('.character-return');close?.click();}
+  if(e.key==='Escape'&&!e.repeat&&!document.querySelector('#modal-root')?.childElementCount){const close=document.querySelector('.farm-immersive [data-act="fullScreen"]')||document.querySelector('.character-return')||document.querySelector('.estate-tour [data-act="estateView"]');close?.click();}
 });

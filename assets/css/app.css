@@ -638,3 +638,14 @@ body:has(.farm-immersive) {overflow:hidden;}
 .character-studio>.persona-portrait {width:100%;aspect-ratio:1;border-radius:5px;border:1px solid var(--line);}
 .character-controls {display:flex;flex-direction:column;gap:9px;margin:20px 0;}
 .character-controls>.btn {justify-content:center;}
+.estate-tour-start{width:100%;justify-content:space-between;margin:2px 0 0;background:var(--gold-soft);border-color:var(--gold);}
+.estate-tour .eyebrow{font-size:9px;letter-spacing:1.6px;color:var(--gold);margin-bottom:14px;}
+.estate-tour h2{font:500 36px/1.1 var(--serif);}
+.estate-tour>p{font-size:13px;line-height:1.8;color:var(--text-2);margin:18px 0;}
+.tour-progress{display:flex;gap:7px;margin:28px 0;}
+.tour-progress>button{height:4px;flex:1;border:0;background:var(--line-2);padding:0;cursor:pointer;}
+.tour-progress>button[aria-current="step"]{background:var(--gold);}
+.tour-actions{display:flex;gap:8px;margin-bottom:12px;}
+.tour-actions>.btn{flex:1;justify-content:center;}
+.tour-walk{width:100%;justify-content:center;margin-bottom:12px;}
+@media(max-width:520px){.farm-camera-tools{max-width:calc(100% - 24px);}.farm-camera-tools .btn{font-size:9px;padding:0 5px;}.farm-camera-tools{top:8px;left:8px;}.eng-stage{min-height:450px;}}

@@ -228,9 +228,40 @@ export function buildPerks(R,level){
  // Distant wooded hills replace the city skyline, crane and aerial traffic.
  for(let i=0;i<18;i++){
   const a=i/18*TAU,r=48+rnd()*8,cx=Math.cos(a)*r,cz=Math.sin(a)*r,w=20+rnd()*12,d=18+rnd()*10,h=5+rnd()*9;
-  surface(m,(u,v)=>{const ridge=Math.pow(Math.max(0,Math.sin(Math.PI*u)*Math.sin(Math.PI*v)),.8);return [cx+(u-.5)*w,-.2+ridge*h*(.8+.13*Math.sin(u*23+i)+.1*Math.sin(v*19)),cz+(v-.5)*d];},24,20,{col:hex(i%2?'#7c8970':'#687d63'),mat:mt(.96,0,0,18),out:p=>[p[0],-5,p[2]]});
+  surface(m,(u,v)=>{const ridge=Math.pow(Math.max(0,Math.sin(Math.PI*u)*Math.sin(Math.PI*v)),.8);return [cx+(u-.5)*w,-.2+ridge*h*(.72+.22*Math.abs(Math.sin(u*9+i))+.12*Math.sin(v*13+u*3)),cz+(v-.5)*d];},24,20,{col:hex(i%2?'#7c8970':'#687d63'),mat:mt(.96,0,0,29),out:p=>[p[0],-5,p[2]]});
  }
 
  for(let i=0;i<level*4;i++){const a=i*2.4;tree(m,Math.cos(a)*16,Math.sin(a)*16,.8,true);}
  add(R,m,'perk');return {skyline:null,blink:null,crane:null};
+}
+
+// Small, batched ambient models animate inside the existing render loop.
+export function buildAmbient(R) {
+  const birds = [];
+  for (let i = 0; i < 5; i++) {
+    const m = new Mesh(), feather = mat(i % 2 ? '#6b7164' : '#a9afa1', .8);
+    ellipsoid(m, [0,0,0], [.025,.022,.095], '#777e70', 8);
+    for (const side of [-1,1]) {
+      const points = [[0,0,-.02],[side*.22,.025,.04],[side*.08,0,.09]];
+      const ids = points.map(p => m.vert(p,[0,1,0],feather.col,feather.mat));m.tri(...ids);
+    }
+    birds.push({ group:add(R,m,'ambient',{shadow:false}), radius:12+i*2.3, height:3.1+i*.3, speed:.055+i*.008, phase:i*1.8 });
+  }
+  const mast = new Mesh(), rotor = new Mesh(), px=-12.5, pz=6.2, height=2.4;
+  for (const side of [-1,1]) {
+    tube(mast,[[px+side*.34,0,pz],[px+side*.08,height,pz]],.035,7,wood);
+    if(side===1)for(let j=0;j<5;j++)tube(mast,[[px-.3+j*.045,j*.44,pz],[px+.3-(j+1)*.045,(j+1)*.44,pz]],.015,5,wood);
+  }
+  tube(mast,[[px,0,pz],[px,height,pz]],.025,7,wood);add(R,mast);
+  sphere(rotor,[0,0,0],.07,12,mat('#77776b',.5));
+  for(let i=0;i<4;i++){
+    const a=i*Math.PI/2,c=Math.cos(a),s=Math.sin(a);
+    const points=[[-.035,.09,.025],[.035,.09,.025],[.08,.64,.025],[-.08,.64,.025]].map(([x,y,z])=>[x*c-y*s,x*s+y*c,z]);
+    const ids=points.map(p=>rotor.vert(p,[0,0,1],wood.col,wood.mat));rotor.quad(...ids);
+  }
+  const wind=add(R,rotor,'ambient',{shadow:false});
+  return { birds, wind, animate(t){
+    for(const b of birds){const a=b.phase+t*b.speed,c=Math.cos(-a),s=Math.sin(-a);b.group.model=new Float32Array([c,0,-s,0,0,1,0,0,s,0,c,0,Math.cos(a)*b.radius,b.height+Math.sin(t*.6+b.phase)*.08,Math.sin(a)*b.radius,1]);}
+    const a=t*.35,c=Math.cos(a),s=Math.sin(a);wind.model=new Float32Array([c,s,0,0,-s,c,0,0,0,0,1,0,px,height,pz+.03,1]);
+  }};
 }

@@ -50,7 +50,7 @@ export function route(fromPos, to) {
 }
 /** Free roam: a clicked ground point becomes a walkable spot on the garden ring. */
 export function groundBlocked(x,z) {
-  if(Math.hypot(x,z)>27)return true;
+  if(Math.hypot(x,z)>27||Math.hypot(x+12.5,z-6.2)<.5)return true;
   if(Math.abs(x)<8&&Math.abs(x)>1.1&&(Math.abs(z-9)<.18||Math.abs(z+9)<.18))return true;
   if(x>10&&x<21&&(x<14.9||x>16.1))for(let i=0;i<6;i++)if(Math.abs(z-(-9+i*2.1))<.18)return true;
   if(Math.abs(x+7)<.62&&Math.abs(z-4.75)<.28)return true;

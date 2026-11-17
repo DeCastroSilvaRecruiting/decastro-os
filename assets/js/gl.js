@@ -327,6 +327,15 @@ void main(){
     col*=mix(.55,1.,uDim);
     col+=base*uHL*.08;
   }
+  else if(kind==29){ // distant geology: exposed rock, strata and lower green slopes
+    float weather=fbm(vPos.xz*.32+vPos.y*.11);
+    float slope=1.-max(N.y,0.);
+    vec3 rock=mix(vec3(.22,.24,.21),vec3(.43,.42,.34),weather);
+    rock*=.88+.12*sin(vPos.y*2.8+weather*2.);
+    vec3 grass=mix(vec3(.095,.15,.07),vec3(.22,.27,.12),weather);
+    alb=mix(grass,rock,smoothstep(.16,.52,slope+weather*.12+vPos.y*.012));
+    col=shade(alb,N,V,.96,0.,sh,1.);
+  }
   else if(kind==26){ // farmhouse glazing: sky reflection by day, warm rooms after dusk
     vec3 reflected=skyCol(reflect(-V,N));
     col=shade(base,N,V,.2,.1,sh,1.)*.55+reflected*.18;
@@ -673,7 +682,7 @@ export class Renderer {
     // 2. main pass into the multisampled HDR buffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.msaaFbo); gl.viewport(0, 0, this.W, this.H);
     gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    const setEnv = (p) => { for (const k of ['uSunDir', 'uSunCol', 'uSkyTop', 'uSkyHor', 'uAmbSky', 'uAmbGnd', 'uFogCol', 'uSand']) this.u(p, k, env[k]); this.u(p, 'uFog', env.uFog); this.u(p, 'uNight', env.uNight); this.u(p, 'uTime', F.t); };
+    const setEnv = (p) => { for (const k of ['uSunDir', 'uSunCol', 'uSkyTop', 'uSkyHor', 'uAmbSky', 'uAmbGnd', 'uFogCol', 'uSand']) this.u(p, k, env[k]); this.u(p, 'uFog', env.uFog); this.u(p, 'uNight', env.uNight); this.u(p, 'uTime', F.motionTime ?? F.t); };
     // sky + desert
     gl.disable(gl.DEPTH_TEST); gl.depthMask(false); gl.useProgram(P.sky.id); setEnv(P.sky);
     this.u(P.sky, 'uInvVP', M.inv(vp)); this.u(P.sky, 'uCam', F.eye); this.u(P.sky, 'uGroundY', env.groundY); this.u(P.sky, 'uIslandR', env.islandR);

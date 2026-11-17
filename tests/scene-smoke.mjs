@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { avatarMeshes, addAvatar, DEFAULT_AVATARS, TOPS, HAIR_STYLES, ACCESSORIES } from '../assets/js/avatar.js';
 import * as Farm from '../assets/js/farm-scene.js';
+import { ESTATE_TOUR } from '../assets/js/farm-tour.js';
 import { planGroundRoute } from '../assets/js/farm-navigation.js';
 import { groundBlocked, PLACES, route, toXYZ } from '../assets/js/game-world.js';
 import { SEED } from '../assets/js/seed.js';
@@ -58,3 +59,16 @@ const aroundFence=planGroundRoute([0,-2],[0,2],fence);assert(aroundFence?.length
 for(let i=1;i<aroundFence.length;i++){const a=aroundFence[i-1],b=aroundFence[i];for(let t=0;t<=1;t+=.025)assert(!fence(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t),'route crossed between grid samples through a fence');}
 assert.equal(planGroundRoute([0,0],[50,50],()=>false),null,'outside-world targets must be rejected');
 console.log('Passed: thin-fence collision and world bounds.');
+
+const ambient=Farm.buildAmbient(renderer);
+ambient.animate(0);const initial=ambient.wind.model.slice();ambient.animate(1);
+assert.notDeepEqual(ambient.wind.model,initial,'wind pump must animate');
+for(const b of ambient.birds)assert(b.group.model.every(Number.isFinite),'bird transforms must stay finite');
+ambient.animate(0);assert.deepEqual(ambient.wind.model,initial,'ambient motion must support a deterministic reduced-motion pose');
+console.log('Passed: ambient bird and wind-pump animation.');
+
+for(const stop of ESTATE_TOUR){
+ assert([...stop.target,...stop.walk,stop.yaw,stop.pitch,stop.zoom].every(Number.isFinite),'tour camera values must be finite');
+ assert(planGroundRoute([0,7.62],stop.walk,groundBlocked)?.length,`tour destination ${stop.title} must be reachable`);
+}
+console.log(`Passed: all ${ESTATE_TOUR.length} tour destinations are reachable.`);

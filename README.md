@@ -89,6 +89,12 @@ The farm now opens directly onto the 3D workspace. **Estate view** restores the 
 
 Buildings face their approach paths. Research cottages have reading verandas, operations use timber barns, property and investment offices use glazed studios, and the main farmhouse has a porch. Windows and path lanterns illuminate at dusk.
 
-For geometry and animation regression checks, run `node tests/scene-smoke.mjs` with Node 22 or later. It covers all wardrobe combinations, generated mesh integrity, joint transforms and workshop routes, collision-aware free exploration and vineyard gates without installing packages. Browser verification additionally checks actual WebGL rendering, face-texture fallback, camera controls, responsive layouts, day/night lighting and workshop arrival.
+For geometry and animation regression checks, run `node tests/scene-smoke.mjs` with Node 24 or later. It covers all wardrobe combinations, generated mesh integrity, joint transforms and workshop routes, collision-aware free exploration and vineyard gates without installing packages. Browser verification additionally checks actual WebGL rendering, face-texture fallback, camera controls, responsive layouts, day/night lighting and workshop arrival.
 
 Free exploration uses local A* routing on open ground. It avoids the pond, growing beds, workshop footprints and fences, with openings through the farm and vineyard. Fixed destinations keep their workshop routes and arrival panels. The sidebar starts with a compact estate welcome view; detailed statistics live in the Empire layer.
+
+### Scenic views and the estate tour
+
+The default overview is now a lower scenic camera, with **Estate view** retaining the planning map. **Scenic view** restores the landscape angle; the chosen overview is remembered. **Take a look around** opens a five-stop, user-controlled tour of the farmhouse, pond, vineyard, orchard and growing beds. Next, Previous and the stop markers move the camera; **Walk here** sends the active character along a safe ground route to that destination. Touring never awards XP or changes business records.
+
+Gliding birds and the pond wind pump animate in the existing render loop. Ambient animation and camera transitions respect the system reduced-motion preference. The tour uses short, interruptible camera transitions; dragging or scrolling interrupts a transition. Terrain separates lower green slopes from exposed rock. No new dependencies or external services are used. `tests/scene-smoke.mjs` also validates ambient transforms and reachability of every tour stop.

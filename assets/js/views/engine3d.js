@@ -14,6 +14,7 @@ import { RUBRIC } from '../seed.js';
 import { FLOW, STAGE_INFO, readiness, nextStage, prevStage } from '../gates.js';
 import { Renderer, skyAt, M, V, TAU, Mesh, box, hex, mt } from '../gl.js';
 import * as T from '../farm-scene.js';
+import { ESTATE_TOUR } from '../farm-tour.js';
 import { game, LEVELS } from '../empire-game.js';
 import { fxWarning, procureAlerts } from '../procure-data.js';
 
@@ -40,6 +41,9 @@ const otherId = () => (activeId() === 'matthew' ? 'lizzie' : 'matthew');
 const avatarCfg = (id) => ({ ...DEFAULT_AVATARS[id], ...((gs().avatars || {})[id] || {}) });
 let wikiArticles = [];
 let characterView = false;
+let tourIndex = null;
+let scenicMode=false, cameraJourney=null;
+
 function ensureChars() {
   for (const [id, deg] of [['matthew', 92], ['lizzie', 97]]) if (!gameRT.chars[id]) { const pos = GW.toXYZ(deg, GW.ringR(deg)); gameRT.chars[id] = { pos, yaw: Math.atan2(pos[0], pos[2]), path: [], goal: null, walk: 0, phase: 0, waveAt: 0 }; }
 }
@@ -126,11 +130,12 @@ function start(canvas, overlay, panel) {
     stage.insertAdjacentHTML('afterbegin', `<div class="eng-fallback"><b>The 3D farm needs WebGL 2.</b><br><span class="small muted">Your browser or device could not start it. Everything else on this page still works: the empire level, what needs you, the gates and the readiness table.</span></div>`);
     GW.setIslands(WI.islandSlots(store.get()));
     let sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0);
-    loop = { stop() {}, refresh() { sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0); }, select(s) { selected = s; panel.innerHTML = panelHTML(sc0); }, setLayer() { panel.innerHTML = panelHTML(sc0); }, panel() { panel.innerHTML = panelHTML(sc0); },
+    loop = { stop(){cameraJourney=null;tourIndex=null;scenicMode=false;}, refresh() { sc0 = buildScene(store.get()); curSc = sc0; panel.innerHTML = panelHTML(sc0); }, select(s) { selected = s; panel.innerHTML = panelHTML(sc0); }, setLayer() { panel.innerHTML = panelHTML(sc0); }, panel() { panel.innerHTML = panelHTML(sc0); },
       walkTo(k) { gameRT.at = k; panel.innerHTML = panelHTML(sc0); }, setPlay() { panel.innerHTML = panelHTML(sc0); } };
     return;
   }
   const reg = T.buildStatic(R);
+  const ambient=T.buildAmbient(R),motionPreference=matchMedia('(prefers-reduced-motion: reduce)');
   // Farmhouse and its ground-level entrance are part of the farm scene.
   const slots = T.buildDistricts(R, store.get()); GW.setIslands(slots);
   ensureChars();
@@ -159,7 +164,7 @@ function start(canvas, overlay, panel) {
   function resize() {
     const r = stage.getBoundingClientRect();
     W = Math.max(2, r.width); H = Math.max(2, r.height); dpr = Math.min(window.devicePixelRatio || 1, 1.6);
-    colW = isPlay() ? 0 : W < 620 ? 112 : 168;
+    colW = isPlay() || scenicMode ? 0 : W < 620 ? 112 : 168;
     R.resize(W, H, R.softwareRenderer ? Math.min(dpr,.85) : dpr);
     overlay.width = Math.floor(W * dpr); overlay.height = Math.floor(H * dpr);
   }
@@ -206,6 +211,7 @@ function start(canvas, overlay, panel) {
     if (id === activeId()) { c.waveAt = t; gameRT.at = g.k; gameRT.wtab = 'learn'; selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc); }
   }
   function walkTo(k, spot) {
+    tourIndex=null;
     const c = gameRT.chars[activeId()], place = k ? GW.placeOf(k) : null;
     if (k && !place) return;
     characterView=false;cam.zoomT=.24;cam.pitch=.78;
@@ -221,6 +227,7 @@ function start(canvas, overlay, panel) {
     env = skyAt(skyHour(tw().sky)); env.groundY = -0.32; env.islandR = 0; env.uSand = [0.28, 0.34, 0.22]; env.bloom *= 0.35;
     const layer = tw().layer;
 
+    ambient.animate(motionPreference.matches?0:t);
     // ---- characters
     const P = isPlay();
     // Substeps preserve walking speed on slower renderers without jumping after tab suspension.
@@ -238,6 +245,11 @@ function start(canvas, overlay, panel) {
     if(characterView){
       env=skyAt(10);env.bloom=.08;env.groundY=-99;env.islandR=0;env.uAmbSky=[.5,.5,.46];env.uAmbGnd=[.25,.22,.18];env.uSunCol=[1.5,1.4,1.2];env.uSunDir=V.norm([-.4,.8,1]);
       const p=gameRT.chars[activeId()].pos;studioFloor.model[12]=p[0];studioFloor.model[13]=p[1]-.001;studioFloor.model[14]=p[2];
+    }
+    if(cameraJourney){
+      const j=cameraJourney,u=motionPreference.matches?1:Math.min(1,(now-j.at)/1400),e=1-Math.pow(1-u,3);
+      cam.base=j.from.base+(j.to.base-j.from.base)*e;cam.pitch=j.from.pitch+(j.to.pitch-j.from.pitch)*e;cam.zoom=cam.zoomT=j.from.zoom+(j.to.zoom-j.from.zoom)*e;
+      cam.tt=cam.tc=j.from.target.map((v,i)=>v+(j.to.target[i]-v)*e);if(u===1)cameraJourney=null;
     }
     // ---- camera
     if (cam.auto && !P && !drag.on && now - lastInteract > 3500) cam.phase += dt * 0.00022;
@@ -278,7 +290,7 @@ function start(canvas, overlay, panel) {
     for (const b of beacons) { const sp = b.sev >= 3 ? 5 : b.sev === 2 ? 3 : 1.6, amp = b.sev >= 3 ? 0.45 : b.sev === 2 ? 0.3 : 0.15; for (const g of b.groups) { g.dim = 1 - amp + amp * Math.sin(t * sp); g.hl = isSel(b) ? 1 : 0; } }
     if (perks.skyline) perks.skyline.occ = Math.min(1, 0.22 + 0.1 * sc.G.level.n);
 
-    try { vp = R.render({ view, proj, eye, t, env, sunTarget: characterView?[gameRT.chars[activeId()].pos[0],gameRT.chars[activeId()].pos[1]+.4,gameRT.chars[activeId()].pos[2]]:[0,3,0], shadowRadius:characterView?1.6:27, only:characterView?new Set([...avs[activeId()].groups,studioFloor]):null, focus: P && !characterView ? [gameRT.chars[activeId()].pos[0], gameRT.chars[activeId()].pos[1] + 0.3, gameRT.chars[activeId()].pos[2]] : null }); } catch (e) { console.error(e); stop(); return; }
+    try { vp = R.render({ view, proj, eye, t, motionTime:motionPreference.matches?0:t, env, sunTarget: characterView?[gameRT.chars[activeId()].pos[0],gameRT.chars[activeId()].pos[1]+.4,gameRT.chars[activeId()].pos[2]]:[0,3,0], shadowRadius:characterView?1.6:27, only:characterView?new Set([...avs[activeId()].groups,studioFloor]):null, focus: P && !characterView ? [gameRT.chars[activeId()].pos[0], gameRT.chars[activeId()].pos[1] + 0.3, gameRT.chars[activeId()].pos[2]] : null }); } catch (e) { console.error(e); stop(); return; }
     drawOverlay(t, view, { any, isSel, isHov, floorFocus, modLit, count, focusMod, focusStage, selVenture, vlinks, layer, play: P });
     overlay.style.cursor = hover || P ? 'pointer' : drag.on ? 'grabbing' : 'grab';
     requestAnimationFrame(frame);
@@ -359,7 +371,7 @@ function start(canvas, overlay, panel) {
       if (gameRT.chars[activeId()].path.length) { const dst = gameRT.chars[activeId()].path[gameRT.chars[activeId()].path.length - 1], d = P(dst); if (d) { ctx.strokeStyle = '#e2c477'; ctx.lineWidth = 2; ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t * 6); ctx.beginPath(); ctx.ellipse(d.x, d.y, 12, 5, 0, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; } }
     }
     // stage column
-    const right = [view[0], view[4], view[8]], order = F.play ? [] : ['Parked', ...FLOW], colX = W - colW + 4, rows = [];
+    const right = [view[0], view[4], view[8]], order = F.play || scenicMode ? [] : ['Parked', ...FLOW], colX = W - colW + 4, rows = [];
     for (const st of order) {
       const vs = sc.ventures.filter((x) => x.stage === st), midY = T.stageMidY(st), rr = st === 'Parked' ? 1.1 : T.rad(midY) + 0.7;
       const center = T.stageCenter(st), a = P(center), e = P([center[0] + right[0] * rr, midY, center[2] + right[2] * rr]); if (!a || !e) continue;
@@ -389,7 +401,7 @@ function start(canvas, overlay, panel) {
       });
     }
     // Compact level indicator; detailed progress lives in the side panel.
-    if(!characterView) {
+    if(!characterView&&!scenicMode) {
       const G = sc.G, lv = G.level, x = 18, y = 66, w = Math.min(190, W - colW - 40), h = 42;
       ctx.fillStyle = light ? 'rgba(255,255,255,0.82)' : 'rgba(8,13,22,0.72)'; rrect(x, y, w, h, 9); ctx.fill();
       ctx.strokeStyle = 'rgba(226,196,119,0.45)'; ctx.lineWidth = 1; ctx.stroke();
@@ -449,7 +461,7 @@ function start(canvas, overlay, panel) {
     return best;
   }
   const local = (e) => { const r = overlay.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-  overlay.addEventListener('pointerdown', (e) => { overlay.setPointerCapture(e.pointerId); pointers.set(e.pointerId, local(e)); drag.on = true; const p = local(e); drag.x = p.x; drag.y = p.y; drag.moved = 0; lastInteract = performance.now(); if (pointers.size === 2) { const [a, b] = [...pointers.values()]; drag.pinch = Math.hypot(a.x - b.x, a.y - b.y); } });
+  overlay.addEventListener('pointerdown', (e) => { cameraJourney=null; overlay.setPointerCapture(e.pointerId); pointers.set(e.pointerId, local(e)); drag.on = true; const p = local(e); drag.x = p.x; drag.y = p.y; drag.moved = 0; lastInteract = performance.now(); if (pointers.size === 2) { const [a, b] = [...pointers.values()]; drag.pinch = Math.hypot(a.x - b.x, a.y - b.y); } });
   overlay.addEventListener('pointermove', (e) => {
     const p = local(e);
     if (pointers.has(e.pointerId)) pointers.set(e.pointerId, p);
@@ -477,7 +489,7 @@ function start(canvas, overlay, panel) {
   };
   overlay.addEventListener('pointerup', end); overlay.addEventListener('pointercancel', end);
   overlay.addEventListener('pointerleave', () => { hover = null; });
-  overlay.addEventListener('wheel', (e) => { e.preventDefault(); cam.zoomT = clampZ(cam.zoomT * (1 + Math.sign(e.deltaY) * 0.09)); lastInteract = performance.now(); }, { passive: false });
+  overlay.addEventListener('wheel', (e) => { cameraJourney=null; e.preventDefault(); cam.zoomT = clampZ(cam.zoomT * (1 + Math.sign(e.deltaY) * 0.09)); lastInteract = performance.now(); }, { passive: false });
 
   function focusFor(s) {
     if (s.kind === 'stage') { cam.tt = T.stageCenter(s.id); cam.zoomT = s.id === 'Parked' ? 0.55 : 0.6; }
@@ -485,18 +497,18 @@ function start(canvas, overlay, panel) {
     else if (s.kind === 'venture') { const vn = sc.ventures.find((x) => x.id === s.id); cam.tt = vn ? [vn.pos[0] * 0.4, vn.pos[1], vn.pos[2] * 0.4] : [0, 0.5, 0]; cam.zoomT = 0.55; }
     else { cam.tt = [0, 0.5, 0]; cam.zoomT = 1; }
   }
-  function select(s) { selected = { kind: s.kind, id: s.id }; ptab = 'needs'; if (!isPlay()) focusFor(s); rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
+  function select(s) { tourIndex=null; selected = { kind: s.kind, id: s.id }; ptab = 'needs'; if (!isPlay()) focusFor(s); rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
   function refresh() { sc = buildScene(store.get()); curSc = sc; rebuildDynamic(); panel.innerHTML = panelHTML(sc); levelCheck(sc); }
   function setLayer() { rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
-  function stop() { running = false; ro.disconnect(); R.dispose(); }
+  function stop() { running = false; cameraJourney=null;tourIndex=null;scenicMode=false;ro.disconnect(); R.dispose(); }
   function setPlay(on) {
-    characterView=false;
+    tourIndex=null;scenicMode=false;cameraJourney=null;characterView=false;
     resize();
     if (on) { cam.zoomT = 0.24; cam.pitch = 0.78; cam.auto = false; } else { cam.tt = [0, 0.5, 0]; cam.zoomT = 1; cam.pitch = CAM0.pitch; gameRT.at = null; }
     selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc);
   }
-  loop = { stop, refresh, select, setLayer, walkTo, setPlay, panel() { panel.innerHTML = panelHTML(sc); } };
-  if(isPlay()){cam.zoomT=characterView?.047:Math.min(cam.zoomT,.3);cam.zoom=cam.zoomT;cam.pitch=characterView?.16:Math.max(cam.pitch,.6);}else focusFor(selected);
+  loop = { stop, refresh, select, setLayer, walkTo, setPlay, setScenic(on){scenicMode=on;resize();}, panel() { panel.innerHTML = panelHTML(sc); } };
+  if(isPlay()){cam.zoomT=characterView?.047:Math.min(cam.zoomT,.3);cam.zoom=cam.zoomT;cam.pitch=characterView?.16:Math.max(cam.pitch,.6);}else if(selected.kind==='core'&&(tw().camera||'scenic')==='scenic'&&tourIndex===null){scenicMode=true;cam={...CAM0,base:.85,pitch:.28,zoom:.85,zoomT:.85,tt:[0,1.1,0],tc:[0,1.1,0]};resize();}else focusFor(selected);
   panel.innerHTML = panelHTML(sc);
   levelCheck(sc);
   requestAnimationFrame(frame);
@@ -575,6 +587,7 @@ function empireHTML(sc, full) {
 let showAllMs = false;
 function panelHTML(sc) {
   const sel = selected, layer = tw().layer;
+  if(tourIndex!==null&&!isPlay())return tourPanelHTML();
   if (isPlay() && sel.kind !== 'venture') return gameRT.at ? workshopHTML(sc, gameRT.at) : playHomeHTML(sc);
   if (sel.kind === 'venture') {
     const vn = sc.ventures.find((x) => x.id === sel.id);
@@ -653,10 +666,21 @@ function tasksAt(k) {
   return out.sort((a, b) => (a.done - b.done) || String(a.due || '9').localeCompare(String(b.due || '9')));
 }
 
+function frameTourStop(i){
+ const stop=ESTATE_TOUR[i];tourIndex=i;
+ const target={base:cam.base+Math.atan2(Math.sin(stop.yaw-cam.base),Math.cos(stop.yaw-cam.base)),pitch:stop.pitch,zoom:stop.zoom,target:stop.target.slice()};
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){cam.base=target.base;cam.pitch=target.pitch;cam.zoom=cam.zoomT=target.zoom;cam.tt=cam.tc=target.target;cameraJourney=null;}
+ else cameraJourney={at:performance.now(),from:{base:cam.base,pitch:cam.pitch,zoom:cam.zoom,target:cam.tc.slice()},to:target};
+ loop?.panel();
+}
+function tourPanelHTML(){
+ const stop=ESTATE_TOUR[tourIndex];
+ return `<div class="estate-tour"><div class="eyebrow">A WALK AROUND THE ESTATE · ${tourIndex+1} / ${ESTATE_TOUR.length}</div><h2>${esc(stop.title)}</h2><p>${esc(stop.note)}</p><div class="tour-progress">${ESTATE_TOUR.map((_,i)=>`<button data-act="tourStop" data-id="${i}" aria-label="Tour stop ${i+1}" aria-current="${i===tourIndex?'step':'false'}"></button>`).join('')}</div><div class="tour-actions"><button class="btn" data-act="tourPrevious" ${tourIndex===0?'disabled':''}>Previous</button><button class="btn primary" data-act="tourNext">${tourIndex===ESTATE_TOUR.length-1?'Start again':'Next stop'} ${icon('arrow')}</button></div><button class="btn tour-walk" data-act="tourWalk">Walk here</button><button class="btn ghost" data-act="estateView">Return to estate view</button><p class="small muted">Drag to look around. The tour moves only when you choose a stop.</p></div>`;
+}
 function estateWelcomeHTML(sc){
  const live=sc.ventures.filter(v=>v.stage!=='Parked'),urgent=sc.G.attention.filter(n=>n.sev>=2);
  return `<div class="eng-head"><div class="eyebrow">WELCOME TO YOUR ESTATE</div><h2>Good things<br>grow with care.</h2><p>Choose who to explore with, then follow a path to your next piece of work.</p></div>
- <div class="estate-people">${['matthew','lizzie'].map(id=>{const p=PERSONAS.find(p=>p.id===id);return `<button class="estate-person" data-act="exploreAs" data-id="${id}">${personaPortrait(p)}<span><strong>${esc(avatarCfg(id).name)}</strong><small>Explore the farm ${icon('arrow')}</small></span></button>`;}).join('')}</div>
+ <button class="btn estate-tour-start" data-act="startTour">Take a look around ${icon('arrow')}</button><div class="estate-people">${['matthew','lizzie'].map(id=>{const p=PERSONAS.find(p=>p.id===id);return `<button class="estate-person" data-act="exploreAs" data-id="${id}">${personaPortrait(p)}<span><strong>${esc(avatarCfg(id).name)}</strong><small>Explore the farm ${icon('arrow')}</small></span></button>`;}).join('')}</div>
  <div class="estate-summary"><div><b>${live.length}</b><span>Growing ventures</span></div><div><b>${sc.G.level.n}</b><span>Estate level</span></div></div>
  ${urgent.length?`<button class="estate-attention" data-act="showAttention"><span class="sync-dot"></span><span>${urgent.length} things need your attention</span>${icon('arrow')}</button>`:'<p class="small muted">Everything is in hand. Take a look around.</p>'}
  <h4 class="eng-sub">A place for your next step</h4><div class="estate-destinations">${[['hq','Venture farmhouse','Shape a plan'],['wiki','Learning cottage','Find something worth knowing'],['procure','Operations barn','Bring the plan to life']].map(([id,name,note])=>`<button data-act="goto" data-id="${id}"><span><b>${name}</b><small>${note}</small></span>${icon('arrow')}</button>`).join('')}</div>
@@ -783,7 +807,7 @@ export default {
     return `
     <header class="farm-masthead"><div><div class="eyebrow">DE CASTRO ESTATE · YOUR LIVING WORKSPACE</div><h1>The Nature Farm</h1><p>A place to think clearly, build patiently, and grow together.</p></div><a class="btn primary" href="#/ventures">${icon('plus')} New venture</a></header>
     <div class="eng-wrap">
-      <div class="eng-stage card flush"><div class="farm-camera-tools" role="toolbar" aria-label="Farm camera"><button class="btn sm" data-act="estateView">Estate view</button><button class="btn sm" data-act="exploreView">Explore on foot</button><button class="btn sm" data-act="toggleLabels" aria-pressed="${!!t.labels}">Place labels</button><button class="btn sm" data-act="fullScreen" aria-label="Toggle expanded farm view">${icon('expand')} Expand view</button></div><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="Interactive 3D nature farm with planted stage beds, farmhouse workshops, orchards, vineyard and venture plots"></canvas>
+      <div class="eng-stage card flush"><div class="farm-camera-tools" role="toolbar" aria-label="Farm camera"><button class="btn sm" data-act="estateView">Estate view</button><button class="btn sm" data-act="scenicView">Scenic view</button><button class="btn sm" data-act="exploreView">Explore on foot</button><button class="btn sm" data-act="toggleLabels" aria-pressed="${!!t.labels}">Place labels</button><button class="btn sm" data-act="fullScreen" aria-label="Toggle expanded farm view">${icon('expand')} Expand view</button></div><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="Interactive 3D nature farm with planted stage beds, farmhouse workshops, orchards, vineyard and venture plots"></canvas>
         <div class="eng-layers" role="toolbar" aria-label="Farm progress layers"><button class="eng-layer eng-play ${t.play ? 'on' : ''}" data-act="playToggle">${t.play ? '■ Exit game' : '▶ Play'}</button>${LAYERS.map(([k, l]) => `<button class="eng-layer ${(t.layer || 'pipeline') === k ? 'on' : ''}" data-act="layer" data-id="${k}" aria-pressed="${(t.layer || 'pipeline') === k}">${l}</button>`).join('')}
           <select class="eng-sky" data-change="sky" aria-label="Sky">${SKIES.map(([k, l]) => `<option value="${k}" ${(t.sky || 'live') === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
       <aside class="eng-panel card" id="eng-panel"></aside>
@@ -807,9 +831,30 @@ export default {
     },
     showAttention(){document.querySelector('[data-act="layer"][data-id="attention"]')?.click();},
     showProgress(){document.querySelector('[data-act="layer"][data-id="game"]')?.click();},
+    scenicView(){
+      setTower({play:false,camera:'scenic'});loop?.setPlay(false);characterView=false;tourIndex=null;selected={kind:'core',id:null};
+      cam={...CAM0,base:.85,pitch:.28,zoom:.85,zoomT:.85,tt:[0,1.1,0],tc:[0,1.1,0]};loop?.setScenic?.(true);loop?.panel();
+      const b=document.querySelector('.eng-play');if(b){b.textContent='▶ Play';b.classList.remove('on');}
+    },
+    startTour(){
+      setTower({play:false});loop?.setPlay(false);tourIndex=0;selected={kind:'core',id:null};
+      loop?.setScenic?.(true);frameTourStop(0);
+      const b=document.querySelector('.eng-play');if(b){b.textContent='▶ Play';b.classList.remove('on');}
+    },
+    tourStop(el){
+      const i=Number(el.dataset.id);if(!Number.isInteger(i)||i<0||i>=ESTATE_TOUR.length)return;
+      frameTourStop(i);
+    },
+    tourNext(){frameTourStop(((tourIndex??-1)+1)%ESTATE_TOUR.length);},
+    tourPrevious(){if(tourIndex!==null&&tourIndex>0)frameTourStop(tourIndex-1);},
+    tourWalk(){
+      if(tourIndex===null)return;const stop=ESTATE_TOUR[tourIndex],p=GW.toPolar([stop.walk[0],0,stop.walk[1]]);
+      setTower({play:true});loop?.setPlay(true);loop?.walkTo(null,{deg:p.deg,r:p.r});
+      const b=document.querySelector('.eng-play');if(b){b.textContent='■ Exit game';b.classList.add('on');}
+    },
     estateView() {
-      setTower({play:false});characterView=false;selected={kind:'core',id:null};
-      cam={...CAM0,tt:[0,.5,0],tc:[0,.5,0]};loop?.setPlay(false);
+      setTower({play:false,camera:'estate'});characterView=false;selected={kind:'core',id:null};
+      tourIndex=null;cam={...CAM0,tt:[0,.5,0],tc:[0,.5,0]};loop?.setPlay(false);
       const b=document.querySelector('.eng-play');if(b){b.textContent='▶ Play';b.classList.remove('on');}
     },
     exploreView() {
