@@ -42,6 +42,12 @@ function gable(m,x,z,w,d,h,material=roof){
  for(const ids of [[0,3,5,2],[2,5,4,1]]){const n=V.norm(V.cross(V.sub(p[ids[1]],p[ids[0]]),V.sub(p[ids[2]],p[ids[0]]))),vs=ids.map(i=>m.vert(p[i],n,material.col,material.mat));m.quad(...vs);}
  for(const ids of [[0,2,1],[3,4,5]]){const n=V.norm(V.cross(V.sub(p[ids[1]],p[ids[0]]),V.sub(p[ids[2]],p[ids[0]]))),vs=ids.map(i=>m.vert(p[i],n,wall.col,wall.mat));m.tri(...vs);}
 }
+function windowPane(m,c,yaw=0){
+ box(m,c,.38,.44,.026,yaw,wood);
+ const front=[c[0]+Math.sin(yaw)*.022,c[1],c[2]+Math.cos(yaw)*.022];
+ box(m,front,.3,.36,.018,yaw,{col:hex('#667d7d'),mat:mt(.18,.1,0,26)});
+ box(m,[front[0]+Math.sin(yaw)*.015,front[1],front[2]+Math.cos(yaw)*.015],.014,.36,.012,yaw,wall);
+}
 function building(m,x,z,w=1.65,d=1.3,color='#ded6bb'){
  box(m,[x,.64,z],w,1.28,d,0,{...wall,col:hex(color)});gable(m,x,z,w+.18,d+.18,1.28);
  box(m,[x,.43,z+d/2+.012],.35,.86,.025,0,wood);
@@ -51,7 +57,7 @@ function building(m,x,z,w=1.65,d=1.3,color='#ded6bb'){
  for(const side of [-1,1]){
   const wx=x+side*w*.32,front=z+d/2+.045;
   box(m,[wx,.77,front],.35,.42,.018,0,wood);
-  box(m,[wx,.77,front+.015],.27,.34,.018,0,{col:hex('#667d7d'),mat:mt(.14,.25,0,0)});
+  box(m,[wx,.77,front+.015],.27,.34,.018,0,{col:hex('#667d7d'),mat:mt(.18,.1,0,26)});
   box(m,[wx,.77,front+.026],.018,.35,.018,0,wall);
   box(m,[wx,.77,front+.026],.28,.018,.018,0,wall);
   box(m,[wx,.54,front+.04],.39,.035,.11,0,stone);
@@ -61,10 +67,50 @@ function building(m,x,z,w=1.65,d=1.3,color='#ded6bb'){
  sphere(m,[x+.1,.43,z+d/2+.048],.013,8,mat('#a58b58',.3));
  for(const dz of [-d/2-.07,d/2+.07])tube(m,[[x-w/2-.05,1.27,z+dz],[x+w/2+.05,1.27,z+dz]],.025,6,wood);
  box(m,[x,.025,z+d/2+.24],.65,.04,.38,0,stone);
+ for(const side of [-1,1]){windowPane(m,[x+side*w*.28,.79,z-d/2-.022],Math.PI);windowPane(m,[x+side*(w/2+.022),.79,z],side*Math.PI/2);}
  // A small terracotta planter and a leafy plant beside the entrance.
  lathe(m,[[.085,0],[.11,.15],[.12,.16],[.105,.17]],12,{cx:x+w*.36,cz:z+d/2+.18,col:hex('#a66f50'),mat:mt(.9,0,0,19)});
  for(let i=0;i<5;i++){const a=i*2.4;tube(m,[[x+w*.36,.15,z+d/2+.18],[x+w*.36+Math.cos(a)*.1,.27,z+d/2+.18+Math.sin(a)*.1]],.012,4,mat('#526c3f'));}
 
+}
+// Departments have recognisable silhouettes, not a ring of cloned houses.
+function barn(m,x,z,color='#80634c'){
+ box(m,[x,.7,z],1.85,1.4,1.25,0,{...wood,col:hex(color)});gable(m,x,z,2.02,1.42,1.4);
+ for(const side of [-1,1]){
+  box(m,[x+side*.29,.57,z+.64],.55,1.12,.035,0,wood);
+  tube(m,[[x+side*.55,.08,z+.67],[x+side*.02,1.08,z+.67]],.018,5,wall);
+ }
+ tube(m,[[x-.85,1.27,z+.68],[x+.85,1.27,z+.68]],.025,6,wall);
+ windowPane(m,[x,.9,z-.65],Math.PI);
+ for(let i=0;i<13;i++)box(m,[x-.84+i*.14,.7,z+.632],.008,1.3,.016,0,wood);
+ for(const side of [-1,1]){lathe(m,[[.22,0],[.22,.65],[.2,.72]],20,{cx:x+side*1.15,cz:z-.1,col:hex('#a6aa9a'),mat:mt(.55,.45,0,0)});}
+}
+function cottage(m,x,z){
+ building(m,x,z,1.7,1.18,'#b9b5a0');
+ // Stone buttresses and a shaded reading veranda.
+ for(const side of [-1,1]){box(m,[x+side*.77,.63,z+.61],.12,1.26,.13,0,stone);tube(m,[[x+side*.72,.03,z+1.02],[x+side*.72,1.09,z+1.02]],.027,8,wood);}
+ box(m,[x,1.12,z+.85],1.7,.055,.65,0,wood);
+ for(let i=0;i<8;i++)box(m,[x-.76+i*.215,1.17,z+.85],.045,.04,.7,0,wood);
+ box(m,[x,.24,z+.87],.85,.045,.24,0,wood);
+}
+function studio(m,x,z){
+ box(m,[x,.53,z],1.65,1.06,1.2,0,{...wall,col:hex('#d8d0b7')});
+ box(m,[x,1.11,z],1.85,.12,1.4,0,wood);
+ for(let i=0;i<4;i++){box(m,[x-.59+i*.39,.58,z+.61],.35,.78,.025,0,{col:hex('#6b8887'),mat:mt(.18,.1,0,26)});box(m,[x-.785+i*.39,.58,z+.635],.022,.84,.02,0,wood);}
+ windowPane(m,[x,.6,z-.625],Math.PI);
+ box(m,[x,.06,z+.81],1.85,.12,.4,0,stone);
+ for(const side of [-1,1])box(m,[x+side*.78,.35,z+.8],.16,.5,.2,0,wood);
+}
+function estatePorch(m){
+ for(const x of [-.9,.9])tube(m,[[x,.03,3.55],[x,1.18,3.55]],.04,10,wall);
+ box(m,[0,1.2,3.3],2.3,.09,.85,0,wood);
+ box(m,[0,.035,3.3],2.4,.07,.9,0,stone);
+ for(const x of [-.65,.65]){box(m,[x,.36,3.3],.38,.06,.27,0,wood);for(const dx of [-.13,.13])tube(m,[[x+dx,.03,3.3],[x+dx,.36,3.3]],.018,5,wood);}
+}
+function faceEntrance(m,c,angle){
+ const co=Math.cos(angle),si=Math.sin(angle);
+ for(let i=0;i<m.n;i++){const k=i*16,x=m.v[k]-c[0],z=m.v[k+2]-c[2],nx=m.v[k+3],nz=m.v[k+5];m.v[k]=c[0]+x*co+z*si;m.v[k+2]=c[2]-x*si+z*co;m.v[k+3]=nx*co+nz*si;m.v[k+5]=-nx*si+nz*co;}
+ if(m.leaves)faceEntrance(m.leaves,c,angle);
 }
 function path(m,points,width){
  for(let i=0;i<points.length-1;i++){
@@ -105,22 +151,39 @@ export function buildStatic(R){
  const reg={floors:[],modules:{},bridges:[],myc:[],exo:null,crown:[],vault:[]},ground=new Mesh();
  box(ground,[0,-.18,0],145,.3,145,0,{col:hex('#697655'),mat:mt(1,0,0,21)});
  // Broad natural paths: the same routes used by the walking characters.
- path(ground,circlePts(7.62,.025,160),.3);
+ const lane=Array.from({length:181},(_,i)=>{const deg=i*2;let r=7.62;for(const center of [117,243]){const d=Math.abs(deg-center);if(d<16)r=Math.min(r,6.5+(7.62-6.5)*(1-Math.cos(Math.PI*d/16))/2);}const p=polar(deg,r);return[p[0],.025,p[2]];});
+ path(ground,lane,.3);
  path(ground,[[0,.025,-8],[0,.025,8]],.24);
  path(ground,[[-7,.025,0],[7,.025,0]],.22);
+ for(const d of ALL_DEFS){const ops=d.group==='operations',a=polar(d.deg,ops?6.0:7.62),b=polar(d.deg,ops?6.85:d.r+1.05);path(ground,[[a[0],.025,a[2]],[b[0],.025,b[2]]],.2);}
  add(R,ground);
  for(const st of FLOW){const p=stageCenter(st),m=new Mesh();bed(m,p[0],p[2],FLOW.indexOf(st));reg.floors.push([add(R,m)]);}
  const main=new Mesh();building(main,0,2.55,2.2,1.25,'#e6dfcc');building(main,VAULT_C[0],0,.95,.85,'#b9ac8e');
- reg.vault=[add(R,main)];
- for(const d of ALL_DEFS){const p=polar(d.deg,d.r),m=new Mesh();building(m,p[0],p[2],d.group==='operations'?1.35:1.55,1.15,d.k==='commerce'?'#a68b70':'#d5cdb5');reg.modules[d.k]=[add(R,m)];}
+ estatePorch(main);reg.vault=[add(R,main)];
+ for(const d of ALL_DEFS){
+  const p=polar(d.deg,d.r),m=new Mesh();
+  if(d.group==='operations')barn(m,p[0],p[2],d.k==='commerce'?'#748071':'#8c6a4e');
+  else if(['wiki','claude','math'].includes(d.k))cottage(m,p[0],p[2]);
+  else if(['investments','property'].includes(d.k))studio(m,p[0],p[2]);
+  else building(m,p[0],p[2],1.6,1.15,d.k==='legal'?'#c5c0ab':'#e0d5bd');
+  faceEntrance(m,p,Math.atan2(p[0],p[2])+(d.group==='operations'?Math.PI:0));
+  reg.modules[d.k]=[add(R,m)];
+ }
  greenhouse(R,-3.8,2.4);
  const plants=new Mesh(),rnd=rng(752);
+ for(let i=0;i<12;i++){
+  const p=polar(15+i*30,8.3),bronze={col:hex('#514b3c'),mat:mt(.6,.3,0,0)};
+  tube(plants,[[p[0],0,p[2]],[p[0],.52,p[2]]],.022,8,bronze);
+  box(plants,[p[0],.48,p[2]],.11,.025,.11,0,bronze);
+  box(plants,[p[0],.55,p[2]],.075,.12,.075,0,{col:hex('#c5b894'),mat:mt(.4,0,0,27)});
+  box(plants,[p[0],.62,p[2]],.12,.025,.12,0,bronze);
+ }
  for(let i=0;i<34;i++){const a=i/34*TAU,r=10+rnd()*3;tree(plants,Math.cos(a)*r,Math.sin(a)*r,.8+rnd()*.45,i%3===0);}
  for(let row=0;row<9;row++)for(let col=0;col<15;col++){
   const x=11+col*.65,z=-8+row*.75;
   tube(plants,[[x,.03,z],[x,.4,z]],.018,4,wood);ellipsoid(plants,[x,.42,z],[.24,.2,.2],row%2?'#647b49':'#71854e',6);
  }
- for(let i=0;i<6;i++)fence(plants,10,-9+i*2.1,21,-9+i*2.1);
+ for(let i=0;i<6;i++){fence(plants,10,-9+i*2.1,14.9,-9+i*2.1);fence(plants,16.1,-9+i*2.1,21,-9+i*2.1);}
  // Pond, reed fringe and orchard in the opposite meadow.
  const pond=new Mesh();ellipsoid(pond,[-10,.01,3.5],[2.5,.035,1.6],'#597f7c',48,mt(.12,0,0,4));add(R,pond);
  for(let i=0;i<28;i++){const a=i/28*TAU,x=-10+Math.cos(a)*2.65,z=3.5+Math.sin(a)*1.75;tube(plants,[[x,0,z],[x,.32+rnd()*.25,z]],.018,4,mat('#8a8956'));}
@@ -128,7 +191,7 @@ export function buildStatic(R){
  for(const x of [-7.4,-6.6])for(const z of [4.6,4.9])box(plants,[x,.15,z],.045,.3,.045,0,wood);
  box(plants,[-7,.32,4.75],1.05,.05,.42,0,wood);box(plants,[-7,.55,4.94],1.05,.3,.04,0,wood);
  for(let x=-18;x<=-11;x+=2)for(let z=-9;z<=-3;z+=2)tree(plants,x,z,1.1,true);
- fence(plants,-8,-9,8,-9);fence(plants,-8,9,8,9);
+ for(const z of [-9,9]){fence(plants,-8,z,-1.1,z);fence(plants,1.1,z,8,z);}
  for(let i=0;i<80;i++){const a=rnd()*TAU,r=8.7+rnd()*3,p=polar(a*180/Math.PI,r);sphere(plants,[p[0],.12,p[2]],.045,5,mat(['#c3ac68','#a496b3','#e1d6b5'][i%3]));}
  add(R,plants);return reg;
 }

@@ -77,7 +77,7 @@ async function render() {
   try {
     const html = await mod.render(store.get(), params);
     if (token !== renderToken) return;
-    $view.innerHTML = personaHeader(name) + html;
+    $view.innerHTML = (name === 'engine' ? '' : personaHeader(name)) + html;
     mod.mount?.($view, params);
     window.scrollTo(0, scroll);
   } catch (e) {
@@ -128,3 +128,8 @@ else if (!store.get().settings.starterQueueLoaded) {
     store.update((s) => { s.settings.starterQueueLoaded = true; if (q?.items && !s.queue.length) s.queue = q.items; });
   }).catch(() => {});
 }
+
+// Embedded fullscreen fallback also exits with Escape.
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'&&!e.repeat&&!document.querySelector('#modal-root')?.childElementCount){const close=document.querySelector('.farm-immersive [data-act="fullScreen"]')||document.querySelector('.character-return');close?.click();}
+});

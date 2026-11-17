@@ -206,7 +206,7 @@ const FS_MAIN = `#version 300 es
 precision highp sampler2DShadow;
 ${COMMON}
 in vec3 vPos; in vec3 vNrm; in vec4 vCol; in vec4 vMat; in vec2 vUV; in vec4 vSh;
-uniform vec3 uCam; uniform float uDim, uHL, uOcc, uPassBack, uShadowTexel;
+uniform vec3 uCam; uniform float uDim, uHL, uOcc, uPassBack, uShadowTexel, uShadowRadius;
 uniform vec3 uFocus; uniform float uCut;
 uniform sampler2DShadow uShadow;
 uniform sampler2D uPortrait; uniform float uPortraitReady;
@@ -258,7 +258,7 @@ void main(){
   float ndl0 = max(dot(N,uSunDir),0.);
   vec3 sc = vSh.xyz/vSh.w*0.5+0.5; float sh = 1.;
   if (sc.x>0. && sc.x<1. && sc.y>0. && sc.y<1. && sc.z<1.) {
-    float s = 0.; float bias = 0.0012 + 0.0028*(1.-ndl0);
+    float s = 0.; float bias = (0.0012 + 0.0028*(1.-ndl0))*clamp(uShadowRadius/10.,.1,1.);
     for (int x=-1; x<=1; x++) for (int y=-1; y<=1; y++) s += texture(uShadow, vec3(sc.xy + vec2(float(x),float(y))*uShadowTexel, sc.z - bias));
     sh = s/9.;
   }
@@ -268,13 +268,14 @@ void main(){
     float distanceFade=1.-smoothstep(4.,22.,length(uCam-vPos));
     float detail=0.; float strength=0.004;
     if(kind==15 || kind==24 || kind==25){ // skin: pores, subtle mottling and warm light transmission
-      float pores=vn(vUV*180.);
-      alb=base*mix(0.96,1.035,vn(vUV*18.)); detail=pores; strength=0.0008;
-      rough=0.48+pores*0.09;
+      float pores=vn(vUV*80.);
+      alb=base*mix(0.96,1.035,vn(vUV*18.)); detail=pores; strength=0.00008;
+      rough=0.62+pores*0.06;
+      if(kind==15)alb=base*.88;
       if(kind>=24 && uPortraitReady>0.5){
         vec3 photo=pow(texture(uPortrait,vUV).rgb,vec3(2.2));
         vec3 reference=pow(kind==24?vec3(0.863,0.639,0.490):vec3(0.933,0.757,0.631),vec3(2.2));
-        alb=mix(alb,photo*clamp(base/reference,vec3(0.45),vec3(1.7)),smoothstep(0.15,0.68,vMat.y));
+        alb=mix(alb,photo*1.1*clamp(base/reference,vec3(0.45),vec3(1.7)),smoothstep(0.15,0.68,vMat.y));
       }
       if(kind>=24 && uPortraitReady<0.5){
         float center=kind==24?.281:.765;
@@ -325,6 +326,15 @@ void main(){
     }
     col*=mix(.55,1.,uDim);
     col+=base*uHL*.08;
+  }
+  else if(kind==26){ // farmhouse glazing: sky reflection by day, warm rooms after dusk
+    vec3 reflected=skyCol(reflect(-V,N));
+    col=shade(base,N,V,.2,.1,sh,1.)*.55+reflected*.18;
+    col=mix(col,vec3(1.35,.72,.28)*(0.8+0.2*vn(vUV*4.)),smoothstep(.12,.7,uNight));
+    col*=mix(.55,1.,uDim);
+  }
+  else if(kind==27){ // low-energy path lanterns
+    col=shade(base,N,V,.3,.1,sh,1.)+vec3(1.5,.8,.3)*smoothstep(.1,.75,uNight);
   }
   else if (kind == 7) {                       // foliage cards
     int lt = int(vMat.y + 0.5); vec2 uv = vUV;
@@ -646,17 +656,18 @@ export class Renderer {
   /** frame: { view, proj, eye, t, env, sunTarget } */
   render(F) {
     const gl = this.gl, P = this.P, env = F.env;
+    const visible=g=>F.only?F.only.has(g):g.tag!=='studio';
     const vp = M.mul(F.proj, F.view);
     // sun shadow matrix: ortho box around the model
     const sc = F.sunTarget || [0, 3, 0], sunEye = V.add(sc, V.mul(env.uSunDir, 40));
-    const svp = M.mul(M.ortho(-27, 27, -27, 27, 5, 105), M.look(sunEye, sc, Math.abs(env.uSunDir[1]) > 0.98 ? [1, 0, 0] : [0, 1, 0]));
+    const svp = M.mul(M.ortho(-(F.shadowRadius||27), F.shadowRadius||27, -(F.shadowRadius||27), F.shadowRadius||27, (F.shadowRadius||27)<5?35:5, (F.shadowRadius||27)<5?45:105), M.look(sunEye, sc, Math.abs(env.uSunDir[1]) > 0.98 ? [1, 0, 0] : [0, 1, 0]));
 
     // 1. shadow pass
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFbo); gl.viewport(0, 0, this.shadowSize, this.shadowSize);
     gl.colorMask(false, false, false, false); gl.depthMask(true); gl.enable(gl.DEPTH_TEST); gl.disable(gl.BLEND); gl.disable(gl.CULL_FACE); gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(2, 4);
     gl.useProgram(P.shadow.id); this.u(P.shadow, 'uSVP', svp);
-    for (const g of this.groups) if (g.shadow) { this.u(P.shadow, 'uModel', g.model); gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); }
+    for (const g of this.groups) if (g.shadow && visible(g)) { this.u(P.shadow, 'uModel', g.model); gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); }
     gl.disable(gl.POLYGON_OFFSET_FILL); gl.colorMask(true, true, true, true);
 
     // 2. main pass into the multisampled HDR buffer
@@ -670,15 +681,15 @@ export class Renderer {
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true);
     // scene
     gl.useProgram(P.main.id); setEnv(P.main);
-    this.u(P.main, 'uVP', vp); this.u(P.main, 'uSVP', svp); this.u(P.main, 'uCam', F.eye); this.u(P.main, 'uFocus', F.focus || [0, -99, 0]); this.u(P.main, 'uCut', F.focus ? 1 : 0); this.u(P.main, 'uShadowTexel', 1 / this.shadowSize);
+    this.u(P.main, 'uVP', vp); this.u(P.main, 'uSVP', svp); this.u(P.main, 'uCam', F.eye); this.u(P.main, 'uFocus', F.focus || [0, -99, 0]); this.u(P.main, 'uCut', F.focus ? 1 : 0); this.u(P.main, 'uShadowTexel', 1 / this.shadowSize);this.u(P.main,'uShadowRadius',F.shadowRadius||27);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.shadowTex); this.ui(P.main, 'uShadow', 0);
     gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.portraitTex);this.ui(P.main,'uPortrait',1);this.u(P.main,'uPortraitReady',this.portraitReady);gl.activeTexture(gl.TEXTURE0);
-    const draw = (g, back) => { this.u(P.main, 'uModel', g.model); this.u(P.main, 'uDim', g.dim); this.u(P.main, 'uHL', g.hl); this.u(P.main, 'uOcc', g.occ); this.u(P.main, 'uPassBack', back); gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); };
+    const draw = (g, back) => { if(!visible(g))return; this.u(P.main, 'uModel', g.model); this.u(P.main, 'uDim', g.dim); this.u(P.main, 'uHL', g.hl); this.u(P.main, 'uOcc', g.occ); this.u(P.main, 'uPassBack', back); gl.bindVertexArray(g.vao); gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0); };
     gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND);
     for (const g of this.groups) if (g.pass === 'opaque' || g.pass === 'foliage') draw(g, 0);
     // glass: far → near, back faces then front faces
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
-    const glassG = this.groups.filter((g) => g.pass === 'glass').map((g) => ({ g, d: Math.hypot(g.center[0] - F.eye[0], g.center[1] - F.eye[1], g.center[2] - F.eye[2]) })).sort((a, b) => b.d - a.d);
+    const glassG = this.groups.filter((g) => g.pass === 'glass' && visible(g)).map((g) => ({ g, d: Math.hypot(g.center[0] - F.eye[0], g.center[1] - F.eye[1], g.center[2] - F.eye[2]) })).sort((a, b) => b.d - a.d);
     for (const { g } of glassG) { draw(g, 1); draw(g, 0); }
     // additive light
     gl.blendFunc(gl.ONE, gl.ONE);
