@@ -578,3 +578,11 @@ a:focus-visible,button:focus-visible,select:focus-visible { outline: 2px solid v
 @media(max-width:650px) { .persona-card > .persona-portrait { background-position: var(--portrait-x) 47%; } }
 .gm-face .persona-portrait { display: block; }
 .gm-face:has(.persona-portrait) { border-width: 1px; border-color: var(--gold) !important; }
+/* Matthew and Lizzie: reference-guided generated portraits, not the original photos. */
+.persona-portrait.persona-matthew,.persona-portrait.persona-lizzie { background-image: url('../art/farm-portraits.png'); background-size: 200% auto; background-position: 0% 40%; }
+.persona-portrait.persona-lizzie { background-position: 100% 40%; }
+.hq-photo { background-image: url('../art/title.png'); background-position: center; }
+.tower-office-image { background: #53684c; object-position: center 55%; }
+.persona-card > .persona-portrait { aspect-ratio: 1; }
+.department-persona > .persona-matthew,.department-persona > .persona-lizzie { height: 76px; }
+@media(max-width:650px) { .department-persona > .persona-matthew,.department-persona > .persona-lizzie { height: 60px; } }

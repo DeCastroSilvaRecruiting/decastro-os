@@ -3,21 +3,21 @@
   "slots": [
     {
       "file": "title.png",
-      "where": "Tower page banner",
+      "where": "Nature Farm landscape",
       "size": "1536x640",
-      "prompt": "A contemporary private investment headquarters in Dubai, travertine stone, bronze detailing, olive trees and panoramic skyline windows, a welcoming professional team in tailored business casual clothing, golden hour"
+      "prompt": "A nature farm in a green mountain valley, whitewashed farmhouse, timber barn, terracotta roofs, vineyard, olive orchard, greenhouse, vegetable gardens and pond at golden hour"
     },
     {
       "file": "matthew.png",
       "where": "Matthew character portrait",
       "size": "1024x1024",
-      "prompt": "Realistic editorial portrait of a fictional Matthew, navy unstructured blazer over cream polo, natural adult proportions, short brown hair and stubble, warm expression, head and shoulders; use a supplied reference photo only when available"
+      "prompt": "Realistic reference-guided portrait of Matthew, short curly dark hair, salt-and-pepper beard, blue linen shirt, natural expression, vineyard and mountain background; preserve identity from supplied references"
     },
     {
       "file": "lizzie.png",
       "where": "Lizzie character portrait",
       "size": "1024x1024",
-      "prompt": "Realistic editorial portrait of a fictional Lizzie, cream tailored blazer over terracotta blouse, natural adult proportions, auburn hair, warm expression, head and shoulders; use a supplied reference photo only when available"
+      "prompt": "Realistic reference-guided portrait of Lizzie, long dark brown hair, strong dark eyebrows, terracotta-red linen dress, natural expression, vineyard and mountain background; preserve identity from supplied references"
     },
     {
       "file": "ws-hq.png",

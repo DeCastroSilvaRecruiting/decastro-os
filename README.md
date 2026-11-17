@@ -70,3 +70,9 @@ starter/          a copy of the vault's starter wiki and queue, used in local mo
 ```
 
 Extending it: add a view in `assets/js/views/`, register it in `ROUTES` and `NAV` in `app.js`. Add a record type by adding a schema in `schemas.js` and a collection in `seed.js`.
+
+## Nature Farm world
+
+The `#/engine` route now opens an interactive, grounded nature farm. Venture stages appear as six planted growth beds, departments occupy farm workshops, and neighbouring venture plots connect by ground-level paths. The scene includes an orchard, vineyard, pond, greenhouse and distant hills. Existing tasks, lessons, stage gates, progress layers and wardrobe settings remain available.
+
+Matthew and Lizzie use generated portraits based on supplied reference photos; the original photos are not included. Their procedural 3D avatars have matching broad styling, while the photographic likeness appears in dashboard, department and game portraits.

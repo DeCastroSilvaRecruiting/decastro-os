@@ -10,8 +10,8 @@ export const TOPS = [['polo', 'Golf polo'], ['shirt', 'Shirt'], ['blazer', 'Blaz
 export const ACCESSORIES = [['none', 'None'], ['cap', 'Golf cap'], ['visor', 'Golf visor'], ['sunglasses', 'Sunglasses'], ['bag', 'DCS golf bag']];
 
 export const DEFAULT_AVATARS = {
-  matthew: { name: 'Matthew', skin: '#dca37d', hair: '#3b2a20', hairStyle: 'side', facial: 'stubble', top: 'blazer', topColor: '#24354a', bottomColor: '#c4b79d', shoes: '#42392f', accent: '#b8a078', accessory: 'none', eyes: '#2b1d14' },
-  lizzie: { name: 'Lizzie', skin: '#eec1a1', hair: '#8a5a3b', hairStyle: 'long', facial: 'none', top: 'blazer', topColor: '#ddd1b9', bottomColor: '#a1664e', shoes: '#564238', accent: '#c9ad7a', accessory: 'none', eyes: '#3a2a20' },
+  matthew: { name: 'Matthew', skin: '#dca37d', hair: '#332c28', hairStyle: 'curly', facial: 'beard', top: 'shirt', topColor: '#86acbc', bottomColor: '#c4b79d', shoes: '#42392f', accent: '#b8a078', accessory: 'none', eyes: '#2b1d14' },
+  lizzie: { name: 'Lizzie', skin: '#eec1a1', hair: '#30231f', hairStyle: 'long', facial: 'none', top: 'dress', topColor: '#be4e3c', bottomColor: '#a1664e', shoes: '#564238', accent: '#c9ad7a', accessory: 'none', eyes: '#3a2a20' },
 };
 
 // ---------- small matrix helpers (column-major, like gl.js) ----------

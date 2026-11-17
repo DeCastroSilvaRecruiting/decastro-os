@@ -19,7 +19,7 @@ export function setIslands(slots) { ISLES = slots.map((sl) => ({ k: sl.k, label:
 export const islands = () => ISLES;
 export const placeOf = (k) => PLACES.find((p) => p.k === k) || ISLES.find((p) => p.k === k);
 const clampDeg = (d) => Math.max(62, Math.min(298, d));
-export const yAt = (r) => { const b = bridgeY(r); return b != null ? b : r <= 5.12 && r >= 3.45 ? 0.125 : 0.02; };
+export const yAt = (r) => { const b = bridgeY(r); return b != null ? b : 0.035; };
 export const toXYZ = (deg, r) => { const p = polar(deg, r); return [p[0], yAt(r), p[2]]; };
 export const toPolar = (p) => { let deg = (Math.atan2(p[2], p[0]) * 180) / Math.PI; if (deg < 0) deg += 360; return { deg, r: Math.hypot(p[0], p[2]) }; };
 

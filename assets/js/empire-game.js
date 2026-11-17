@@ -8,14 +8,14 @@ const dayDiff = (a, b) => Math.round((new Date(`${a}T00:00:00`) - new Date(`${b}
 const d10 = (x) => (x ? String(x).slice(0, 10) : '');
 
 export const LEVELS = [
-  { at: 0, title: 'Founder', perk: 'The site is surveyed. Every floor of the tower is yours to earn.' },
-  { at: 250, title: 'Operator', perk: 'The first towers rise on the skyline.' },
-  { at: 700, title: 'Builder', perk: 'Aviation lights on every pavilion: the site is live.' },
-  { at: 1500, title: 'Owner', perk: 'A second ring of towers fills the skyline.' },
-  { at: 3000, title: 'Investor', perk: 'A supertall landmark crowns your skyline.' },
-  { at: 5500, title: 'Tycoon', perk: 'The skyline stays lit through the night.' },
+  { at: 0, title: 'Founder', perk: 'The land is surveyed. Every growing bed is yours to cultivate.' },
+  { at: 250, title: 'Operator', perk: 'The first orchard trees take root around the farm.' },
+  { at: 700, title: 'Builder', perk: 'The orchard expands as the farm comes to life.' },
+  { at: 1500, title: 'Owner', perk: 'New fruit trees fill the neighbouring fields.' },
+  { at: 3000, title: 'Investor', perk: 'A thriving orchard anchors the estate.' },
+  { at: 5500, title: 'Tycoon', perk: 'The farm continues to flourish through every season.' },
   { at: 9000, title: 'Magnate', perk: 'A city of your own on the horizon.' },
-  { at: 15000, title: 'Dynasty', perk: 'The crane comes down. The tower is complete.' },
+  { at: 15000, title: 'Dynasty', perk: 'The orchard is mature. Your farm is flourishing.' },
 ];
 
 /** Where each kind of activity lives in the tower: a pavilion key, 'ventures' or a stage. */

@@ -42,3 +42,9 @@ Every slot starts with a placeholder illustration drawn by Claude (`placeholders
 ## Private office cast
 
 `office-cast.png` is generated artwork showing six fictional personas, ordered Matthew, Lizzie, Researcher, Capital Steward, Counsel and Operator. These are character interpretations, not verified likenesses or live agents. The dashboard, department introductions and playable-character cards use this local asset; no image service or credentials are needed at runtime. `assets/js/personas.js` defines role labels, navigation and portrait positions. Keep the six people equally spaced when replacing this image so the responsive portrait crops remain aligned.
+
+## Nature farm update
+
+`farm-portraits.png` contains generated, reference-guided portraits of Matthew (left) and Lizzie (right). CSS crops the two equal panels for dashboard, department and play-mode portraits. The original uploaded reference photos are not stored in this repository. `title.png` is the nature farm landscape used on the dashboard and farm page. The other four role personas remain fictional.
+
+The interactive world is built by `assets/js/farm-scene.js`: six growth beds, farm workshops, a greenhouse, vineyard, pond, orchard, distant hills and venture plots. It reuses the existing module IDs, stage gates, tasks and lessons; the `#/engine` route remains valid. Walking uses ground-level paths rather than aerial bridges. The 3D avatars use a blue shirt/curly hair/beard for Matthew and a terracotta dress/long dark hair for Lizzie; existing saved wardrobe choices are preserved. The photographic likeness is in the portraits; the procedural 3D avatars remain simplified.

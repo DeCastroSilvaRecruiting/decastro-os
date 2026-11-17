@@ -12,9 +12,9 @@ const SLOT_DEG = [96, 136, 176, 216, 256, 292];
 export const THEMES = {
   atelier: { title: 'Golf Atelier', blurb: 'Leather workshop and boutique, with a putting green to test every bag.', sand: 0.05, color: '#c9a54c', main: [0.5, 0.2, 2.0, 1.6] },
   course: { title: 'The Circuit Course', blurb: 'A championship hole, carts and the clubhouse where the Wednesday mornings happen.', sand: 0.0, color: '#4fb286', main: [-1.5, 2.0, 1.5, 1.1] },
-  farm: { title: 'Ostrich Farm', blurb: 'Desert pens, a water hole with palms, and the farm restaurant and craft store.', sand: 0.95, color: '#e39a4f', main: [-0.5, 2.2, 1.7, 1.2] },
-  port: { title: 'Trade Port', blurb: 'Container yard, gantry and the cargo airship that brings stock from the factories.', sand: 0.45, color: '#6fa0d8', main: [1.1, 0.2, 2.2, 1.6] },
-  generic: { title: 'Venture Quarter', blurb: 'A plot that grows into headquarters as the venture rises.', sand: 0.2, color: '#a18ad6', main: [0.6, 0.2, 1.9, 1.5] },
+  farm: { title: 'Ostrich Farm', blurb: 'A nature farm plot with orchard rows, growing beds and space for the next venture.', sand: 0.95, color: '#e39a4f', main: [-0.5, 2.2, 1.7, 1.2] },
+  port: { title: 'Farm Trading Post', blurb: 'The farm trading post: a place for goods, suppliers and commerce.', sand: 0.45, color: '#6fa0d8', main: [1.1, 0.2, 2.2, 1.6] },
+  generic: { title: 'Venture Plot', blurb: 'A plot that grows into headquarters as the venture rises.', sand: 0.2, color: '#a18ad6', main: [0.6, 0.2, 1.9, 1.5] },
 };
 export const BUILD_STEPS = ['Survey staked out', 'Market-test stall', 'Foundations poured', 'Under construction', 'Grand opening', 'Expansion'];
 
@@ -33,7 +33,7 @@ export function islandSlots(s) {
     return { k: `v:${v.id}`, v, id: v.id, theme: themeOf(v), deg, a, c: [Math.cos(a) * ISLAND_DIST, 0, Math.sin(a) * ISLAND_DIST], level: v.stage === 'Parked' ? -1 : FLOW.indexOf(v.stage), label: v.name };
   });
 }
-export const bridgeY = (r) => (r > RIM && r < BRIDGE_END ? 0.12 + Math.sin(((r - RIM) / (BRIDGE_END - RIM)) * Math.PI) * 0.75 : null);
+export const bridgeY = (r) => r > RIM && r < BRIDGE_END ? 0.02 : null;
 
 // ---------------------------------------------------------------- small helpers
 function blob(m, c, r, o, seg = 10) {

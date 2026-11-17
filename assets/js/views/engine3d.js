@@ -13,7 +13,7 @@ import { PERSONAS, personaPortrait } from '../personas.js';
 import { RUBRIC } from '../seed.js';
 import { FLOW, STAGE_INFO, readiness, nextStage, prevStage } from '../gates.js';
 import { Renderer, skyAt, M, V, TAU } from '../gl.js';
-import * as T from '../tower-scene.js';
+import * as T from '../farm-scene.js';
 import { game, LEVELS } from '../empire-game.js';
 import { fxWarning, procureAlerts } from '../procure-data.js';
 
@@ -23,8 +23,8 @@ export const LAYERS = [['pipeline', 'Pipeline'], ['attention', 'Needs you'], ['p
 const SKIES = [['live', 'Live sky'], ['day', 'Day'], ['dusk', 'Dusk'], ['night', 'Night']];
 
 // ---------- Model ----------
-const CAM0 = { base: 0.35, pitch: 0.2, zoom: 1, zoomT: 1, ty: 4.2, auto: true, swayAmp: 0.8, phase: 0 };
-let cam = { ...CAM0, tt: [0, 4.2, 0], tc: [0, 4.2, 0] };
+const CAM0 = { base: 0.85, pitch: 0.85, zoom: 1, zoomT: 1, ty: 0.5, auto: true, swayAmp: 0.8, phase: 0 };
+let cam = { ...CAM0, tt: [0, 0.5, 0], tc: [0, 0.5, 0] };
 let selected = { kind: 'core', id: null };
 let loop = null;
 let wikiCount = 0;
@@ -53,11 +53,8 @@ function buildScene(s) {
     const st = FLOW.includes(v.stage) ? v.stage : 'Parked';
     const n = (perStage[st] = (perStage[st] || 0) + 1) - 1;
     let pos;
-    if (st === 'Parked') { const a = n * 1.25; pos = [Math.cos(a) * 0.62, -2.75 + (n > 4 ? 0.4 : 0), Math.sin(a) * 0.62]; }
-    else {
-      const i = FLOW.indexOf(st), ring = n % 6, tier = Math.floor(n / 6), a = i * 0.9 + ring * (TAU / 6) + T.twist(T.floorY(i));
-      pos = [Math.cos(a) * 1.1, T.floorY(i) + 0.62 + tier * 0.55, Math.sin(a) * 1.1];
-    }
+    const center = T.stageCenter(st);
+    pos = [center[0] + (n % 4 - 1.5) * 0.28, 0.55 + Math.floor(n / 4) * 0.14, center[2]];
     ventures.push({ kind: 'venture', id: v.id, v, stage: st, pos, score: store.ventureScore(v, RUBRIC), ready: readiness(v), color: STAGE_COLOR[st] });
   }
   const modules = MODULES.map((m) => ({ ...m, kind: 'module', id: m.k, color: GROUPS[m.group].color, base: T.polar(m.deg, m.r) }));
@@ -133,8 +130,8 @@ function start(canvas, overlay, panel) {
     return;
   }
   const reg = T.buildStatic(R);
-  GW.buildHQ(R);
-  const slots = WI.buildIslands(R, store.get()); GW.setIslands(slots);
+  // Farmhouse and its ground-level entrance are part of the farm scene.
+  const slots = T.buildDistricts(R, store.get()); GW.setIslands(slots);
   ensureChars();
   const avs = { matthew: addAvatar(R, avatarCfg('matthew'), 'avatar'), lizzie: addAvatar(R, avatarCfg('lizzie'), 'avatar') };
   window.__dcTower = { cam: () => cam, select: (x) => loop?.select(x), sc: () => curSc, R, game: gameRT, walk: (k) => loop?.walkTo(k) };
@@ -217,7 +214,7 @@ function start(canvas, overlay, panel) {
     if (!canvas.isConnected) { stop(); return; }
     const dt = Math.max(0, Math.min(64, now - last)); last = now; const t = Math.max(0, now - t0) / 1000, k = 1 - Math.exp(-dt * 0.008);
     if ((root.dataset.theme === 'light') !== light) readTheme();
-    env = skyAt(skyHour(tw().sky));
+    env = skyAt(skyHour(tw().sky)); env.groundY = -0.32; env.islandR = 0; env.uSand = [0.28, 0.34, 0.22]; env.bloom *= 0.35;
     const layer = tw().layer;
 
     // ---- characters
@@ -353,8 +350,8 @@ function start(canvas, overlay, panel) {
     const right = [view[0], view[4], view[8]], order = F.play ? [] : ['Parked', ...FLOW], colX = W - colW + 4, rows = [];
     for (const st of order) {
       const vs = sc.ventures.filter((x) => x.stage === st), midY = T.stageMidY(st), rr = st === 'Parked' ? 1.1 : T.rad(midY) + 0.7;
-      const a = P([0, midY, 0]), e = P([right[0] * rr, midY, right[2] * rr]); if (!a || !e) continue;
-      rows.push({ st, vs, desired: a.y, h: 20 + vs.length * 14, edge: e });
+      const center = T.stageCenter(st), a = P(center), e = P([center[0] + right[0] * rr, midY, center[2] + right[2] * rr]); if (!a || !e) continue;
+      rows.push({ st, vs, desired: H - 35 - (order.indexOf(st) * (H - 80) / 7), h: 20 + vs.length * 14, edge: e });
     }
     if (!F.play) { const g = ctx.createLinearGradient(colX - 30, 0, colX + 40, 0); g.addColorStop(0, 'rgba(6,10,18,0)'); g.addColorStop(1, light ? 'rgba(255,255,255,0.5)' : env.uNight < 0.3 ? 'rgba(8,13,22,0.4)' : 'rgba(6,10,18,0.62)'); ctx.fillStyle = g; ctx.fillRect(colX - 30, 0, W - colX + 30, H); }
     let yPrev = H - 8;
@@ -364,7 +361,7 @@ function start(canvas, overlay, panel) {
       const st = rw.st, col = STAGE_COLOR[st], o = { kind: 'stage', id: st }, on = F.isSel(o) || F.isHov(o), ff = st === 'Parked' ? 1 : F.floorFocus(st), al = Math.max(0.5, ff);
       ctx.strokeStyle = col; ctx.globalAlpha = (on ? 0.85 : 0.3) * al; ctx.lineWidth = 1; ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(rw.edge.x, rw.edge.y); ctx.lineTo(colX - 8, rw.y); ctx.stroke(); ctx.setLineDash([]);
       ctx.globalAlpha = al; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(colX - 4, rw.y, on ? 3.5 : 2.5, 0, TAU); ctx.fill();
-      const head = `${st === 'Parked' ? '' : String(FLOW.indexOf(st) + 1).padStart(2, '0') + '  '}${st === 'Parked' ? 'SEED VAULT' : st.toUpperCase()}`;
+      const head = `${st === 'Parked' ? '' : String(FLOW.indexOf(st) + 1).padStart(2, '0') + '  '}${st === 'Parked' ? 'SEED STORE' : st.toUpperCase()}`;
       ctx.font = '700 11px Inter, system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = col; ctx.fillText(head, colX + 4, rw.y);
       const hw = ctx.measureText(head).width; ctx.font = '500 10px Inter, system-ui, sans-serif'; ctx.fillStyle = theme.muted;
       if (W >= 620 && F.layer === 'pipeline') ctx.fillText(st === 'Parked' ? 'parked' : STAGE_NAME[st], colX + 4 + hw + 6, rw.y);
@@ -384,7 +381,7 @@ function start(canvas, overlay, panel) {
     ctx.strokeStyle = ink; ctx.lineWidth = 1.2;
     for (const [x, y, dx, dy] of [[m, m, 1, 1], [W - m, m, -1, 1], [m, H - m, 1, -1], [W - m, H - m, -1, -1]]) { ctx.beginPath(); ctx.moveTo(x, y + dy * Lc); ctx.lineTo(x, y); ctx.lineTo(x + dx * Lc, y); ctx.stroke(); }
     const live = sc.ventures.filter((x) => x.stage !== 'Parked'), ready = live.filter((x) => x.ready.pct >= 1 && nextStage(x.stage)).length;
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = '#e2c477'; ctx.font = '700 10px Inter, system-ui, sans-serif'; ctx.fillText('DE CASTRO  ·  LIVING TOWER', 22, 20);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = '#e2c477'; ctx.font = '700 10px Inter, system-ui, sans-serif'; ctx.fillText('DE CASTRO  ·  NATURE FARM', 22, 20);
     ctx.fillStyle = theme.muted; ctx.font = '500 10px Inter, system-ui, sans-serif';
     const hr = env.hour, clock = `${String(Math.floor(hr)).padStart(2, '0')}:${String(Math.floor((hr % 1) * 60)).padStart(2, '0')}`;
     ctx.fillText(`${live.length} live · ${ready} ready to rise · ${tw().sky === 'live' ? `sky at ${clock}` : `${tw().sky} sky`}`, 22, 35);
@@ -444,9 +441,9 @@ function start(canvas, overlay, panel) {
     const consider = (tt, o) => { if (tt && tt < bt) { bt = tt; best = o; } };
     for (const m of sc.modules) consider(rayCyl(a, d, m.base[0], m.base[2], m.group === 'operations' ? 0.95 : 1.25, 0, T.modTopY(m) + 0.3), { kind: 'module', id: m.k });
     for (const isle of GW.islands()) consider(rayCyl(a, d, isle.c[0], isle.c[2], WI.ISLAND_RAD, -0.5, 1.6), isPlay() ? { kind: 'place', id: isle.k } : { kind: 'venture', id: isle.id });
-    FLOW.forEach((st, i) => { const y0 = T.floorY(i); consider(rayCyl(a, d, 0, 0, T.rad(y0 + T.FH / 2) + 0.65, y0, y0 + T.FH), { kind: 'stage', id: st }); });
+    FLOW.forEach(st => { const p = T.stageCenter(st); consider(rayCyl(a, d, p[0], p[2], 0.82, 0, 0.9), { kind: 'stage', id: st }); });
     const vt = raySphere(a, d, T.VAULT_C, T.VAULT_R * 1.05);
-    if (vt) { const p = V.add(a, V.mul(d, vt)), deg = (Math.atan2(p[2], p[0]) * 180) / Math.PI; if (Math.abs(deg) < 58 && p[1] < 0) consider(vt, { kind: 'stage', id: 'Parked' }); }
+    if (vt) consider(vt, { kind: 'stage', id: 'Parked' });
     return best;
   }
   const local = (e) => { const r = overlay.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
@@ -481,10 +478,10 @@ function start(canvas, overlay, panel) {
   overlay.addEventListener('wheel', (e) => { e.preventDefault(); cam.zoomT = clampZ(cam.zoomT * (1 + Math.sign(e.deltaY) * 0.09)); lastInteract = performance.now(); }, { passive: false });
 
   function focusFor(s) {
-    if (s.kind === 'stage') { cam.tt = [0, T.stageMidY(s.id), 0]; cam.zoomT = s.id === 'Parked' ? 0.55 : 0.6; }
+    if (s.kind === 'stage') { cam.tt = T.stageCenter(s.id); cam.zoomT = s.id === 'Parked' ? 0.55 : 0.6; }
     else if (s.kind === 'module') { const m = sc.modIdx[s.id]; cam.tt = [m.base[0] * 0.55, 1.6, m.base[2] * 0.55]; cam.zoomT = 0.62; }
-    else if (s.kind === 'venture') { const vn = sc.ventures.find((x) => x.id === s.id); cam.tt = vn ? [vn.pos[0] * 0.4, vn.pos[1], vn.pos[2] * 0.4] : [0, 4.2, 0]; cam.zoomT = 0.55; }
-    else { cam.tt = [0, 4.2, 0]; cam.zoomT = 1; }
+    else if (s.kind === 'venture') { const vn = sc.ventures.find((x) => x.id === s.id); cam.tt = vn ? [vn.pos[0] * 0.4, vn.pos[1], vn.pos[2] * 0.4] : [0, 0.5, 0]; cam.zoomT = 0.55; }
+    else { cam.tt = [0, 0.5, 0]; cam.zoomT = 1; }
   }
   function select(s) { selected = { kind: s.kind, id: s.id }; ptab = 'needs'; if (!isPlay()) focusFor(s); rebuildDynamic(); panel.innerHTML = panelHTML(sc); }
   function refresh() { sc = buildScene(store.get()); curSc = sc; rebuildDynamic(); panel.innerHTML = panelHTML(sc); levelCheck(sc); }
@@ -492,7 +489,7 @@ function start(canvas, overlay, panel) {
   function stop() { running = false; ro.disconnect(); R.dispose(); }
   function setPlay(on) {
     resize();
-    if (on) { cam.zoomT = 0.24; cam.pitch = 0.78; cam.auto = false; } else { cam.tt = [0, 4.2, 0]; cam.zoomT = 1; cam.pitch = CAM0.pitch; gameRT.at = null; }
+    if (on) { cam.zoomT = 0.24; cam.pitch = 0.78; cam.auto = false; } else { cam.tt = [0, 0.5, 0]; cam.zoomT = 1; cam.pitch = CAM0.pitch; gameRT.at = null; }
     selected = { kind: 'core', id: null }; panel.innerHTML = panelHTML(sc);
   }
   loop = { stop, refresh, select, setLayer, walkTo, setPlay, panel() { panel.innerHTML = panelHTML(sc); } };
@@ -608,7 +605,7 @@ function panelHTML(sc) {
       <p>${esc(m.role)}</p>
       <div class="callout small">${esc(moduleStats(m.k))}</div>
       ${statusHTML(sc.stat(m))}
-      ${m.feeds.length ? `<h4 class="eng-sub">${m.group === 'operations' ? 'Feeds these floors' : 'Sky-bridges to these floors'}</h4><div class="row">${m.feeds.map((st) => `<button class="btn sm" data-act="pickStage" data-id="${st}" style="color:${STAGE_COLOR[st]}">${st}</button>`).join('')}</div>` : ''}
+      ${m.feeds.length ? `<h4 class="eng-sub">${m.group === 'operations' ? 'Supports these growth beds' : 'Supports these growth beds'}</h4><div class="row">${m.feeds.map((st) => `<button class="btn sm" data-act="pickStage" data-id="${st}" style="color:${STAGE_COLOR[st]}">${st}</button>`).join('')}</div>` : ''}
       ${(m.also || []).length ? `<h4 class="eng-sub">Feeds</h4><div class="row">${m.also.map((o) => sc.modIdx[o] ? `<button class="btn sm" data-act="pickModule" data-id="${o}">${esc(sc.modIdx[o].label)}</button>` : '').join('')}</div>` : ''}
       ${gateUses(sc, m.k)}
       <div class="eng-actions"><a class="btn primary" href="${m.href}">Open ${esc(m.label)} ${icon('arrow')}</a></div>`;
@@ -621,7 +618,7 @@ function panelHTML(sc) {
       <p>${esc(STAGE_INFO[st])}</p>
       ${statusHTML(sc.stat({ kind: 'stage', id: st }), { emptyDone: st === 'Parked' ? 'No ventures parked yet. Parking a failed idea is a win: +20 XP.' : `No venture has risen to ${st} yet: +${100 * (FLOW.indexOf(st) + 1)} XP when one does.` })}
       ${feeders.length ? `<h4 class="eng-sub">Powered by</h4><div class="row">${feeders.map((m) => `<button class="btn sm" data-act="pickModule" data-id="${m.k}" style="color:${m.color}">${esc(m.label)}</button>`).join('')}</div>` : ''}
-      <h4 class="eng-sub">Ventures ${st === 'Parked' ? 'in the vault' : 'on this floor'}</h4>
+      <h4 class="eng-sub">Ventures ${st === 'Parked' ? 'in the seed store' : 'in this garden bed'}</h4>
       ${vs.length ? `<div class="list">${vs.map((x) => `<a class="list-item" data-act="pickVenture" data-id="${x.id}" style="cursor:pointer"><b class="grow">${esc(x.v.name)}</b><span class="badge ${x.ready.pct >= 1 ? 'green' : ''}">${x.ready.met}/${x.ready.total}</span></a>`).join('')}</div>` : '<p class="small muted">None yet.</p>'}
       ${st === 'Idea' ? `<div class="eng-actions"><a class="btn primary" href="#/ventures" data-act="newVenture">${icon('plus')} Plant a new idea</a></div>` : ''}`;
   }
@@ -630,13 +627,13 @@ function panelHTML(sc) {
   const readyNow = live.filter((x) => x.ready.pct >= 1 && nextStage(x.stage));
   return `${empireHTML(sc, showAllMs)}
     ${readyNow.length ? `<h4 class="eng-sub">Ready to rise</h4><div class="list">${readyNow.map((x) => `<a class="list-item" data-act="pickVenture" data-id="${x.id}" style="cursor:pointer"><b class="grow">${esc(x.v.name)}</b>${chip(x.v.stage + ' → ' + nextStage(x.v.stage), STAGE_COLOR[nextStage(x.v.stage)])}</a>`).join('')}</div>` : ''}
-    <h4 class="eng-sub">Reading the tower</h4>
+    <h4 class="eng-sub">Reading the farm</h4>
     <div class="small muted eng-legend">
-      <div><b style="color:var(--text)">Layers.</b> ${layer === 'attention' ? 'Needs you: red beacons need action now, amber soon, blue are worth doing.' : layer === 'progress' ? 'Done: green rings mark everything with recorded work, with the count beside each label.' : layer === 'game' ? 'Empire: the XP each part of the tower has earned you.' : 'Pipeline: the plain building. Switch layers at the bottom left of the view.'}</div>
-      <div><span class="lg-dot" style="background:#e2c477"></span>Gold pods are ventures. Size is score; the ring around each is readiness for the next floor.</div>
+      <div><b style="color:var(--text)">Layers.</b> ${layer === 'attention' ? 'Needs you: red beacons need action now, amber soon, blue are worth doing.' : layer === 'progress' ? 'Done: green rings mark everything with recorded work, with the count beside each label.' : layer === 'game' ? 'Empire: the XP each part of the tower has earned you.' : 'Pipeline: the six planted growth beds. Switch layers at the bottom left of the view.'}</div>
+      <div><span class="lg-dot" style="background:#e2c477"></span>Planted markers represent ventures. The ring shows readiness for the next stage.</div>
       <div><span class="lg-dot" style="background:${GROUPS.knowledge.color}"></span>Crystal towers: Knowledge. <span class="lg-dot" style="background:${GROUPS.capital.color};margin-left:6px"></span>Domed vaults: Capital. <span class="lg-dot" style="background:${GROUPS.governance.color};margin-left:6px"></span>Green-roofed blocks: Governance. <span class="lg-dot" style="background:${GROUPS.operations.color};margin-left:6px"></span>Outposts on the outer ring: Operations.</div>
-      <div>The skyline on the horizon grows with your level, and the crane stays until the tower is complete. The sky follows your clock unless you fix it.</div>
-      <div style="margin-top:6px">Drag to orbit · scroll or pinch to zoom · click a floor, pod, pavilion or the level card.</div>
+      <div>Orchards grow as your level increases. The farm has a vineyard, greenhouse, pond and neighbouring venture plots. The sky follows your clock unless you fix it.</div>
+      <div style="margin-top:6px">Drag to orbit · scroll or pinch to zoom · click a garden bed, venture marker, farm building or level card.</div>
     </div>`;
 }
 
@@ -655,12 +652,12 @@ function tasksAt(k) {
 function playHomeHTML(sc) {
   const act = activeId(), c = gameRT.chars[act], walking = c && c.path.length && c.goal;
   const card = (id) => { const a = avatarCfg(id), on = id === act; return `<div class="gm-char ${on ? 'on' : ''}"><div class="gm-face" style="background:${a.skin};border-color:${a.hair}">${personaPortrait(PERSONAS.find(p => p.id === id))}</div><div class="grow"><b>${esc(a.name)}</b><div class="small muted">${on ? 'You are playing' : 'Following along'}</div></div>${on ? '' : `<button class="btn sm" data-act="playAs" data-id="${id}">Play as</button>`}<button class="btn sm ghost" data-act="wardrobe" data-id="${id}">Wardrobe</button></div>`; };
-  return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">The Tower · game</div><h2>${walking ? `Walking to ${esc(c.goal.label)}…` : 'Where to next?'}</h2><p class="small muted">Tap a building, an island or the world map to travel. Each building is a workshop, and every venture has its own island across a sky-bridge that builds itself up as the venture rises the tower.</p></div>
+  return `<div class="eng-head"><div class="eyebrow" style="color:#e2c477">Nature Farm · explore</div><h2>${walking ? `Walking to ${esc(c.goal.label)}…` : 'Where to next?'}</h2><p class="small muted">Follow the paths to a farm workshop or use the map to visit a venture plot. Garden beds track the stages of your ventures, from first seeds to a mature harvest.</p></div>
     <div class="gm-chars">${card('matthew')}${card('lizzie')}</div>
     <h4 class="eng-sub">Workshops</h4>
     <div class="gm-places">${GW.PLACES.map((p) => { const st = placeStat(sc, p.k), sv = st.needs.reduce((a, n) => Math.max(a, n.sev), 0), W = GW.WORKSHOPS[p.k]; return `<button class="gm-place" data-act="goto" data-id="${p.k}"><span class="gm-pin" style="background:${p.k === 'hq' ? '#e2c477' : GROUPS[p.group]?.color || '#888'}"></span><span class="grow"><b>${esc(W?.title || p.label)}</b></span>${st.needs.length ? `<span class="gm-n" style="background:${SEV_COLOR[sv]}">${st.needs.length}</span>` : ''}</button>`; }).join('')}</div>
-    <h4 class="eng-sub">Venture islands</h4>
-    <div class="gm-places">${GW.islands().map((p) => { const th = WI.THEMES[p.theme], n = sc.G.venture(p.id).needs.length; return `<button class="gm-place" data-act="goto" data-id="${p.k}"><span class="gm-pin" style="background:${th.color}"></span><span class="grow"><b>${esc(p.label)}</b><span class="small muted" style="display:block">${esc(th.title)} · ${p.level < 0 ? 'parked' : esc(WI.BUILD_STEPS[p.level].toLowerCase())}</span></span>${n ? `<span class="gm-n" style="background:${SEV_COLOR[2]}">${n}</span>` : ''}</button>`; }).join('') || '<p class="small muted">Plant a venture and its island appears.</p>'}</div>
+    <h4 class="eng-sub">Venture plots</h4>
+    <div class="gm-places">${GW.islands().map((p) => { const th = WI.THEMES[p.theme], n = sc.G.venture(p.id).needs.length; return `<button class="gm-place" data-act="goto" data-id="${p.k}"><span class="gm-pin" style="background:${th.color}"></span><span class="grow"><b>${esc(p.label)}</b><span class="small muted" style="display:block">${esc(th.title)} · ${p.level < 0 ? 'parked' : esc(WI.BUILD_STEPS[p.level].toLowerCase())}</span></span>${n ? `<span class="gm-n" style="background:${SEV_COLOR[2]}">${n}</span>` : ''}</button>`; }).join('') || '<p class="small muted">Plant a venture and its farm plot appears.</p>'}</div>
     <h4 class="eng-sub">Orders of the day</h4>
     ${sc.G.quests.length ? `<div class="eng-feed">${sc.G.quests.map((n) => `<button class="eng-row gm-btnrow" data-act="goto" data-id="${questPlace(n)}"><span class="eng-dot" style="background:${SEV_COLOR[n.sev]}"></span><span class="grow small">${esc(n.text)}</span>${n.xp ? `<span class="eng-xp">+${n.xp}</span>` : ''}</button>`).join('')}</div>` : '<p class="small muted">No open orders. Visit Venture HQ and write the next section of a plan.</p>'}
     ${empireHTML(sc, false).split('<h4 class="eng-sub">Orders of the day</h4>')[0]}`;
@@ -760,28 +757,28 @@ function moveStage(id, to) {
 const setTower = (patch) => store.update((s) => { s.settings.tower = { ...(s.settings.tower || {}), ...patch }; }, { render: false });
 
 export default {
-  title: 'The Tower',
+  title: 'Nature Farm',
   async render(s) {
     try { const ix = await K.loadIndex(); wikiArticles = ix.articles || []; wikiCount = wikiArticles.length; } catch { wikiCount = 0; wikiArticles = []; }
     const live = s.ventures.filter((v) => v.stage !== 'Parked');
     const rows = live.map((v) => ({ v, r: readiness(v) })).sort((a, b) => FLOW.indexOf(b.v.stage) - FLOW.indexOf(a.v.stage) || b.r.pct - a.r.pct);
     const t = s.settings.tower || {};
     return `
-    <div class="page-head"><div><div class="eyebrow">Build</div><h1>The Tower</h1>
-      <p>Your empire as a living building, and a game. Press Play to walk the island as yourself or Lizzie: every building is a workshop where you learn, write your business plans and set tasks. Switch layers to see what needs you and what is done, and watch the skyline grow as real work earns XP.</p></div>
+    <div class="page-head"><div><div class="eyebrow">Build</div><h1>The Nature Farm</h1>
+      <p>A living farm for your ventures. Walk the garden paths as Matthew or Lizzie, visit the farm workshops, and grow each venture from a seed bed to a mature orchard. Explore the vineyard, greenhouse, pond and neighbouring venture plots. Switch layers to see what needs attention and the work you have completed.</p></div>
       <div class="actions"><button class="btn" data-act="resetCam">${icon('sync')} Reset view</button><button class="btn" data-act="toggleSpin">${cam.auto ? 'Pause rotation' : 'Rotate'}</button><a class="btn primary" href="#/ventures" data-act="newVenture">${icon('plus')} New idea</a></div></div>
     ${artImg('title.png', 'art-title tower-office-image', 'The De Castro team at their Dubai headquarters')}
     <div class="eng-wrap">
-      <div class="eng-stage card flush"><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="3D model of the venture tower: stage floors, the seed vault, the connected pavilions and outposts"></canvas>
+      <div class="eng-stage card flush"><canvas id="eng-canvas" aria-hidden="true"></canvas><canvas id="eng-overlay" aria-label="Interactive 3D nature farm with planted stage beds, farmhouse workshops, orchards, vineyard and venture plots"></canvas>
         <div class="eng-layers" role="toolbar" aria-label="Tower layers"><button class="eng-layer eng-play ${t.play ? 'on' : ''}" data-act="playToggle">${t.play ? '■ Exit game' : '▶ Play'}</button>${LAYERS.map(([k, l]) => `<button class="eng-layer ${(t.layer || 'pipeline') === k ? 'on' : ''}" data-act="layer" data-id="${k}" aria-pressed="${(t.layer || 'pipeline') === k}">${l}</button>`).join('')}
           <select class="eng-sky" data-change="sky" aria-label="Sky">${SKIES.map(([k, l]) => `<option value="${k}" ${(t.sky || 'live') === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
       <aside class="eng-panel card" id="eng-panel"></aside>
     </div>
-    <div class="card flush mt"><div class="card-head"><h3>Pipeline readiness</h3><div class="right small muted">Gates met for each venture's next floor</div></div>
-      ${rows.length ? `<div class="table-wrap"><table><thead><tr><th>Venture</th><th>Floor</th><th>Next</th><th style="width:38%">Readiness</th><th class="num">Score</th></tr></thead><tbody>
+    <div class="card flush mt"><div class="card-head"><h3>Growth readiness</h3><div class="right small muted">Gates met for each venture’s next growth stage</div></div>
+      ${rows.length ? `<div class="table-wrap"><table><thead><tr><th>Venture</th><th>Stage</th><th>Next</th><th style="width:38%">Readiness</th><th class="num">Score</th></tr></thead><tbody>
       ${rows.map(({ v, r }) => `<tr class="click" data-act="pickVenture" data-id="${v.id}"><td><b>${esc(v.name)}</b></td><td><span class="badge" style="color:${STAGE_COLOR[v.stage]}">${esc(v.stage)}</span></td><td class="small muted">${esc(nextStage(v.stage) || '—')}</td>
         <td><div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.pct * 100)}%;background:${r.pct >= 1 ? 'var(--green)' : STAGE_COLOR[v.stage]}"></div></div><div class="small muted" style="margin-top:3px">${r.met}/${r.total} · ${esc(r.gates.find((g) => !g.ok)?.label || 'All gates met')}</div></td>
-        <td class="num"><span class="score-ring" style="font-size:16px">${store.ventureScore(v, RUBRIC)}</span></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No live ventures. Plant an idea to start the tower.</div>'}
+        <td class="num"><span class="score-ring" style="font-size:16px">${store.ventureScore(v, RUBRIC)}</span></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No live ventures. Plant an idea to start the farm.</div>'}
     </div>`;
   },
   mount(el) {
@@ -789,7 +786,7 @@ export default {
     if (canvas && overlay && panel) start(canvas, overlay, panel);
   },
   actions: {
-    resetCam() { cam = { ...CAM0, auto: cam.auto, tt: [0, 4.2, 0], tc: cam.tc }; },
+    resetCam() { cam = { ...CAM0, auto: cam.auto, tt: [0, 0.5, 0], tc: cam.tc }; },
     toggleSpin(el) {
       if (cam.auto) { cam.base += Math.sin(cam.phase) * cam.swayAmp; cam.auto = false; }
       else { cam.phase = 0; cam.auto = true; }
@@ -803,7 +800,7 @@ export default {
       loop?.setLayer();
     },
     sky(el) { setTower({ sky: el.value }); },
-    playToggle(el) { const on = !isPlay(); setTower({ play: on }); el.textContent = on ? '■ Exit game' : '▶ Play'; el.classList.toggle('on', on); loop?.setPlay(on); if (on) toast('Tap a building to walk there', 'ok'); },
+    playToggle(el) { const on = !isPlay(); setTower({ play: on }); el.textContent = on ? '■ Exit game' : '▶ Play'; el.classList.toggle('on', on); loop?.setPlay(on); if (on) toast('Tap a farm building to walk there', 'ok'); },
     goto(el) { if (!isPlay()) { setTower({ play: true }); loop?.setPlay(true); document.querySelector('.eng-play')?.classList.add('on'); } loop?.walkTo(el.dataset.id); },
     leavePlace() { gameRT.at = null; selected = { kind: 'core', id: null }; loop?.panel(); },
     wtab(el) { gameRT.wtab = el.dataset.tab; loop?.panel(); },
@@ -871,7 +868,7 @@ ${GW.planMarkdown(v)}`, domain: 'Business & Ventures', venture: v.id, priority: 
       selected = { kind: 'venture', id: v.id }; moveStage(v.id, nxt); toast(`${v.name} rose to ${nxt}: +${100 * (FLOW.indexOf(nxt) + 1)} XP`, 'ok');
     },
     back(el) { const v = store.byId('ventures', el.dataset.id); const p = prevStage(v.stage); if (p) { selected = { kind: 'venture', id: v.id }; moveStage(v.id, p); } },
-    async park(el) { const v = store.byId('ventures', el.dataset.id); if (await confirmBox(`Park ${v.name}? It will rest in the seed vault beneath the tower until you revive it.`, 'Park')) { selected = { kind: 'venture', id: v.id }; moveStage(v.id, 'Parked'); } },
+    async park(el) { const v = store.byId('ventures', el.dataset.id); if (await confirmBox(`Park ${v.name}? It will rest in the seed vault on the farm until you revive it.`, 'Park')) { selected = { kind: 'venture', id: v.id }; moveStage(v.id, 'Parked'); } },
     revive(el) { selected = { kind: 'venture', id: el.dataset.id }; moveStage(el.dataset.id, 'Idea'); },
     diligence(el) {
       const v = store.byId('ventures', el.dataset.id);
