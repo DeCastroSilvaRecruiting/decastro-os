@@ -82,7 +82,8 @@ export const SEED = {
     procure: { dutyRate: 0.05, vatRate: 0.05, vatRecoverable: true, capitalRate: 0.1, fxChecked: '' },
     tower: { sky: 'live', layer: 'pipeline', play: false },
     game: { active: 'matthew', avatars: null, learned: {} },
-    art: { repo: '' },   // site repo for Art Studio uploads; blank = <github owner>/decastro-os
+    art: { repo: '' },
+    dynasty: { setup: {}, sim: null, premiumCap: 0.2, profit: '', bankCapital: [] },   // site repo for Art Studio uploads; blank = <github owner>/decastro-os
   },
   // Units of base currency per 1 unit of currency. USD is the CBUAE peg.
   fx: { AED: 1, USD: 3.6725, CNY: 0.52 },
@@ -129,6 +130,12 @@ export const SEED = {
     { id: 'c_nw', title: 'Quarterly empire review (net worth, ventures, wiki)', entity: 'Personal', due: '', recurrence: 'Quarterly', status: 'Open', notes: 'Record a net-worth snapshot and review every venture score.' },
     { id: 'c_ct', title: 'Confirm UAE Corporate Tax registration & filing obligations for each entity', entity: 'Personal', due: '', recurrence: 'Annual', status: 'Open', notes: 'Verify current rules on tax.gov.ae / with an adviser before relying on any date.' },
   ],
+  // Dynasty: the family wealth structure (foundation, policies, family bank, governance)
+  family: [],      // {id, name, relation, birthDate, generation, roles, residency}
+  policies: [],    // {id, insurer, regulator, kind, status, lifeInsured, owner, beneficiary, sumAssured, ccy, premium, frequency, surrender}
+  familyLoans: [], // {id, borrower, venture, principal, ccy, rate, termMonths, start, status, minutes, repayments:[{date, amount}]}
+  governance: [],  // {id, kind, title, entity, signedOn, reviewDue, fileUrl}
+  lifeEvents: [],  // {id, kind, who, date, notes, checks:{}}
   // Mastermind
   decisions: [],   // {id, date, title, context, options, choice, probability, confidence, expected, reviewDate, outcome, lesson}
   // Claude

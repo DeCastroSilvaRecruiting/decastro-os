@@ -28,7 +28,7 @@ export default {
     const nextTasks = s.ventures.flatMap((v) => v.tasks.filter((t) => !t.done).map((t) => ({ ...t, v }))).sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999')).slice(0, 6);
     const topIdeas = allIdeas(s).filter((i) => i.kind !== 'product' && i.status === 'new').sort((a, b) => b.calc.total - a.calc.total).slice(0, 3);
     const isEmpty = !s.cash.length && !s.holdings.length && !s.properties.length;
-    const G = game(s, { today: today(), deadlines: store.deadlines(14), wealth: w, wikiCount: idx.articles.length, fxWarning: fxWarning(s), procureAlerts: procureAlerts(s) });
+    const G = game(s, { today: today(), deadlines: store.deadlines(14), wealth: w, wikiCount: idx.articles.length, fxWarning: fxWarning(s), procureAlerts: procureAlerts(s), toBase: store.toBase });
     const urgent = G.attention.filter((n) => n.sev >= 2).length;
 
     const setup = [

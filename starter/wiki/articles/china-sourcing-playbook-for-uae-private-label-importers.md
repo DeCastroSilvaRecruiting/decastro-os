@@ -5,7 +5,7 @@ tags: [china, sourcing, alibaba, 1688, global-sources, made-in-china, supplier-v
 confidence: medium
 summary: Source through Alibaba Trade Assurance or a verified Global Sources supplier, check the licence yourself, pay 30/70 with the balance released only after a passed third-party inspection (about USD 268–298 a man-day, named providers), buy FOB/FCA and clear under your own importer code; but plan freight around the Hormuz closure, which since March 2026 has pushed China–UAE sea cargo through east-coast ports at far higher cost and longer transit.
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-16
 queue_id: q_amz_sourcing
 sources:
   - 1. Alibaba Guarantee On-time Delivery Terms and Conditions — Alibaba.com — https://terms.alicdn.com/legal-agreement/terms/common_platform_service/20250206115430183/20250206115430183.html (no effective date shown; accessed 2026-11-09) [T1]
@@ -130,7 +130,7 @@ Do all of this **before** paying anything:
 |---|---|---|
 | **EXW** Ex Works | Goods made available at the factory. Buyer handles export clearance, loading and everything after [11] | Avoid for China. You become responsible for Chinese export clearance. ICC calls EXW best suited to domestic trade and suggests **FCA** when the buyer may struggle with export clearance [11]. |
 | **FCA** Free Carrier (any mode) [12] | Goods handed, export-cleared, to your forwarder | Best for **air, LCL and consolidations**. Your forwarder controls the main leg. |
-| **FOB** Free on Board (sea only) [12] | Goods loaded on the vessel at the Chinese port | **Recommended default for sea.** Your forwarder books the main leg, insurance and the Dubai side. It is the price most suppliers quote. |
+| **FOB** Free on Board (sea only) [12] | Goods loaded on the vessel at the Chinese port | **Recommended default for sea.** Your forwarder books the main leg, insurance and the Dubai side. It is the price most suppliers quote. Caveat: the ICC says FOB and CIF are "not suitable for container shipments"; for a full container, consider contracting FCA at the named container yard (see [[Procurement Fundamentals: Landed Cost, Incoterms and Negotiation]]). |
 | **CIF** Cost, Insurance & Freight (sea only) [12] | Supplier pays freight and insurance to the UAE port; risk passes at loading | Looks convenient, but the supplier picks the cheapest carrier and the insurance minimum, and destination charges come back to you. In 2026 the supplier may also be quoting to a port the ship can no longer reach (*Judgement*). |
 | **DDP** Delivered Duty Paid | Seller clears import and pays duty and VAT at destination [11] | ICC warns that some countries do not let foreign sellers complete import formalities and suggests DAP instead [11]. In the UAE a commercial import needs a licensed importer's customs code [20][21]. A "DDP door-to-FBA" offer from a Chinese forwarder therefore means **someone else's code is on your goods**. You lose control of the declared value and may be unable to recover the import VAT (*Judgement*; ask the forwarder whose code and TRN they will use). |
 
@@ -292,15 +292,17 @@ What this shows (*Judgement*):
 - Current door-to-FBA quotes for 3–5 CBM LCL from at least three named forwarders, with the discharge port and trucking stated. This replaces the illustrative AED 5,300.
 - Whether, and when, Hormuz reopens. Watch Lloyd's List Intelligence (next brief due 19 Nov 2026) and carrier advisories for Jebel Ali.
 - The current UAE Ministry of Economy trademark fee schedule, read from the ministry itself, and how to link the TRN to the customs code for VAT deferral.
-- UAE/GCC conformity certification (ECAS/ESMA, G-Mark) by product category.
+- UAE/GCC conformity certification by product category: now covered in [[UAE and GCC Product Conformity and Import Rules for Amazon Sellers]].
 
 ## Related
+- [[UAE and GCC Product Conformity and Import Rules for Amazon Sellers]] — which products need ECAS, G-Mark, TDRA or Montaji before import
 - [[Amazon FBA from China: Model, Rules and Economics]] — the model and unit economics this playbook executes; its freight assumption needs updating
 - [[UAE E-commerce Seller Set-up: Licence, VAT and Corporate Tax]] — licence, customs code and VAT registration this depends on
 - [[Venture Validation Framework]] — gate a product must pass before any sample money is spent
 - [[Venture Dossier: DCS Golf]] — may source hardware and components from China; trademark exposure
 - [[Treasury Liquidity Tiers]] — where the deposit, balance and freight cash should come from
 - [[UAE Corporate Tax Essentials]] — tax on the resulting profits
+- [[Procurement Fundamentals: Landed Cost, Incoterms and Negotiation]] — the general landed-cost, Incoterms and negotiation method this playbook applies to China
 
 ## Sources
 1. Alibaba Guarantee On-time Delivery Terms and Conditions — Alibaba.com — https://terms.alicdn.com/legal-agreement/terms/common_platform_service/20250206115430183/20250206115430183.html (no effective date shown; accessed 2026-11-09) [T1]

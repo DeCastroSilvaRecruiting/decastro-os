@@ -5,7 +5,7 @@ tags: [principles, philosophy, decision-making]
 confidence: medium
 summary: The short list of rules the De Castro Empire runs on, refined weekly as research adds evidence.
 created: 2026-11-07
-updated: 2026-11-07
+updated: 2026-11-15
 pinned: true
 sources:
   - Benjamin Graham — The Intelligent Investor (rev. ed. 1973), chapter 20 on margin of safety [T1]
@@ -30,9 +30,13 @@ sources:
 ## Property
 8. **Buy on net numbers.** Net yield, cash-on-cash and debt cover — not headline price growth. See [[Property Investment Metrics]].
 
+## Structure
+14. **One box per tax and risk profile.** Keep personal rental property, venture shares and trading businesses in separate holdings: Dubai rent held personally (no licence) sits outside Corporate Tax, but the same rent inside a free zone holdco is taxed at 9% and can cost that company its 0% status. Evidence: [[UAE Holding Structures]], [[Dubai Property Purchase Costs and Rental Yield Data]]. Confirm any structure with a licensed adviser. *(added 15 Nov 2026)*
+
 ## Governance & trust
 9. **If it is not in the ledger, it did not happen.** Clean books for every entity. See [[Double-Entry Accounting]].
 10. **Never miss a deadline you could have calendared.** Licences, filings and notice periods are trust made visible.
+13. **Compliance before tax optimisation.** For small ventures the fines for missed paperwork usually outweigh the tax itself: AED 10,000 for late Corporate Tax registration when SBR makes the tax nil, AED 5,000 a month for e-invoicing failures, AED 20,000 for one unpermitted sports event (as of Nov 2026). Get registered, permitted and invoicing correctly first; optimise later. Evidence: [[UAE Corporate Tax Essentials]], [[Venture Dossier: Wednesday Circuit]]. *(added 15 Nov 2026)*
 11. **Write decisions down before the outcome is known.** Measure your judgement honestly.
 
 ## Knowledge

@@ -2,6 +2,7 @@
 // Nothing here is self-reported: every point comes from something dated or verifiable in the app's data.
 // Pure functions of state (no DOM), shared by The Tower, the Command Centre and tests.
 import { FLOW, readiness, nextStage } from './gates.js';
+import { dynastyAlerts } from './dynasty.js';
 
 const num = (x) => (Number.isFinite(+x) ? +x : 0);
 const dayDiff = (a, b) => Math.round((new Date(`${a}T00:00:00`) - new Date(`${b}T00:00:00`)) / 86400000);
@@ -49,6 +50,12 @@ export function events(s) {
   for (const c of s.compliance || []) { if (c.lastDone) add(c.lastDone, 30, `Obligation met: ${c.title}`, 'legal', '#/legal/compliance'); else if (c.status === 'Done') add('', 30, `Obligation met: ${c.title}`, 'legal', '#/legal/compliance'); }
   for (const e of s.entities || []) if (e.status === 'Active' && e.type !== 'Individual') add('', 150, `Entity active: ${e.name}`, 'legal', '#/legal/entities');
   for (const c of s.contracts || []) add(c.start || '', 20, `Contract registered: ${c.title}`, 'legal', '#/legal/contracts');
+  // Dynasty: the family structure is real-world progress too
+  for (const [k, on] of Object.entries(s.settings?.dynasty?.setup || {})) add(on, 20, `Dynasty setup step done (${k.split('.')[0]})`, 'legal', '#/dynasty/setup');
+  for (const g of s.governance || []) if (g.signedOn) add(g.signedOn, g.kind === 'Minutes' ? 20 : 60, `${g.kind} signed: ${g.title || g.kind}`, 'legal', '#/dynasty/governance');
+  for (const p of s.policies || []) if (p.status === 'In force') add(p.start || '', 80, `Policy in force: ${p.insurer} on ${p.lifeInsured || 'family member'}`, 'treasury', '#/dynasty/policies');
+  for (const e of s.lifeEvents || []) if (e.closed) add(e.closed, 30, `Life-event review completed: ${e.kind}`, 'legal', '#/dynasty/governance');
+  for (const l of s.familyLoans || []) if (l.status === 'Repaid') add((l.repayments || []).map((r) => r.date).sort().pop() || '', 60, `Family bank loan repaid by ${l.borrower}`, 'treasury', '#/dynasty/bank');
   for (const n of s.snapshots || []) add(n.date, 20, 'Net-worth snapshot recorded', 'treasury', '#/treasury');
   for (const h of s.holdings || []) add(h.date || '', 20, `Holding tracked: ${h.name || h.ticker || 'investment'}`, 'investments', '#/investments');
   for (const p of s.properties || []) if (p.status !== 'Target') add(p.purchaseDate || '', 100, `Property owned: ${p.name}`, 'property', '#/property');
@@ -116,7 +123,7 @@ export function attention(s, ctx = {}) {
   const t = ctx.today, need = [];
   const add = (k, sev, text, href, extra = {}) => need.push({ k, sev, text, href, ...extra });
   for (const d of ctx.deadlines || []) {
-    const k = d.href.startsWith('#/procure') ? 'procure' : d.href.startsWith('#/legal') ? 'legal' : d.href.startsWith('#/math') ? 'math' : d.href.startsWith('#/ventures') ? 'ventures' : 'core';
+    const k = d.href.startsWith('#/procure') ? 'procure' : d.href.startsWith('#/legal') || d.href.startsWith('#/dynasty') ? 'legal' : d.href.startsWith('#/math') ? 'math' : d.href.startsWith('#/ventures') ? 'ventures' : 'core';
     const venture = d.href.startsWith('#/ventures/') ? d.href.split('/')[2] : undefined;
     add(k, d.days < 0 ? 3 : d.days <= 7 ? 2 : 1, `${d.days < 0 ? `Overdue by ${-d.days} day${d.days === -1 ? '' : 's'}` : d.days === 0 ? 'Due today' : `Due in ${d.days} day${d.days === 1 ? '' : 's'}`}: ${d.title}`, d.href, { venture, xp: k === 'procure' ? 30 : 25 });
   }
@@ -141,6 +148,7 @@ export function attention(s, ctx = {}) {
   const building = (s.ventures || []).filter((v) => ['Build', 'Launch', 'Scale'].includes(v.stage));
   for (const v of building) if (!v.entity || !(s.journal || []).some((j) => j.entity === v.entity)) add('finance', 2, `${v.name} is at ${v.stage} with no books open`, '#/finance', { venture: v.id, xp: 30 });
   for (const a of ctx.procureAlerts || []) add('procure', a.tone === 'red' ? 3 : 2, a.text, a.href, { xp: 30 });
+  for (const a of dynastyAlerts(s, ctx.toBase)) if (!/review overdue|^Life-event review open/.test(a.text)) add('legal', a.sev, a.text, a.href, { xp: 25 });
   // de-duplicate on text
   const seen = new Set();
   return need.filter((n) => (seen.has(n.text) ? false : seen.add(n.text))).sort((a, b) => b.sev - a.sev);

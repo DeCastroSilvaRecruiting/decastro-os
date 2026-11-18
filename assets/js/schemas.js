@@ -1,9 +1,11 @@
 // Field schemas for every record type, plus generic CRUD actions.
 import * as store from './store.js';
 import { uid, openForm } from './ui.js';
+import { POLICY_KINDS, POLICY_STATUS, GOV_KINDS } from './dynasty.js';
 
 const ccys = () => store.currencies();
 const entities = () => store.get().entities.map((e) => e.name);
+const people = () => ['', ...(store.get().family || []).map((p) => p.name)];
 
 export const SCHEMAS = {
   cash: { title: 'Cash account', fields: [
@@ -72,6 +74,8 @@ export const SCHEMAS = {
     { k: 'expiry', label: 'Licence expiry', type: 'date' },
     { k: 'ownership', label: 'Your ownership %', type: 'number' },
     { k: 'parent', label: 'Owned by (parent entity)', type: 'select', options: () => ['', ...entities()] },
+    { k: 'taxStatus', label: 'Tax status', type: 'select', options: ['', 'QFF transparent', 'CT registered', 'Exempt', 'Pending'], hint: 'QFF = Qualifying Family Foundation (tax-transparent)' },
+    { k: 'venture', label: 'Holds this venture', type: 'select', options: () => [{ v: '', l: '—' }, ...store.get().ventures.map((v) => ({ v: v.id, l: v.name }))], hint: 'Ring-fencing: one company per business or property' },
     { k: 'notes', label: 'Notes (directors, agents, bank, tax registrations)', type: 'textarea' },
   ] },
   contracts: { title: 'Contract', fields: [
@@ -93,6 +97,53 @@ export const SCHEMAS = {
     { k: 'recurrence', label: 'Recurrence', type: 'select', options: ['One-off', 'Monthly', 'Quarterly', 'Annual'] },
     { k: 'status', label: 'Status', type: 'select', options: ['Open', 'In progress', 'Done'] },
     { k: 'notes', label: 'Notes / authority / adviser', type: 'textarea' },
+  ] },
+  family: { title: 'Family member', fields: [
+    { k: 'name', label: 'Name', required: true },
+    { k: 'relation', label: 'Relation', placeholder: 'Self, spouse, son, daughter…' },
+    { k: 'birthDate', label: 'Date of birth', type: 'date' },
+    { k: 'generation', label: 'Generation', type: 'select', options: [{ v: '1', l: '1 · you and your spouse' }, { v: '2', l: '2 · children' }, { v: '3', l: '3 · grandchildren' }, { v: '0', l: 'Not family (adviser or councillor)' }] },
+    { k: 'roles', label: 'Roles in the structure', full: true, placeholder: 'founder, councillor, guardian, beneficiary, director, shareholder', hint: 'Comma-separated' },
+    { k: 'residency', label: 'Tax residency', placeholder: 'UAE' },
+    { k: 'notes', label: 'Notes', type: 'textarea' },
+  ] },
+  policies: { title: 'Life policy', fields: [
+    { k: 'insurer', label: 'Insurer', required: true },
+    { k: 'regulator', label: 'Regulator', type: 'select', options: ['CBUAE', 'DFSA', 'FSRA', 'Offshore'] },
+    { k: 'kind', label: 'Policy type', type: 'select', options: POLICY_KINDS, hint: 'Key person and business term cover are owned by the business, not the foundation' },
+    { k: 'status', label: 'Status', type: 'select', options: POLICY_STATUS },
+    { k: 'lifeInsured', label: 'Life insured', type: 'select', options: people },
+    { k: 'owner', label: 'Policy owner', type: 'select', options: () => ['', ...entities()] },
+    { k: 'beneficiary', label: 'Beneficiary', type: 'select', options: () => ['', ...entities()] },
+    { k: 'sumAssured', label: 'Sum assured', type: 'number' },
+    { k: 'ccy', label: 'Currency', type: 'select', options: ccys },
+    { k: 'premium', label: 'Premium', type: 'number' },
+    { k: 'frequency', label: 'Premium frequency', type: 'select', options: ['Annual', 'Quarterly', 'Monthly'] },
+    { k: 'start', label: 'Start date', type: 'date' },
+    { k: 'nominationReview', label: 'Next nomination review', type: 'date' },
+    { k: 'surrender', label: 'Surrender schedule from the illustration', type: 'textarea', placeholder: '1: 0\n5: 120000\n10: 410000', hint: 'One "year: surrender value" per line, copied from the insurer illustration' },
+    { k: 'notes', label: 'Notes', type: 'textarea' },
+  ] },
+  familyLoans: { title: 'Family bank loan', fields: [
+    { k: 'borrower', label: 'Borrower', type: 'select', options: people, required: true },
+    { k: 'venture', label: 'Venture', placeholder: 'What the money is for' },
+    { k: 'principal', label: 'Amount', type: 'number', required: true },
+    { k: 'ccy', label: 'Currency', type: 'select', options: ccys },
+    { k: 'rate', label: 'Interest rate % a year', type: 'number' },
+    { k: 'termMonths', label: 'Term (months)', type: 'number', default: 36 },
+    { k: 'start', label: 'First payment month starts', type: 'date' },
+    { k: 'status', label: 'Status', type: 'select', options: ['Pitched', 'Approved', 'Active', 'Repaid', 'Default', 'Declined'] },
+    { k: 'minutes', label: 'Council approval minutes', type: 'select', options: () => [{ v: '', l: '— none yet —' }, ...(store.get().governance || []).filter((g) => g.kind === 'Minutes').map((g) => ({ v: g.id, l: `${g.title || 'Minutes'}${g.signedOn ? ` (${g.signedOn})` : ''}` }))], hint: 'No loan is approved without minutes. Log the meeting under Governance first.' },
+    { k: 'pitch', label: 'The pitch', type: 'textarea' },
+  ] },
+  governance: { title: 'Governance record', fields: [
+    { k: 'kind', label: 'Kind', type: 'select', options: GOV_KINDS },
+    { k: 'title', label: 'Title', placeholder: 'Foundation charter v1, Q1 council minutes…' },
+    { k: 'entity', label: 'Entity', type: 'select', options: entities },
+    { k: 'signedOn', label: 'Signed / held on', type: 'date' },
+    { k: 'reviewDue', label: 'Review due', type: 'date' },
+    { k: 'fileUrl', label: 'Link to the signed copy', placeholder: 'Google Drive, OneDrive…', hint: 'Keep the document in your own storage; the app keeps only the link' },
+    { k: 'notes', label: 'Notes', type: 'textarea' },
   ] },
   decisions: { title: 'Decision', fields: [
     { k: 'title', label: 'Decision', required: true, full: true, placeholder: 'Buy the Marina 2BR at AED X?' },

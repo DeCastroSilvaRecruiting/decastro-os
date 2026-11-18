@@ -5,7 +5,7 @@ tags: [treasury, cash-management, liquidity, reserves, runway]
 confidence: high
 summary: Split cash into operating, reserve and strategic tiers sized in months of burn, so you can survive shocks and still act on opportunities.
 created: 2026-11-07
-updated: 2026-11-07
+updated: 2026-11-15
 sources:
   - Association for Financial Professionals — Treasury management body of knowledge (CTP) [T2]
   - Basel Committee on Banking Supervision — Liquidity Coverage Ratio framework (2013), bis.org [T1]
@@ -46,6 +46,8 @@ The Treasury page shows each tier against its target. When the reserve is fully 
 - [[Property Investment Metrics]]
 - [[Double-Entry Accounting]]
 - [[Dubai Property Purchase Costs and Rental Yield Data]] — property deposits need ~47% of price in cash
+- [[UAE Holding Structures]] — which entity should hold reserve cash versus venture operating cash
+- [[Venture Dossier: Wednesday Circuit]] — member deposits and sponsor fees received ahead of events are liabilities, not free cash
 
 ## Sources
 1. Association for Financial Professionals — CTP body of knowledge [T2]

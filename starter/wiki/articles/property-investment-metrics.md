@@ -5,7 +5,7 @@ tags: [property, real-estate, yield, cash-on-cash, dscr, irr]
 confidence: high
 summary: Judge property on net yield, cash-on-cash return, debt service cover and IRR — not on headline price or gross yield.
 created: 2026-11-07
-updated: 2026-11-08
+updated: 2026-11-15
 sources:
   - Dubai Land Department — Request for sale registration (fees) — https://dubailand.gov.ae/en/eservices/request-for-sale-registration (accessed 2026-11-08) [T1]
   - Royal Institution of Chartered Surveyors — RICS Valuation – Global Standards (Red Book) — https://www.rics.org [T1]
@@ -48,6 +48,8 @@ Always compute net yield on **total cost** (price + acquisition costs), not pric
 
 ## What this means for the empire
 Only buy when net numbers work at today's rent and a higher rate. Treat expected price growth as upside, not as the case for the deal. Track every property in the portfolio with the same metrics so they can be compared and pruned.
+
+Update (15 Nov 2026, weekly review): Dubai's market has started to turn. Cavendish Maxwell's Q3 2026 data (via Khaleej Times, T2) shows rent growth halved to +5.5% y/y, one in five rental deals at a lower rent, and the average price per sq ft down 2.2% y/y — the first yearly fall since the recovery. Run the base case at **flat rent on renewal and lower rent on new lets**, not at last year's growth. Figures and caveats in [[Dubai Property Purchase Costs and Rental Yield Data]].
 
 ## Related
 - [[Compounding and the Rule of 72]]

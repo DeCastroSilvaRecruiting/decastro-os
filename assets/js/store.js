@@ -2,6 +2,7 @@
 import { SEED, ECOM_VENTURE } from './seed.js';
 import { num, today } from './ui.js';
 import { propertyMetrics } from './fin.js';
+import { dynastyDeadlines } from './dynasty.js';
 
 const KEY = 'dcos.state.v1';
 let state = null;
@@ -183,6 +184,7 @@ export function deadlines(withinDays = 60) {
     push(r.need, `Decide supplier: ${r.title}`, 'Sourcing', '#/procure/sourcing');
     (r.quotes || []).forEach((q) => push(q.validUntil, `Quote expires: ${r.title} (${state.suppliers.find((x) => x.id === q.supplier)?.name || q.supplierName || 'supplier'})`, 'Sourcing', '#/procure/sourcing'));
   });
+  dynastyDeadlines(state).forEach((d) => push(d.date, d.title, d.kind, d.href));
   state.decisions.filter((d) => !d.outcome || d.outcome === 'Pending').forEach((d) => push(d.reviewDate, `Review decision: ${d.title}`, 'Decision', '#/math/decisions'));
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }

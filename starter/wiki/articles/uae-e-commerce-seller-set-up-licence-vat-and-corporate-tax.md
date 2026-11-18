@@ -5,7 +5,7 @@ tags: [uae, dubai, e-commerce, amazon, fba, licensing, det, free-zone, vat, corp
 confidence: medium
 summary: For a first-year B2C Amazon.ae seller, a Dubai mainland (DET) LLC with an online-retail activity, a Dubai Customs code and VAT registered on time beats a free zone company, because sales to consumers are an excluded activity for the free zone 0% rate and a free zone entity adds a mainland-access problem without a tax benefit; at AED 400k–600k revenue Corporate Tax is nil either way.
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-13
 queue_id: q_amz_entity
 sources:
   - 1. Ministerial Decision No. 229 of 2025 Regarding Qualifying Activities and Excluded Activities — Ministry of Finance — https://mof.gov.ae/wp-content/uploads/2025/09/EN-Ministerial-Decision-No.-229-of-2025-Regarding-Qualifying-Activities-and-Excluded-Activities.pdf (28 Aug 2025; fetch blocked 2026-11-09, read 2026-11-08 for [[UAE Holding Structures]]) [T1]
@@ -165,6 +165,7 @@ Lesson: in years one and two, the licence fee difference between routes (≈ AED
 ## Open questions
 - Fetch the MD 229/2025 PDF directly and confirm the natural-persons exception list (blocked this run).
 - DET's official fee schedule for an LLC with an e-commerce activity, and whether expatriates can hold an eTrader licence (DET/Invest in Dubai pages did not show fees).
+  - Update 2026-11-13: the official u.ae page still says UAE/GCC nationals only. A Sep 2026 guide citing Khaleej Times (Mar 2025) reports expats may hold **professional (service) activities only**, not commercial trading. If confirmed, the eTrader route is closed to an expat selling goods. See [[Venture Dossier: DCS Golf]].
 - Prices for Dubai CommerCity, IFZA, DMCC, RAKEZ and SHAMS e-commerce licences (SHAMS page blocked; DMCC and RAKEZ not checked this run).
 - Amazon.ae payout currency and whether a USD account can receive Amazon.ae disbursements. Check Seller Central.
 - Whether DET has published the activity list and permits under Executive Council Resolution 11/2025 (as of Nov 2026).
@@ -176,6 +177,7 @@ Lesson: in years one and two, the licence fee difference between routes (≈ AED
 - [[Amazon FBA from China: Model, Rules and Economics]] — the business model, fees and cash cycle
 - [[China Sourcing Playbook for UAE Private-Label Importers]] — suppliers, inspection and product conformity
 - [[Treasury Liquidity Tiers]] — funding stock, duty and VAT cash outlays
+- [[Venture Dossier: DCS Golf]] — expat eTrader limits and the free-zone route for selling physical goods (Nov 2026)
 
 ## Sources
 1. Ministerial Decision No. 229 of 2025 Regarding Qualifying Activities and Excluded Activities — Ministry of Finance — https://mof.gov.ae/wp-content/uploads/2025/09/EN-Ministerial-Decision-No.-229-of-2025-Regarding-Qualifying-Activities-and-Excluded-Activities.pdf (28 Aug 2025; fetch blocked 2026-11-09, read 2026-11-08 for [[UAE Holding Structures]]) [T1]

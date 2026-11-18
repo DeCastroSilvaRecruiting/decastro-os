@@ -1,17 +1,19 @@
 {
-  "updated": "2026-11-09T04:34:54.864Z",
+  "updated": "2026-11-18T06:12:03.347Z",
   "stats": {
-    "articles": 18,
-    "sources": 197,
-    "links": 87,
-    "words": 29478,
+    "articles": 22,
+    "sources": 381,
+    "links": 137,
+    "words": 53981,
     "confidence": {
       "high": 7,
-      "medium": 9,
-      "low": 2
+      "medium": 11,
+      "low": 4
     }
   },
-  "missingLinks": [],
+  "missingLinks": [
+    "saudi-arabia-market-entry-for-uae-sellers"
+  ],
   "articles": [
     {
       "slug": "amazon-fba-from-china-model-rules-and-economics",
@@ -28,24 +30,62 @@
         "passive-income",
         "global-trend-store"
       ],
-      "summary": "A compliant China-to-Amazon.ae store is private label sold through FBA with you as seller of record; Amazon's own rate card now confirms the fees, the business can run on low input once set up, but it is capital-hungry, fee-heavy and never fully passive.",
+      "summary": "A compliant China-to-Amazon.ae store is private label sold through FBA with you as seller of record; Amazon's own rate card now confirms the fees, the business can run on low input once set up, but it is capital-hungry, fee-heavy and never fully passive; a lean tool stack costs about AED 1,450 a month and agencies only pay off above roughly AED 100,000 a month of sales.",
       "confidence": "medium",
       "created": "2026-11-08",
-      "updated": "2026-11-09",
+      "updated": "2026-11-11",
       "pinned": true,
       "redirect": false,
-      "sources": 16,
+      "sources": 34,
       "links": [
         "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
         "uae-corporate-tax-essentials",
         "uae-holding-structures",
         "china-sourcing-playbook-for-uae-private-label-importers",
+        "uae-and-gcc-product-conformity-and-import-rules-for-amazon-sellers",
+        "multichannel-expansion-from-the-uae-amazonsa-noon-and-shopify",
+        "amazonae-and-noon-category-scan-small-light-uncertified-niches",
         "venture-validation-framework",
         "double-entry-accounting",
         "treasury-liquidity-tiers"
       ],
-      "words": 3888,
+      "words": 5582,
       "path": "wiki/articles/amazon-fba-from-china-model-rules-and-economics.md"
+    },
+    {
+      "slug": "amazonae-and-noon-category-scan-small-light-uncertified-niches",
+      "title": "Amazon.ae and Noon Category Scan: Small, Light, Uncertified Niches",
+      "domain": "Markets & Macro",
+      "tags": [
+        "amazon-ae",
+        "noon",
+        "ecommerce",
+        "category-research",
+        "product-selection",
+        "private-label",
+        "seasonality",
+        "golf",
+        "global-trend-store",
+        "dcs-golf",
+        "uae"
+      ],
+      "summary": "On September and October 2026 Amazon.ae bestseller data, car-interior, fitness, home-organisation and pet accessories are near-tied as Global Trend Store's first niche; most bestsellers sell at AED 5–40, where FBA fees take the margin, so launch AED 59–99 bundles — and sell pet bundles on Noon (9% referral) or at AED 50 or less on Amazon.ae, whose pet rate jumps from 8% to 15% above AED 50. Golf accessories belong to DCS Golf gifting, not the store.",
+      "confidence": "low",
+      "created": "2026-11-10",
+      "updated": "2026-11-15",
+      "pinned": false,
+      "redirect": false,
+      "sources": 12,
+      "links": [
+        "amazon-fba-from-china-model-rules-and-economics",
+        "uae-and-gcc-product-conformity-and-import-rules-for-amazon-sellers",
+        "china-sourcing-playbook-for-uae-private-label-importers",
+        "multichannel-expansion-from-the-uae-amazonsa-noon-and-shopify",
+        "venture-dossier-dcs-golf",
+        "venture-validation-framework"
+      ],
+      "words": 4248,
+      "path": "wiki/articles/amazonae-and-noon-category-scan-small-light-uncertified-niches.md"
     },
     {
       "slug": "china-sourcing-playbook-for-uae-private-label-importers",
@@ -74,19 +114,21 @@
       "summary": "Source through Alibaba Trade Assurance or a verified Global Sources supplier, check the licence yourself, pay 30/70 with the balance released only after a passed third-party inspection (about USD 268–298 a man-day, named providers), buy FOB/FCA and clear under your own importer code; but plan freight around the Hormuz closure, which since March 2026 has pushed China–UAE sea cargo through east-coast ports at far higher cost and longer transit.",
       "confidence": "medium",
       "created": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-16",
       "pinned": false,
       "redirect": false,
       "sources": 36,
       "links": [
         "amazon-fba-from-china-model-rules-and-economics",
+        "procurement-fundamentals-landed-cost-incoterms-and-negotiation",
         "venture-validation-framework",
         "treasury-liquidity-tiers",
         "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
+        "uae-and-gcc-product-conformity-and-import-rules-for-amazon-sellers",
         "venture-dossier-dcs-golf",
         "uae-corporate-tax-essentials"
       ],
-      "words": 5389,
+      "words": 5478,
       "path": "wiki/articles/china-sourcing-playbook-for-uae-private-label-importers.md"
     },
     {
@@ -158,17 +200,18 @@
       "summary": "Budget about 7% of the price on top of the deposit for a mortgaged Dubai resale purchase (DLD 4%, agent 2% + VAT, trustee, mortgage registration 0.25%), and build net yields from DLD's own transaction, Ejari, rental-index and service-charge data rather than listing-based \"ROI\" figures.",
       "confidence": "medium",
       "created": "2026-11-08",
-      "updated": "2026-11-08",
+      "updated": "2026-11-15",
       "pinned": false,
       "redirect": false,
-      "sources": 14,
+      "sources": 27,
       "links": [
         "property-investment-metrics",
         "uae-corporate-tax-essentials",
         "uae-holding-structures",
-        "treasury-liquidity-tiers"
+        "treasury-liquidity-tiers",
+        "empire-principles"
       ],
-      "words": 1772,
+      "words": 2593,
       "path": "wiki/articles/dubai-property-purchase-costs-and-rental-yield-data.md"
     },
     {
@@ -183,7 +226,7 @@
       "summary": "The short list of rules the De Castro Empire runs on, refined weekly as research adds evidence.",
       "confidence": "medium",
       "created": "2026-11-07",
-      "updated": "2026-11-07",
+      "updated": "2026-11-15",
       "pinned": true,
       "redirect": false,
       "sources": 3,
@@ -193,10 +236,14 @@
         "compounding-and-the-rule-of-72",
         "venture-validation-framework",
         "property-investment-metrics",
+        "uae-holding-structures",
+        "dubai-property-purchase-costs-and-rental-yield-data",
         "double-entry-accounting",
+        "uae-corporate-tax-essentials",
+        "venture-dossier-wednesday-circuit",
         "how-the-knowledge-engine-works"
       ],
-      "words": 329,
+      "words": 476,
       "path": "wiki/articles/empire-principles.md"
     },
     {
@@ -249,6 +296,45 @@
       "path": "wiki/articles/kelly-criterion-and-position-sizing.md"
     },
     {
+      "slug": "multichannel-expansion-from-the-uae-amazonsa-noon-and-shopify",
+      "title": "Multichannel Expansion from the UAE: Amazon.sa, Noon and Shopify",
+      "domain": "Business & Ventures",
+      "tags": [
+        "amazon-sa",
+        "noon",
+        "shopify",
+        "ksa",
+        "saudi-arabia",
+        "gcc",
+        "vat",
+        "zatca",
+        "saber",
+        "cross-border",
+        "payments",
+        "multichannel",
+        "global-trend-store",
+        "dcs-golf"
+      ],
+      "summary": "For Global Trend Store, the cheapest second channel is Noon UAE (FBN fees for a light AED 69 bundle are within a dirham of Amazon.ae's) and Noon's automatic UAE-to-KSA lane, which reaches Saudi buyers with no Saudi entity, VAT registration or stock in KSA; Amazon.sa FBA needs a Saudi importer, SABER certificates and KSA VAT registration, so it waits for proven Saudi demand, and Shopify suits DCS Golf's high-ticket brand, not a low-ticket trend store.",
+      "confidence": "medium",
+      "created": "2026-11-11",
+      "updated": "2026-11-15",
+      "pinned": false,
+      "redirect": false,
+      "sources": 18,
+      "links": [
+        "amazon-fba-from-china-model-rules-and-economics",
+        "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
+        "amazonae-and-noon-category-scan-small-light-uncertified-niches",
+        "uae-and-gcc-product-conformity-and-import-rules-for-amazon-sellers",
+        "china-sourcing-playbook-for-uae-private-label-importers",
+        "venture-dossier-dcs-golf",
+        "saudi-arabia-market-entry-for-uae-sellers"
+      ],
+      "words": 3265,
+      "path": "wiki/articles/multichannel-expansion-from-the-uae-amazonsa-noon-and-shopify.md"
+    },
+    {
       "slug": "procurement-fundamentals-landed-cost-incoterms-and-negotiation",
       "title": "Procurement Fundamentals: Landed Cost, Incoterms and Negotiation",
       "domain": "Business & Ventures",
@@ -260,24 +346,30 @@
         "logistics",
         "negotiation",
         "inventory",
-        "suppliers"
+        "suppliers",
+        "customs",
+        "import-vat",
+        "containers"
       ],
-      "summary": "Buy on total delivered cost, not unit price: add freight, insurance, duty and handling, know who carries risk under the Incoterm, structure payment to protect your cash, and treat order-quantity maths as a starting point.",
+      "summary": "Buy on total delivered cost, not unit price. Add freight, insurance, 5% duty on CIF and handling. Know where risk passes under the Incoterm (ICC says FOB and CIF do not suit containers; FCA does). Register for VAT so import VAT goes through the return rather than out of your cash at the border. Structure payment to protect your cash, and treat order-quantity maths as a starting point.",
       "confidence": "medium",
       "created": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-16",
       "pinned": false,
       "redirect": false,
-      "sources": 4,
+      "sources": 12,
       "links": [
         "amazon-fba-from-china-model-rules-and-economics",
-        "treasury-liquidity-tiers",
+        "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
         "china-sourcing-playbook-for-uae-private-label-importers",
+        "venture-dossier-dcs-golf",
+        "treasury-liquidity-tiers",
         "venture-validation-framework",
         "double-entry-accounting",
-        "uae-corporate-tax-essentials"
+        "uae-corporate-tax-essentials",
+        "venture-dossier-al-ain-ostrich-farm"
       ],
-      "words": 2452,
+      "words": 3690,
       "path": "wiki/articles/procurement-fundamentals-landed-cost-incoterms-and-negotiation.md"
     },
     {
@@ -295,7 +387,7 @@
       "summary": "Judge property on net yield, cash-on-cash return, debt service cover and IRR — not on headline price or gross yield.",
       "confidence": "high",
       "created": "2026-11-07",
-      "updated": "2026-11-08",
+      "updated": "2026-11-15",
       "pinned": false,
       "redirect": false,
       "sources": 3,
@@ -306,7 +398,7 @@
         "empire-principles",
         "uae-holding-structures"
       ],
-      "words": 566,
+      "words": 653,
       "path": "wiki/articles/property-investment-metrics.md"
     },
     {
@@ -323,7 +415,7 @@
       "summary": "Split cash into operating, reserve and strategic tiers sized in months of burn, so you can survive shocks and still act on opportunities.",
       "confidence": "high",
       "created": "2026-11-07",
-      "updated": "2026-11-07",
+      "updated": "2026-11-15",
       "pinned": false,
       "redirect": false,
       "sources": 2,
@@ -332,10 +424,50 @@
         "empire-principles",
         "property-investment-metrics",
         "double-entry-accounting",
-        "dubai-property-purchase-costs-and-rental-yield-data"
+        "dubai-property-purchase-costs-and-rental-yield-data",
+        "uae-holding-structures",
+        "venture-dossier-wednesday-circuit"
       ],
-      "words": 415,
+      "words": 450,
       "path": "wiki/articles/treasury-liquidity-tiers.md"
+    },
+    {
+      "slug": "uae-and-gcc-product-conformity-and-import-rules-for-amazon-sellers",
+      "title": "UAE and GCC Product Conformity and Import Rules for Amazon Sellers",
+      "domain": "Legal & Structuring",
+      "tags": [
+        "uae",
+        "gcc",
+        "conformity",
+        "ecas",
+        "moiat",
+        "g-mark",
+        "tdra",
+        "montaji",
+        "dubai-municipality",
+        "lithium-batteries",
+        "dangerous-goods",
+        "labelling",
+        "amazon",
+        "global-trend-store",
+        "dcs-golf"
+      ],
+      "summary": "Electrical, wireless, battery, cosmetic, chemical, food-contact, toy, child, textile, health and food products all need a UAE certificate, registration or permit before import or sale; non-electric, non-chemical, non-child, non-textile hard goods appear to need none, so Global Trend Store should launch there and treat every regulated category as a separate project.",
+      "confidence": "medium",
+      "created": "2026-11-10",
+      "updated": "2026-11-10",
+      "pinned": false,
+      "redirect": false,
+      "sources": 27,
+      "links": [
+        "amazon-fba-from-china-model-rules-and-economics",
+        "china-sourcing-playbook-for-uae-private-label-importers",
+        "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
+        "amazonae-and-noon-category-scan-small-light-uncertified-niches",
+        "venture-dossier-dcs-golf"
+      ],
+      "words": 3377,
+      "path": "wiki/articles/uae-and-gcc-product-conformity-and-import-rules-for-amazon-sellers.md"
     },
     {
       "slug": "uae-corporate-tax-essentials",
@@ -352,21 +484,22 @@
         "compliance",
         "e-invoicing"
       ],
-      "summary": "Each venture pays 0% up to AED 375,000 of taxable profit and 9% above, Small Business Relief (revenue ≤ AED 3m) now runs to tax periods ending 31 Dec 2029, and an individual trading personally is taxable once combined business turnover exceeds AED 1m — but registration, returns and records are required regardless.",
+      "summary": "Each venture pays 0% up to AED 375,000 of taxable profit and 9% above, Small Business Relief (revenue ≤ AED 3m) runs to tax periods ending 31 Dec 2029, and an individual trading personally is taxable once combined business turnover exceeds AED 1m — but registration, returns, records and (from 1 Jul 2027) B2B e-invoicing are required regardless.",
       "confidence": "medium",
       "created": "2026-11-08",
-      "updated": "2026-11-08",
+      "updated": "2026-11-15",
       "pinned": false,
       "redirect": false,
-      "sources": 13,
+      "sources": 25,
       "links": [
         "uae-holding-structures",
         "dubai-property-purchase-costs-and-rental-yield-data",
         "double-entry-accounting",
         "venture-validation-framework",
-        "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax"
+        "uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax",
+        "venture-dossier-wednesday-circuit"
       ],
-      "words": 1688,
+      "words": 2728,
       "path": "wiki/articles/uae-corporate-tax-essentials.md"
     },
     {
@@ -392,7 +525,7 @@
       "summary": "For a first-year B2C Amazon.ae seller, a Dubai mainland (DET) LLC with an online-retail activity, a Dubai Customs code and VAT registered on time beats a free zone company, because sales to consumers are an excluded activity for the free zone 0% rate and a free zone entity adds a mainland-access problem without a tax benefit; at AED 400k–600k revenue Corporate Tax is nil either way.",
       "confidence": "medium",
       "created": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-13",
       "pinned": false,
       "redirect": false,
       "sources": 31,
@@ -401,10 +534,45 @@
         "uae-corporate-tax-essentials",
         "uae-holding-structures",
         "china-sourcing-playbook-for-uae-private-label-importers",
-        "treasury-liquidity-tiers"
+        "treasury-liquidity-tiers",
+        "venture-dossier-dcs-golf"
       ],
-      "words": 4490,
+      "words": 4558,
       "path": "wiki/articles/uae-e-commerce-seller-set-up-licence-vat-and-corporate-tax.md"
+    },
+    {
+      "slug": "uae-family-wealth-structure-the-waterfall-method",
+      "title": "UAE Family Wealth Structure: The Waterfall Method",
+      "domain": "Legal & Structuring",
+      "tags": [
+        "uae",
+        "structuring",
+        "foundation",
+        "adgm",
+        "difc",
+        "life-insurance",
+        "succession",
+        "wills",
+        "family-bank",
+        "south-africa",
+        "dynasty"
+      ],
+      "summary": "For a Dubai resident the Waterfall Method becomes a UAE foundation at the top, a holding company under it owning each business and property in its own company, and permanent life policies owned by the foundation that pay back into it; build the will, foundation and holding company first and buy insurance last.",
+      "confidence": "low",
+      "created": "2026-11-18",
+      "updated": "2026-11-18",
+      "pinned": false,
+      "redirect": false,
+      "sources": 13,
+      "links": [
+        "uae-holding-structures",
+        "uae-corporate-tax-essentials",
+        "treasury-liquidity-tiers",
+        "venture-validation-framework",
+        "empire-principles"
+      ],
+      "words": 1774,
+      "path": "wiki/articles/uae-family-wealth-structure-the-waterfall-method.md"
     },
     {
       "slug": "uae-holding-structures",
@@ -425,18 +593,20 @@
       "summary": "Hold venture shares in a low-cost free zone holdco (ADGM SPV or DIFC prescribed company), keep Dubai rental property out of any company that relies on 0% free zone status, and confirm DLD eligibility before buying property through an entity.",
       "confidence": "medium",
       "created": "2026-11-08",
-      "updated": "2026-11-08",
+      "updated": "2026-11-15",
       "pinned": false,
       "redirect": false,
-      "sources": 17,
+      "sources": 25,
       "links": [
         "uae-corporate-tax-essentials",
         "dubai-property-purchase-costs-and-rental-yield-data",
         "property-investment-metrics",
         "empire-principles",
-        "venture-dossier-al-ain-ostrich-farm"
+        "venture-dossier-al-ain-ostrich-farm",
+        "uae-family-wealth-structure-the-waterfall-method",
+        "treasury-liquidity-tiers"
       ],
-      "words": 1884,
+      "words": 2584,
       "path": "wiki/articles/uae-holding-structures.md"
     },
     {
@@ -454,20 +624,23 @@
         "south-africa",
         "diligence"
       ],
-      "summary": "The biggest risks are permission and supply, not demand — ADAFSA's farm-activity rules do not name ostriches, the Abu Dhabi Farm Licence is for Emirati farm owners, live birds from South Africa were banned in 2019, and an established state-backed ostrich farm (Ostrich Oasis, ~2,000 birds, 75 t meat/yr) already operates in Al Ain.",
+      "summary": "The biggest risks are permission and supply, not demand — ADAFSA's farm-activity rules do not name ostriches, farm activities are open to farm owners or licensed establishments (so a partnership on an Emirati-owned farm is the realistic route, and ADAFSA's new Nama programme is pushing underused Al Ain farms into agri-tourism), live birds from South Africa have been banned since July 2019 with no published lifting found, and an established ostrich farm (Ostrich Oasis, ~2,000 birds, 75 t meat/yr) already operates in Al Ain; visitor economics work only in a ~7-month cool season.",
       "confidence": "low",
       "created": "2026-11-08",
-      "updated": "2026-11-08",
+      "updated": "2026-11-17",
       "pinned": false,
       "redirect": false,
-      "sources": 17,
+      "sources": 36,
       "links": [
         "venture-validation-framework",
+        "venture-dossier-wednesday-circuit",
+        "kelly-criterion-and-position-sizing",
         "uae-corporate-tax-essentials",
         "uae-holding-structures",
-        "treasury-liquidity-tiers"
+        "treasury-liquidity-tiers",
+        "procurement-fundamentals-landed-cost-incoterms-and-negotiation"
       ],
-      "words": 1629,
+      "words": 3936,
       "path": "wiki/articles/venture-dossier-al-ain-ostrich-farm.md"
     },
     {
@@ -485,21 +658,24 @@
         "licensing",
         "diligence"
       ],
-      "summary": "Hand-made leather golf bags sit in a proven USD 850–1,200 band (MacKenzie, Vessel leather, Sun Mountain Legacy), but at home-made labour costs the margin is thin and the cheap home-business licences are for UAE/GCC nationals only — validate price with pre-orders and corporate gifting before buying tooling or stock.",
+      "summary": "Hand-made golf bags sell at USD 850 (canvas) to ~EUR 1,500 (MacKenzie full leather, Nov 2026); at Italian leather prices a full-leather bag earns ~14% DTC at AED 4,400 but ~31% at a MacKenzie-level AED 5,500, so canvas-with-trim (~29%) is the hero and full leather is a premium/bespoke tier; Indian-origin leather goods enter duty-free under CEPA; and because the AED 1,070 eTrader licence lets expats sell services only, a physical-goods launch needs a free-zone or mainland licence (from ~AED 12,500) — validate with corporate pre-orders first.",
       "confidence": "low",
       "created": "2026-11-08",
-      "updated": "2026-11-08",
+      "updated": "2026-11-18",
       "pinned": false,
       "redirect": false,
-      "sources": 16,
+      "sources": 40,
       "links": [
         "venture-dossier-wednesday-circuit",
         "double-entry-accounting",
         "uae-corporate-tax-essentials",
+        "multichannel-expansion-from-the-uae-amazonsa-noon-and-shopify",
+        "amazonae-and-noon-category-scan-small-light-uncertified-niches",
+        "uae-and-gcc-product-conformity-and-import-rules-for-amazon-sellers",
         "venture-validation-framework",
         "uae-holding-structures"
       ],
-      "words": 1453,
+      "words": 3377,
       "path": "wiki/articles/venture-dossier-dcs-golf.md"
     },
     {
@@ -513,22 +689,26 @@
         "corporate-events",
         "networking",
         "dubai",
-        "diligence"
+        "diligence",
+        "dubai-sports-council",
+        "viya"
       ],
-      "summary": "Demand context is strong (13 Dubai courses near peak capacity, fast-growing business base), but the venture lives or dies on securing a recurring peak-season tee-time block at premier courses and on executives paying a premium over sponsor-funded incumbents like the CEO Masters — test both before spending on brand.",
+      "summary": "Demand context is strong and most premier Dubai tee inventory sits with one operator (Viya / Dubai Golf), but every organised paid round in Dubai likely needs a Dubai Sports Council permit (AED 20,000 fine without one) plus a licensed organiser — so the first tests are a written Viya tee-block quote, a DSC permit answer, and 10 paid founding members.",
       "confidence": "medium",
       "created": "2026-11-08",
-      "updated": "2026-11-08",
+      "updated": "2026-11-15",
       "pinned": false,
       "redirect": false,
-      "sources": 13,
+      "sources": 25,
       "links": [
         "venture-validation-framework",
         "uae-corporate-tax-essentials",
         "venture-dossier-dcs-golf",
-        "uae-holding-structures"
+        "uae-holding-structures",
+        "treasury-liquidity-tiers",
+        "venture-dossier-al-ain-ostrich-farm"
       ],
-      "words": 1281,
+      "words": 2957,
       "path": "wiki/articles/venture-dossier-wednesday-circuit.md"
     },
     {
@@ -557,7 +737,7 @@
         "double-entry-accounting",
         "empire-principles"
       ],
-      "words": 528,
+      "words": 541,
       "path": "wiki/articles/venture-validation-framework.md"
     }
   ]

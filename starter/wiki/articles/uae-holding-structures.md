@@ -5,10 +5,10 @@ tags: [uae, structuring, holding-company, adgm, difc, rak-icc, mainland, foundat
 confidence: medium
 summary: Hold venture shares in a low-cost free zone holdco (ADGM SPV or DIFC prescribed company), keep Dubai rental property out of any company that relies on 0% free zone status, and confirm DLD eligibility before buying property through an entity.
 created: 2026-11-08
-updated: 2026-11-08
+updated: 2026-11-15
 queue_id: q_seed_structure
 sources:
-  - ADGM Registration Authority — Overview of Fees 2025 — https://assets.adgm.com/download/assets/Schedule+of+Fees+2025.pdf/6f25a452823d11ef808c3e0446867bce (version Jan 2025; accessed 2026-11-08) [T1]
+  - ADGM Registration Authority — Overview of Fees 2025 — https://assets.adgm.com/download/assets/Schedule+of+Fees+2025.pdf/6f25a452823d11ef808c3e0446867bce (version Jan 2025; accessed 2026-11-08; current ADGM-Schedule-of-Fees.pdf link https://assets.adgm.com/download/assets/ADGM-Schedule-of-Fees.pdf/6c5c6ff4b0a911ef9bb96218d165befe still serves the Jan 2025 version, accessed 2026-11-15) [T1]
   - ADGM — Annual accounts obligations — https://adgm.com/operating-in-adgm/obligations-of-adgm-registered-entities/annual-filings/annual-accounts (accessed 2026-11-08) [T1]
   - ADGM — Beneficial ownership and control — https://www.adgm.com/operating-in-adgm/obligations-of-adgm-registered-entities/beneficial-ownership-and-control (accessed 2026-11-08) [T1]
   - DIFC Registrar of Companies — Table of Fees Rev. 18 — https://assets.difc.com/v1/media/edge/images/dubaiintern0078-difcexperie96c5-production-3253/media/project/difcexperiences/difc/difcwebsite/documents/business-section-documents/difc-rc-gl-02_rev_18_roc_table_of_fees.pdf (23 Feb 2023; accessed 2026-11-08) [T1]
@@ -25,10 +25,18 @@ sources:
   - Trident Trust — RAK ICC key facts — https://tridenttrust.com/media/pqrho05x/tdub-rakicc-kf.pdf (Feb 2024; accessed 2026-11-08) [T2]
   - FF News — RAK ICC and RAKBANK partnership — https://ffnews.com/news/rak-icc-and-rakbank-partner-to-strengthen-banking-access-for-international-wealt-a305b66c (24 Aug 2026; accessed 2026-11-08) [T3]
   - Avyanco — Dubai mainland company cost — https://avyanco.com/dubai-mainland-cost/ (Jul 2026; accessed 2026-11-08) [T3]
+  - Clyde & Co — DIFC enacts amended prescribed company regulations — https://www.clydeco.com/en/insights/2026/08/difc-enacts-amended-prescribed-company-regulations (5 Aug 2026; accessed 2026-11-15) [T2]
+  - Gibson Dunn — DIFC expands prescribed company regime; comparison with ADGM SPV — https://www.gibsondunn.com/difc-expands-prescribed-company-regime-how-it-compares-with-abu-dhabi-global-market-special-purpose-vehicle-regime/ (26 Aug 2026; accessed 2026-11-15) [T2]
+  - Al Tamimi & Co — DIFC enacts amended Prescribed Company Regulations 2026 — https://www.tamimi.com/news/difc-enacts-amended-prescribed-company-regulations-2026-broader-access-stronger-oversight/ (3 Aug 2026; accessed 2026-11-15) [T2]
+  - PwC — RAK ICC recognised as a free zone for UAE CT purposes — https://www.pwc.com/m1/en/services/tax/middle-east-tax-news-alerts/2026/rak-icc-recognised-as-a-free-zone-for-uae-ct-purposes.html (13 Sep 2026; accessed 2026-11-15) [T2]
+  - Simmons & Simmons — FTA releases summary of Corporate Tax clarifications — https://www.simmons-simmons.com/en/publications/cmrwx7uoj00i6uom86ypw257o/uae-corporate-tax-update-fta-releases-summary-of-clarifications (22 Jul 2026; accessed 2026-11-15) [T2]
+  - Ministry of Finance — Amendment to Cabinet Decision on Economic Substance Requirements (Cabinet Decision 98 of 2024) — https://mof.gov.ae/en/news/ministry-of-finance-announces-amendment-to-cabinet-decision-on-economic-substance-requirements/ (14 Oct 2024; accessed 2026-11-15) [T1]
+  - Ministry of Finance — Amendments to Ministerial Decisions on Tax Groups and Participation Exemption (MD 301 and 302 of 2024) — https://mof.gov.ae/en/news/ministry-of-finance-announces-amendments-to-ministerial-decisions-on-tax-groups-and-participation-and-foreign-permanent-establishment-exemptions/ (23 Dec 2024; accessed 2026-11-15) [T1]
+  - Mondo Visione (republished DIFC release) — New DIFC regulations further strengthen DIFC's structuring advantage for SPVs — https://mondovisione.com/news/new-difc-regulations-further-strengthen-difcs-structuring-advantage-for-spvs-202683/ (3 Aug 2026; accessed 2026-11-15) [T2]
 ---
 # UAE Holding Structures
 
-> **Bottom line:** For holding *venture shares*, a light free zone vehicle — an ADGM SPV (≈ USD 1,500/yr in authority fees) or a DIFC prescribed company (≈ USD 1,300/yr) — is cheap, private and can qualify for 0% Corporate Tax on dividends and share gains. For *Dubai rental property*, holding personally is usually the most tax-efficient (outside Corporate Tax if no licence is needed); putting it in a free zone company makes the rent taxable at 9% and can wreck that company's 0% status. Keep the two in separate boxes, and confirm with DLD and a licensed adviser before buying property through any entity.
+> **Bottom line:** For holding *venture shares*, a light free zone vehicle — an ADGM SPV (≈ USD 1,500/yr in authority fees) or a DIFC prescribed company (≈ USD 1,300/yr; open to any applicant since 24 Jul 2026 but now needs a DFSA-licensed service provider — updated Nov 2026) — is cheap, private and can qualify for 0% Corporate Tax on dividends and share gains. For *Dubai rental property*, holding personally is usually the most tax-efficient (outside Corporate Tax if no licence is needed); putting it in a free zone company makes the rent taxable at 9% and can wreck that company's 0% status. Keep the two in separate boxes, and confirm with DLD and a licensed adviser before buying property through any entity.
 
 ## Context
 Decision informed: which entity (or entities) should own the De Castro ventures (DCS Golf, Wednesday Circuit, Al Ain Ostrich Farm), Dubai property and the investment portfolio — balancing cost, tax, property eligibility, banking, succession and privacy. The operating companies themselves will usually be mainland or a local free zone (they trade with UAE customers); this article is about the layer *above* them.
@@ -36,9 +44,9 @@ Decision informed: which entity (or entities) should own the De Castro ventures 
 ## Cost comparison (authority fees, as of Nov 2026)
 | Vehicle | Initial | Annual | Must-have extras | Source quality |
 |---|---|---|---|---|
-| **ADGM SPV** | USD 1,900 | USD 1,400 renewal + USD 100 confirmation statement | Usually a corporate service provider (fees not verified) | T1 [1] |
+| **ADGM SPV** | USD 1,900 | USD 1,400 renewal + USD 100 confirmation statement | Gateway: connection to ADGM/UAE/GCC (Registrar's discretion); CSP required for non-exempt SPVs since 2021 [19] (CSP fees not verified) | T1 [1], re-checked Nov 2026 |
 | ADGM private company (Cat. B) | USD 5,800 | USD 5,300 | Office/substance | T1 [1] |
-| **DIFC prescribed company** | USD 1,100 (100 application + 1,000 licence) | USD 1,000 + USD 300 confirmation statement | Gateway: e.g. GCC national controller or a DIFC CSP director; no employees | T1 [4] |
+| **DIFC prescribed company** | USD 1,100 (100 application + 1,000 licence); plus USD 750 data protection fee if processing personal data [19] | USD 1,000 + USD 300 confirmation statement (annual figures not re-verified Nov 2026) | **No gateway since 24 Jul 2026**; holding activity only; DFSA-licensed CSP mandatory unless an "Exempt PC"; no employees (updated Nov 2026) [18][19][20] | T1 [4] for fees; T2 for 2026 rules |
 | DIFC foundation | USD 200 licence | USD 200 | — (DIFC elsewhere says "USD 350") | T1, conflicting [4][5] |
 | **RAK ICC company** | ≈ USD 817 government fee | ≈ USD 885 licence | Mandatory registered agent (agent's own renewal to RAK ICC AED 12,500) | T2/T3 only [6][15] |
 | **Mainland (DET) LLC** | ≈ AED 13,900–16,200 (no visas) | Similar licence renewal | Physical office / Ejari | T3 only, unverified [17] |
@@ -47,13 +55,15 @@ At the AED peg of 3.6725, ADGM SPV annual ≈ **AED 5,500**, DIFC prescribed ≈
 
 ## Filing, audit, substance and privacy
 - **ADGM:** most companies file audited accounts within 9 months of year end; small companies (turnover ≤ USD 13.5m and ≤ 35 staff) may file an unaudited balance sheet [2]. Beneficial-owner (≥25%) register is filed with the Registrar but **not public**; changes within 15 days [3]. Foundation by-laws are private.
-- **DIFC:** prescribed companies cannot have employees; land and real property are listed among "GCC registrable assets" they may hold [4]. Audit and UBO access rules for prescribed companies **not verified** this run.
-- **RAK ICC:** accounts kept 7 years but not filed; no audit; UBO data held by the registered agent, not public [15].
+- **DIFC:** prescribed companies cannot have employees or sponsor visas [18]. Under the pre-2026 gateway, land and real property were listed among "GCC registrable assets" they could hold [4]; whether that list survives the July 2026 amendments was **not verified**. **2026 reform (updated Nov 2026):** Prescribed Company Regulations (Consolidated Version No. 5), in force 24 Jul 2026, removed the qualifying requirements, limited the licence to holding activity, and made a DFSA-licensed CSP mandatory unless the PC is an "Exempt PC" (controlled by a DIFC registered person, authorised firm, government entity or listed entity). PCs formed before 24 Jul 2026 must appoint a CSP by **24 Jan 2027** or risk fines of up to USD 20,000 and conversion to an ordinary DIFC company [18][19][20][25]. Accounts must be filed and audited unless the small-companies regime applies (turnover below USD 5m and ≤ 20 shareholders); beneficial ownership is not public [19] (Tier 2 — confirm against the regulations).
+- **RAK ICC:** accounts kept 7 years but not filed; no audit; UBO data held by the registered agent, not public [15]. Note: if a RAK ICC company wants 0% QFZP treatment (see below), Corporate Tax requires audited accounts regardless.
+- **Economic substance:** the UAE Economic Substance Regulations no longer require notifications or reports for financial years ending after 31 Dec 2022 (Cabinet Decision 98 of 2024) [23]. Substance now matters mainly through the Corporate Tax QFZP test.
 - **Corporate Tax overrides the free zone default:** a company claiming Qualifying Free Zone Person (0%) status must have **audited** financial statements and adequate substance, whatever its free zone's own rules say — see [[UAE Corporate Tax Essentials]]. FTA guidance indicates a pure holding company "could have no employees" if its board takes key decisions in the free zone [10].
 
 ## Corporate Tax treatment of a holdco
-- **Qualifying activity:** "holding of shares and other securities for investment purposes" held at least 12 months is a qualifying activity under Ministerial Decision 229 of 2025 (which repealed MD 265 of 2023, retroactive to 1 Jun 2023) [7].
-- **Participation exemption:** dividends and gains from a ≥5% stake (or cost > AED 4m) held ≥12 months, in a company taxed at ≥9%, are exempt; UAE-to-UAE dividends are exempt anyway [11]. So even a holdco taxed at the standard rate pays little on venture dividends.
+- **Qualifying activity:** "holding of shares and other securities for investment purposes" held at least 12 months is a qualifying activity under Ministerial Decision 229 of 2025 (which repealed MD 265 of 2023, retroactive to 1 Jun 2023) [7]. FTA clarifications issued 9 Jul 2026 indicate a disposal within 12 months need not disqualify a QFZP if it can show it intended to hold for 12 months (updated Nov 2026; via [22], Tier 2).
+- **Participation exemption:** dividends and gains from a ≥5% stake (or cost > AED 4m) held ≥12 months, in a company taxed at ≥9%, are exempt; UAE-to-UAE dividends are exempt anyway [11]. So even a holdco taxed at the standard rate pays little on venture dividends. The rules were last amended by MD 302 of 2024 for periods from 1 Jan 2025 (technical changes; thresholds not shown on the MoF release) [24]. FTA's July 2026 view: fair value gains/losses are **not** covered by the exemption, impairment gains/losses are (updated Nov 2026; [22], Tier 2) — relevant if the holdco measures investments at fair value.
+- **RAK ICC now a free zone for Corporate Tax (updated Nov 2026):** Cabinet Resolution 109 of 2026 (13 Jul 2026) reportedly adds RAK ICC to the free zones list under Cabinet Resolution 54 of 2023, retroactive to 1 Jun 2023, so RAK ICC companies can now seek QFZP (0%) status if they meet substance, audit, transfer pricing and de minimis conditions [21]. Tier 2 only — the resolution text was not found on uaelegislation.gov.ae or mof.gov.ae this run.
 - **Property is the trap.** MD 229/2025 excludes "ownership or exploitation of immovable property" other than commercial property in a free zone transacted with a free zone person [7]. FTA guidance (via PwC) says income from property *outside* free zones — e.g. a Dubai Marina apartment — is non-qualifying, taxed at 9%, and counts toward the **de minimis** limit (lower of 5% of revenue or AED 5m); breaching it loses 0% status for that year and the next four [10].
 - **Individuals:** rental income an individual earns from UAE property is outside Corporate Tax at any amount *if no licence is required*. A DET holiday-home permit counts as a licence; Ejari registration does not [13].
 
@@ -89,7 +99,7 @@ Owner holds three ventures via an ADGM SPV holdco and owns a AED 1.5m Dubai apar
 
 ## What this means for the empire
 Our view (judgement, to be confirmed by a licensed UAE tax adviser and corporate lawyer):
-1. **Venture holdco:** one ADGM SPV (or DIFC prescribed company if the gateway is met) owning DCS Golf, Wednesday Circuit and the Al Ain Ostrich Farm operating entities. Optionally a foundation above it for succession.
+1. **Venture holdco:** one ADGM SPV (or DIFC prescribed company — no gateway since Jul 2026, but budget for a DFSA-licensed CSP) owning DCS Golf, Wednesday Circuit and the Al Ain Ostrich Farm operating entities. Optionally a foundation above it for succession.
 2. **Property:** hold Dubai residential property personally while the owner is a Dubai resident, backed by a DIFC or ADJD will. Revisit only for scale, liability, or co-investors — and then use a *separate* property SPV, never the venture holdco.
 3. **Don't licence holiday homes in the owner's name** without modelling the Corporate Tax consequence.
 4. Before forming anything: confirm the Al Ain farm land tenure (Abu Dhabi rules differ entirely from Dubai freehold).
@@ -97,7 +107,8 @@ Our view (judgement, to be confirmed by a licensed UAE tax adviser and corporate
 ## Open questions
 - DLD's current written policy on DIFC, ADGM and RAK ICC company ownership of freehold — ask DLD directly or via a conveyancing lawyer.
 - Current CSP / registered-agent fees for ADGM SPVs and RAK ICC companies (get 2–3 quotes).
-- Audit and UBO rules for DIFC prescribed companies.
+- Audit and UBO rules for DIFC prescribed companies — partly answered from Tier 2 [19]; confirm against the Consolidated Version No. 5 text on the DIFC legal database, plus current DIFC annual fees and whether real property remains a permitted asset.
+- Tier 1 text of Cabinet Resolution 109 of 2026 (RAK ICC as a free zone) — check uaelegislation.gov.ae.
 - Mainland LLC eligibility to own freehold and current DET fees at Tier 1.
 - Whether a holdco above trading subsidiaries benefits from a tax group (95% rule) vs QFZP status — they are mutually exclusive in practice.
 
@@ -107,6 +118,8 @@ Our view (judgement, to be confirmed by a licensed UAE tax adviser and corporate
 - [[Property Investment Metrics]] — how to judge the property itself
 - [[Empire Principles]] — simplicity and downside protection
 - [[Venture Dossier: Al Ain Ostrich Farm]] — needs its own land-tenure research
+- [[UAE Family Wealth Structure: The Waterfall Method]] — the foundation, life policies and family bank that sit above this holdco
+- [[Treasury Liquidity Tiers]] — the holdco is the natural home for the strategic-reserve tier; venture operating cash stays in each operating company
 
 ## Sources
 1. ADGM Registration Authority — Overview of Fees 2025 — https://assets.adgm.com/download/assets/Schedule+of+Fees+2025.pdf/6f25a452823d11ef808c3e0446867bce (Jan 2025; accessed 2026-11-08) [T1]
@@ -126,3 +139,11 @@ Our view (judgement, to be confirmed by a licensed UAE tax adviser and corporate
 15. Trident Trust — RAK ICC key facts — https://tridenttrust.com/media/pqrho05x/tdub-rakicc-kf.pdf (Feb 2024; accessed 2026-11-08) [T2]
 16. FF News — RAK ICC and RAKBANK partnership — https://ffnews.com/news/rak-icc-and-rakbank-partner-to-strengthen-banking-access-for-international-wealt-a305b66c (24 Aug 2026; accessed 2026-11-08) [T3]
 17. Avyanco — Dubai mainland company cost — https://avyanco.com/dubai-mainland-cost/ (Jul 2026; accessed 2026-11-08) [T3]
+18. Clyde & Co — DIFC enacts amended prescribed company regulations — https://www.clydeco.com/en/insights/2026/08/difc-enacts-amended-prescribed-company-regulations (published 5 Aug 2026; accessed 2026-11-15) [T2]
+19. Gibson Dunn — DIFC expands prescribed company regime: comparison with ADGM SPV regime — https://www.gibsondunn.com/difc-expands-prescribed-company-regime-how-it-compares-with-abu-dhabi-global-market-special-purpose-vehicle-regime/ (published 26 Aug 2026; accessed 2026-11-15) [T2]
+20. Al Tamimi & Co — DIFC enacts amended Prescribed Company Regulations 2026 — https://www.tamimi.com/news/difc-enacts-amended-prescribed-company-regulations-2026-broader-access-stronger-oversight/ (published 3 Aug 2026; accessed 2026-11-15) [T2]
+21. PwC — RAK ICC recognised as a free zone for UAE CT purposes — https://www.pwc.com/m1/en/services/tax/middle-east-tax-news-alerts/2026/rak-icc-recognised-as-a-free-zone-for-uae-ct-purposes.html (published 13 Sep 2026; accessed 2026-11-15) [T2]
+22. Simmons & Simmons — FTA releases summary of Corporate Tax clarifications — https://www.simmons-simmons.com/en/publications/cmrwx7uoj00i6uom86ypw257o/uae-corporate-tax-update-fta-releases-summary-of-clarifications (published 22 Jul 2026; accessed 2026-11-15) [T2]
+23. Ministry of Finance — Amendment to Cabinet Decision on Economic Substance Requirements — https://mof.gov.ae/en/news/ministry-of-finance-announces-amendment-to-cabinet-decision-on-economic-substance-requirements/ (published 14 Oct 2024; accessed 2026-11-15) [T1]
+24. Ministry of Finance — Amendments to Ministerial Decisions on Tax Groups and Participation Exemption — https://mof.gov.ae/en/news/ministry-of-finance-announces-amendments-to-ministerial-decisions-on-tax-groups-and-participation-and-foreign-permanent-establishment-exemptions/ (published 23 Dec 2024; accessed 2026-11-15) [T1]
+25. Mondo Visione (republished DIFC press release) — New DIFC regulations further strengthen DIFC's structuring advantage for SPVs — https://mondovisione.com/news/new-difc-regulations-further-strengthen-difcs-structuring-advantage-for-spvs-202683/ (published 3 Aug 2026; accessed 2026-11-15) [T2]

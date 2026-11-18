@@ -49,7 +49,7 @@ function ensureChars() {
 }
 
 function gameCtx(s) {
-  return { today: today(), deadlines: store.deadlines(14), wealth: store.wealth(), wikiCount, fxWarning: fxWarning(s), procureAlerts: procureAlerts(s) };
+  return { today: today(), deadlines: store.deadlines(14), wealth: store.wealth(), wikiCount, fxWarning: fxWarning(s), procureAlerts: procureAlerts(s), toBase: store.toBase };
 }
 
 function buildScene(s) {

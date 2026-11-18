@@ -3,9 +3,9 @@ title: Amazon FBA from China: Model, Rules and Economics
 domain: Business & Ventures
 tags: [amazon, ecommerce, fba, sourcing, china, private-label, uae, passive-income, global-trend-store]
 confidence: medium
-summary: A compliant China-to-Amazon.ae store is private label sold through FBA with you as seller of record; Amazon's own rate card now confirms the fees, the business can run on low input once set up, but it is capital-hungry, fee-heavy and never fully passive.
+summary: A compliant China-to-Amazon.ae store is private label sold through FBA with you as seller of record; Amazon's own rate card now confirms the fees, the business can run on low input once set up, but it is capital-hungry, fee-heavy and never fully passive; a lean tool stack costs about AED 1,450 a month and agencies only pay off above roughly AED 100,000 a month of sales.
 created: 2026-11-08
-updated: 2026-11-09
+updated: 2026-11-11
 pinned: true
 queue_id: q_amz_review
 sources:
@@ -25,10 +25,28 @@ sources:
   - BusinessDubai.ae — How to Sell on Amazon UAE: FBA Business Setup, Customs, Fees & Tax Guide — https://www.businessdubai.ae/blogs/amazon-fba-business-dubai (18 Jul 2026, reviewed 19 Aug 2026; accessed 2026-11-08) [T3]
   - SellerSprite — Amazon Dropshipping Policy: Seller-of-Record Guide — https://www.sellersprite.com/en/blog/amazon-dropshipping-policy (accessed 2026-11-08) [T3]
   - Epic Sourcing — Import Duty & Customs from China to the UAE: A Dubai Importer's 2026 Guide — https://www.epicsourcing.co/post/import-duty-customs-china-to-uae-dubai-2026 (updated 16 Jun 2026; accessed 2026-11-08) [T3]
+  - Amazon — Automate pricing: adjust pricing quickly and automatically — https://sell.amazon.com/tools/automate-pricing (undated; accessed 2026-11-10) [T1]
+  - Amazon.ae — How to Make Money With Amazon UAE (lists Automate Pricing, Sponsored Products, FBA, Brand Registry on Amazon.ae) — https://sell.amazon.ae/selling-online-blog/how-to-make-money-with-amazon (undated; accessed 2026-11-10) [T1]
+  - Amazon Ads Support Center — Rule-based bidding and schedule bid rules for Sponsored Products — https://advertising.amazon.in/help/GDLQ5D2BNFCAU3TW (undated; India help centre, UAE availability not stated; accessed 2026-11-10) [T1]
+  - Amazon — What is the FBA Inventory tool? — https://sell.amazon.com/blog/fba-inventory (published 23 May 2025; accessed 2026-11-10) [T1]
+  - Jungle Scout — The State of the Amazon Seller 2024 — https://www.junglescout.com/wp-content/uploads/2024/02/The-State-of-the-Amazon-Seller-2024-Jungle-Scout.pdf (survey 1 Dec 2023–3 Jan 2024; accessed 2026-11-10) [T2]
+  - Jungle Scout — How much do Amazon sellers make? — https://www.junglescout.com/resources/articles/how-much-do-amazon-sellers-make/ (22 Jul 2024, modified 9 Oct 2024; accessed 2026-11-10) [T2]
+  - Jungle Scout — The State of the Amazon Seller 2023 — https://www.junglescout.com/wp-content/uploads/2023/02/The-State-of-the-Amazon-Seller-2023-Jungle-Scout.pdf (survey 1 Dec 2022–3 Jan 2023; accessed 2026-11-10) [T2]
+  - Jungle Scout — State of the Amazon Seller 2025 (public page) and Jungle Scout pricing page — https://www.junglescout.com/resources/reports/amazon-seller-report-2025/ ; https://www.junglescout.com/pricing/ (survey 10–27 Jan 2025; pricing page modified 22 Oct 2026; accessed 2026-11-10) [T2]
+  - Helium 10 — Pricing — https://www.helium10.com/pricing/ (page modified 23 Sep 2026; accessed 2026-11-10) [T1]
+  - SellerSprite — Pricing — https://www.sellersprite.com/en/price (undated; accessed 2026-11-10) [T1]
+  - Teikametrics — Product pricing — https://teikametrics.com/pricing (page modified 3 May 2026; accessed 2026-11-10) [T1]
+  - SellerApp — Pricing (software and managed services) — https://www.sellerapp.com/pricing.html?pricing=managed (undated, © 2026; accessed 2026-11-10) [T1]
+  - A2X — Amazon pricing — https://www.a2xaccounting.com/amazon/pricing (undated, © 2026, notes increase from 14 Nov 2026; accessed 2026-11-10) [T1]
+  - Xero UAE — Pricing plans — https://www.xero.com/ae/pricing-plans/ (undated, © 2026, USD; accessed 2026-11-10) [T1]
+  - BCL Globiz — Pricing for Accounting and Tax Compliance — https://bcl.ae/pricing-for-accounting-and-tax-compliance (modified 24 Oct 2026; accessed 2026-11-10) [T1]
+  - eStore Factory — Photography and editing packages — https://www.estorefactory.com/photography-and-editing-packages/ (undated, © 2026; accessed 2026-11-10) [T1]
+  - SamVertex F.Z.E. — Amazon FBA prep UAE — https://samvertex-web.pages.dev/blog/amazon-fba-prep-uae/ (10 May 2026; accessed 2026-11-10) [T3]
+  - SupplyKick — How much does an Amazon PPC agency cost? — https://www.supplykick.com/blog/how-much-does-amazon-ppc-agency-cost (updated 3 Oct 2026; accessed 2026-11-10) [T3]
 ---
 # Amazon FBA from China: Model, Rules and Economics
 
-> **Bottom line:** The version of "buy trending items from China and sell on Amazon" that survives is **private label through Fulfilment by Amazon (FBA)**, with your company as the seller of record, a UAE trade licence and a customs client code. Amazon's own Amazon.ae rate card now confirms the fees: 15% referral on home, kitchen and similar categories, FBA from AED 5.5 a unit, AED 2 per cubic foot per month storage, all **before 5% VAT on the fees**. Input can fall to a few hours a week once delegated, but the business is **front-loaded, ties up cash in stock for months, and loses most launches**. Treat it as a portfolio of small, killable bets, not as passive income on day one.
+> **Bottom line:** The version of "buy trending items from China and sell on Amazon" that survives is **private label through Fulfilment by Amazon (FBA)**, with your company as the seller of record, a UAE trade licence and a customs client code. Amazon's own Amazon.ae rate card now confirms the fees: 15% referral on home, kitchen and similar categories, FBA from AED 5.5 a unit, AED 2 per cubic foot per month storage, all **before 5% VAT on the fees**. A lean tool stack runs about AED 1,450 a month, but only one seller in five reports under 4 hours a week (budget 8–10), and an agency at AED 30,000 a month of sales cuts profit by about 40%. The business is **front-loaded, ties up cash in stock for months, and loses most launches**. Treat it as a portfolio of small, killable bets, not as passive income on day one.
 
 *Confidence is medium. The Nov 2026 review (see Verification log) confirmed the referral, FBA and storage fees, customs duty, VAT thresholds, import VAT handling and the corporate tax lines against Tier 1 pages. The Seller Central help pages for the trade-licence rule, the full drop shipping policy and the Brand Registry list of trademark offices could not be fetched, and the normal monthly subscription is not published. Those items stay secondary.*
 
@@ -100,29 +118,57 @@ This is a best-case teaching example. Real products often land closer to 10 to 2
 ## Cash is the real constraint
 Stock is paid for 2 to 4 months before it sells. Illustrative simulation using the example product above (run on the first version at AED 35.05 a unit; the AED 0.50 fee change moves the results by under 2%, so they are not rerun here): eight launches, one every two months; AED 12,000 first order and AED 3,000 launch advertising per launch; a 30% hit rate; winners reach 200 units a month over four months; two-month order-to-shelf lead time; 40% of a failed first order recovered; AED 1,500 a month overhead. Result: **peak cash need about AED 40,000, cumulative profit turning positive around month 16, and about AED 15,000 a month of profit by month 24**. At a 15% hit rate the same programme needs about AED 62,000 of peak cash and only just breaks even around month 24. Failed launches cost the first order and launch advertising, which is why the model assumes most launches fail. Rerun it with your own numbers in the Cash forecast tab.
 
-## What can really be automated
-| Function | Realistic route |
-|---|---|
-| Product scouting | Claude's twice-weekly scout, then 15 minutes of your review |
-| Supplier search and negotiation | Sourcing agent or service; you approve |
-| Quality control | Third-party inspection before each shipment |
-| Freight and customs | Door-to-FBA forwarder with a broker |
-| Listings and images | Freelancer or agency with AI drafting |
-| Advertising | Agency or Amazon ad rules with caps |
-| Pricing, inventory alerts | Amazon automated pricing and alerts |
-| Fulfilment, returns, customer service | FBA |
-| Bookkeeping and VAT | Accountant using the ledger |
-| Strategy and decisions | You: about 30 minutes a week |
+## Low-input operating stack
+Prices are from each provider's own pricing page as of Nov 2026, in USD unless stated, converted at AED 3.6725. They exclude VAT. A VAT-registered business normally reverse-charges and recovers VAT on imported services (adviser to confirm). **Amazon.ae support for each third-party tool is unconfirmed unless stated.**
 
-The app's Automation tab models this at about 4 hours a week once running (model assumption: delegated work still costs about 15% of your time to review, automated about 5%). Setup and each launch take far longer.
+| Function | Amazon native (free with the selling plan) | Named third-party option, price | What stays manual | Owner hours (Judgement) |
+|---|---|---|---|---|
+| Pricing | **Automate Pricing**: rules against the Featured Offer, lowest price or sales volume; existing rules apply within about 15 minutes [17]. Amazon.ae lists it [18] | Not needed for a single-brand private-label seller (*Judgement*) | Setting the floor and ceiling prices; deciding when to stop discounting | 0.25/wk |
+| Advertising | Sponsored Products **rule-based bidding** toward a ROAS goal (needs 10 days live and 10 conversions in 30 days; Amazon "does not guarantee" the target) and **schedule bid rules** [19]. Amazon.ae offers Sponsored Products [18]; whether these rules are available there is unverified | Software: Teikametrics Essentials USD 149–179/mo for up to USD 10k ad spend [27]; Helium 10 Ads in the Diamond plan (USD 279–359/mo) plus **2% of managed spend** [25]. Managed: SellerApp AMS Growth **from USD 750/mo** (lists AE as a supported marketplace) [28] | Launch budgets, ACOS ceiling, negative keywords, killing losing products | 1–2/wk lean; 0.5/wk with an agency |
+| Inventory | FBA Inventory dashboard and **Restock Inventory** recommendations from sales history and seasonality; stock over 90 days of supply counts as excess [20] | — | **Placing purchase orders** and paying deposits: lead times of 6–8 weeks (see [[China Sourcing Playbook for UAE Private-Label Importers]]) make this the one weekly decision you cannot skip | 0.5/wk |
+| Research and keywords | Product Opportunity Explorer, Brand Analytics (registered brand) [20] | Helium 10 Platinum USD 99/mo annual, 129 monthly [25]; SellerSprite USD 39–189/mo [26]; Jungle Scout supports UAE "partially" but its plan prices were not shown on the fetched page [24] | Choosing the product: Claude's scout plus your review | 0.5/wk; heavy at each launch |
+| Listings and images | Manage Your Experiments for A/B tests (registered brand) [20] | SellerApp listing creation from USD 200 per parent ASIN [28]; eStore Factory white-background photography USD 349 per product, editing only USD 199 [32] | Approving claims, compliance wording, Arabic copy | 3–5 per launch |
+| Prep | FBA itself | SamVertex (UAE free zone firm) from AED 0.50 a unit for FNSKU label, AED 1.50 bundling [33] (vendor page, T3) | Choosing between factory labelling and local prep | 0.25/wk |
+| Freight and customs | — | Door-to-FBA forwarder with a broker; see [[China Sourcing Playbook for UAE Private-Label Importers]] | Checking each declaration under your customs code | 1 per shipment |
+| Accounting and VAT | Settlement reports | A2X from USD 59/mo for up to 1,000 orders (prices rise from 14 Nov 2026) [29]; Xero UAE Starter USD 32/mo, Standard USD 54 [30]; BCL Globiz bookkeeping, VAT and corporate tax AED 600/mo + VAT [31] | Reviewing the monthly P&L and the VAT return | 1/month |
+| Fulfilment, returns, service | FBA | — | Escalations, account-health warnings | 0.25/wk |
+
+**Agency fees in context.** No UAE or MENA agency reviewed (SW Cybernetics, My Amazon Guy, SupplyKick) publishes a price; all ask for a call. SupplyKick, an agency, says agencies often charge **10–20% of ad spend**, and cites a third-party report for flat retainers of **USD 1,500–15,000 a month** [34] (T3). SellerApp's USD 750 floor [28] is the cheapest managed option with a published price found.
+
+## Hours by stage: evidence against our model
+| Stage | Evidence | Our model / Judgement |
+|---|---|---|
+| Setup (licence, account, brand, first order) | "Most sellers" have a fully functioning business within **3 months** (Jungle Scout 2023, 715 SMB sellers) [23]; hours not measured | *Judgement:* 10–15 h/wk for about 12 weeks |
+| Each launch (about 8 weeks) | No sourced data found | *Judgement:* +5–8 h/wk on top of steady state |
+| Steady state | Jungle Scout 2024 (1,064 sellers with a live listing, survey Dec 2023–Jan 2024): **19% work under 4 h/wk, 31% 4–10, 21% 11–20, the remaining ~30% over 20**; half work 10 h or less [21][22]. The share under 4 hours was 8% a year earlier [21] | App model: **about 4 h/wk**, a level only about 1 in 5 sellers reports |
+
+Method limits: English-only, self-reported, run by a tool vendor; respondents span 100+ countries but the country mix is not given in the text we could read (*Judgement:* likely US-heavy), and only sellers with a live listing count, so those who quit are excluded [21]. The 2025 edition (about 1,500 respondents, Jan 2025) has no hours figures on its public page; the full report is gated [24]. *Our view:* budget **8–10 h/wk in year one**, and treat 4 h/wk as a year-two target once two or three winners are stable.
+
+## Worked stack cost at AED 30,000 a month of sales
+The worked example product at AED 99: about 303 units, AED 28,571 net of VAT, **AED 10,470 profit before overheads** (36.6% of net revenue). Advertising in the example is about AED 4,500 a month.
+
+| Monthly, AED | (a) Lean DIY with tools | (b) Delegated with agency |
+|---|---|---|
+| Amazon subscription (zero for a limited time [1]) | 0 | 0 |
+| Helium 10 Platinum, annual [25] | 364 | 364 |
+| Xero Starter [30] + A2X Starter [29] | 334 | 334 |
+| Bookkeeping, VAT, corporate tax (BCL Globiz Grow [31]) | 600 | 600 |
+| Prep, 303 units × AED 0.50 [33] | 152 | 152 |
+| PPC management (SellerApp AMS Growth floor [28]) | — | 2,754 |
+| New listing and photos, one product every 2 months [28][32] | — | 1,008 |
+| **Stack cost** | **1,450** | **5,212** |
+| **Profit after stack** | **9,020 (31.6%)** | **5,258 (18.4%)** |
+| Owner hours a week (*Judgement*) | 8–10 | 3–5 |
+
+*Our view:* at AED 30,000 a month an agency is the wrong buy. Its floor fee is **61% of the ad budget**, and with outsourced listings it cuts profit by about 40% against lean (DIY listings cost owner hours instead) and takes the margin below the app's 25% rule. Teikametrics-type software (about AED 660 a month [27]) gives 29.3% for perhaps 2 hours more a week. Agencies start to make sense above roughly AED 100,000 a month, where USD 750 is under 3% of sales. The lean stack (AED 1,450) is close to the AED 1,500 overhead already in the cash simulation. If the Amazon subscription returns at the reported AED 184 a month, margins fall by about 0.6 points.
 
 ## Where it breaks
 - **Product selection:** hype products with weak margins, heavy competition or seasonality.
-- **Compliance and IP:** branded or patented designs, gated categories, products needing safety certification (batteries, electrical, children's, cosmetics, food contact). Check UAE and GCC conformity rules by product type.
+- **Compliance and IP:** branded or patented designs, gated categories, products needing safety certification (batteries, electrical, children's, cosmetics, food contact). Check UAE and GCC conformity rules by product type: see [[UAE and GCC Product Conformity and Import Rules for Amazon Sellers]].
 - **Reviews:** only Amazon-approved programmes; incentivised or fake reviews end accounts.
 - **Cash:** stock-outs hurt rank; overstock burns cash, and stock held over 365 days attracts an unpublished long-term storage fee [1].
 - **Fees drift:** Amazon changes fees (last FBA revision Aug 2025) and the zero subscription is a limited-time offer.
-- **Single-platform risk:** one suspension stops the income. Build your own store and Noon alongside.
+- **Single-platform risk:** one suspension stops the income. Add Noon UAE (and its automatic KSA lane) at the first reorder; see [[Multichannel Expansion from the UAE: Amazon.sa, Noon and Shopify]].
 
 ## Verification log (Nov 2026)
 Review of 9 Nov 2026 for queue item q_amz_review. Not reachable in this run: Seller Central help pages for UAE referral fees (G200336920) and the drop shipping policy (201808410); the Brand Registry eligibility page (sell.amazon.ca/brand-registry, redirected from brandservices.amazon.ca); the Seller Central FBA calculator (needs login); FTA corporate tax rates page, VAT Decree-Law PDFs and E-commerce VAT guide (blocked to automated fetch by the site).
@@ -152,30 +198,36 @@ Review of 9 Nov 2026 for queue item q_amz_review. Not reachable in this run: Sel
 | Small Business Relief below AED 3m to periods ending 31 Dec 2029 | **Confirmed** [11][12] (Ministerial Decision 131 of 2026) |
 | MD 229 of 2025 excludes B2C sales from the free zone 0% rate | **Confirmed in substance**: transactions with natural persons are excluded activities [13]; application to Amazon sales is judgement, adviser to confirm |
 | Worked example FBA fee AED 9.00 | **Corrected** → AED 9.50 [1]; net profit AED 35.05 → 34.55 |
+| *10 Nov 2026, q_amz_automation:* "about 4 h/wk once running" | **Challenged**: only 19% of surveyed sellers report under 4 h/wk [21][22]; operating stack, stage hours and AED stack costs added from providers' own pricing pages [17]–[33]. Not reachable: Jungle Scout plan prices, Zoho Books UAE pricing (fetch permission timed out), DataDive and Perpetua price pages, Amazon.ae availability of rule-based bidding and of each third-party tool; no UAE/MENA agency publishes prices |
 
 ## Key takeaways
 - Be the seller of record; private label with FBA is the compliant, low-input route.
 - Amazon's own rate card confirms the fee stack: about 15% referral plus AED 7–22 FBA per standard unit plus storage, all plus 5% VAT.
 - Kill products on maths: 3x price-to-cost and 25% net margin after ads, no red flags.
-- Register for VAT before the first import: import VAT then goes through the return instead of the border, and Amazon's VAT on fees is recoverable.
-- Budget for months of tied-up cash and for most launches to fail; get an adviser's view on corporate tax and the free zone question before choosing the entity.
+- Register for VAT before the first import (import VAT then goes through the return); budget for months of tied-up cash, most launches failing, and an adviser's view on the free zone question.
+- Run lean (Amazon's free tools plus about AED 1,450 a month of software and bookkeeping) and plan 8–10 hours a week in year one; hire an agency only above roughly AED 100,000 a month of sales.
 
 ## What this means for the empire
 - **Global Trend Store:** run the stage gates in the venture workspace. Do not order until a lead passes the scorecard and calculator with real quotes, and three suppliers have been vetted. Update the calculator's FBA fee to the Aug 2025 rate card (AED 9.50 for a light standard parcel above AED 25).
 - **DCS Golf:** golf accessories are a natural beachhead category and a cross-sell to the luxury line; budget a 14% referral (Sports) rather than 15% until the category is confirmed. Keep branding separate until the store proves itself.
 - **Structure:** decide the entity with an adviser. MD 229 of 2025 excludes transactions with natural persons from the free zone 0% rate, so plan on 9% above AED 375,000 (or Small Business Relief while revenue stays under AED 3 million, to 2029).
+- **Global Trend Store operating plan:** change the app's Automation tab from about 4 to **8–10 h/wk in year one**, add a stack-cost line of about AED 1,450 a month, and flag agency use below AED 100,000 a month of sales as margin-negative (*Judgement*). Before paying for any tool, confirm in a free trial that it reads Amazon.ae data.
 - **Treasury:** fund inventory only from the strategic cash tier, never the reserve.
 - **Before the first shipment:** log in to Seller Central and confirm the trade-licence requirement, the drop shipping policy text, the normal subscription fee, long-term storage and inbound fees, and Brand Registry acceptance of a UAE trademark.
 
 ## Open questions
 - Does Amazon Brand Registry accept a UAE Ministry of Economy trademark, or does the brand need a filing in another approved office? (Seller Central / Brand Registry, behind login.)
 - What is the Amazon.ae subscription fee once the zero-fee offer ends, and what are long-term storage, inbound and removal fees? (Seller Central.)
-- UAE and GCC product conformity requirements (for example ECAS) by category: see [[China Sourcing Playbook for UAE Private-Label Importers]].
+- UAE and GCC product conformity by category is now mapped in [[UAE and GCC Product Conformity and Import Rules for Amazon Sellers]]; open point is a notified-body scope check on the first shortlisted HS codes.
 - Can a freight forwarder act as importer of record for FBA inbound, or must the seller hold its own customs code?
-- Realistic agency and agent fees in the UAE market, from quotes.
+- Quotes from two or three UAE Amazon.ae agencies: none publishes prices. Sourcing-agent fees are still open.
+- Which third-party tools (Helium 10, SellerSprite, Teikametrics, A2X) actually support Amazon.ae data, and is rule-based bidding live in UAE Amazon Ads? (Free trials and the Amazon Ads console.)
 - Typical first-year survival and margin data for new sellers from a neutral source.
 
 ## Related
+- [[Multichannel Expansion from the UAE: Amazon.sa, Noon and Shopify]] — when and how to add Noon, Noon KSA, Amazon.sa and an own store
+- [[Amazon.ae and Noon Category Scan: Small, Light, Uncertified Niches]] — which niches to launch first, and the AED 59 price floor
+- [[UAE and GCC Product Conformity and Import Rules for Amazon Sellers]] — certification, labelling and battery rules by category
 - [[Venture Validation Framework]] — stage-gated capital release for this venture
 - [[UAE Corporate Tax Essentials]] — the tax cost line
 - [[UAE Holding Structures]] — where the e-commerce entity should sit
@@ -201,3 +253,21 @@ Review of 9 Nov 2026 for queue item q_amz_review. Not reachable in this run: Sel
 14. BusinessDubai.ae — How to Sell on Amazon UAE: FBA Business Setup, Customs, Fees & Tax Guide — https://www.businessdubai.ae/blogs/amazon-fba-business-dubai (18 Jul 2026, reviewed 19 Aug 2026; accessed 2026-11-08) [T3] — a company that sells setup services
 15. SellerSprite — Amazon Dropshipping Policy: Seller-of-Record Guide — https://www.sellersprite.com/en/blog/amazon-dropshipping-policy (accessed 2026-11-08) [T3] — summary of Amazon's policy, not Amazon's text
 16. Epic Sourcing — Import Duty & Customs from China to the UAE: A Dubai Importer's 2026 Guide — https://www.epicsourcing.co/post/import-duty-customs-china-to-uae-dubai-2026 (updated 16 Jun 2026; accessed 2026-11-08) [T3] — freight firm
+17. Amazon — Automate pricing: adjust pricing quickly and automatically — https://sell.amazon.com/tools/automate-pricing (undated; accessed 2026-11-10) [T1]
+18. Amazon.ae — How to Make Money With Amazon UAE (lists Automate Pricing, Sponsored Products, FBA, Brand Registry on Amazon.ae) — https://sell.amazon.ae/selling-online-blog/how-to-make-money-with-amazon (undated; accessed 2026-11-10) [T1]
+19. Amazon Ads Support Center — Rule-based bidding and schedule bid rules for Sponsored Products — https://advertising.amazon.in/help/GDLQ5D2BNFCAU3TW (undated; India help centre, UAE availability not stated; accessed 2026-11-10) [T1]
+20. Amazon — What is the FBA Inventory tool? — https://sell.amazon.com/blog/fba-inventory (published 23 May 2025; accessed 2026-11-10) [T1]
+21. Jungle Scout — The State of the Amazon Seller 2024 — https://www.junglescout.com/wp-content/uploads/2024/02/The-State-of-the-Amazon-Seller-2024-Jungle-Scout.pdf (survey 1 Dec 2023–3 Jan 2024; accessed 2026-11-10) [T2] — vendor-run, self-reported survey
+22. Jungle Scout — How much do Amazon sellers make? — https://www.junglescout.com/resources/articles/how-much-do-amazon-sellers-make/ (22 Jul 2024, modified 9 Oct 2024; accessed 2026-11-10) [T2] — gives the full hours distribution from [21]
+23. Jungle Scout — The State of the Amazon Seller 2023 — https://www.junglescout.com/wp-content/uploads/2023/02/The-State-of-the-Amazon-Seller-2023-Jungle-Scout.pdf (survey 1 Dec 2022–3 Jan 2023; accessed 2026-11-10) [T2] — vendor-run survey
+24. Jungle Scout — State of the Amazon Seller 2025 (public page) and Jungle Scout pricing page — https://www.junglescout.com/resources/reports/amazon-seller-report-2025/ ; https://www.junglescout.com/pricing/ (survey 10–27 Jan 2025; pricing page modified 22 Oct 2026; accessed 2026-11-10) [T2] — full report gated; plan prices not shown
+25. Helium 10 — Pricing — https://www.helium10.com/pricing/ (page modified 23 Sep 2026; accessed 2026-11-10) [T1]
+26. SellerSprite — Pricing — https://www.sellersprite.com/en/price (undated; accessed 2026-11-10) [T1]
+27. Teikametrics — Product pricing — https://teikametrics.com/pricing (page modified 3 May 2026; accessed 2026-11-10) [T1]
+28. SellerApp — Pricing (software and managed services) — https://www.sellerapp.com/pricing.html?pricing=managed (undated, © 2026; accessed 2026-11-10) [T1]
+29. A2X — Amazon pricing — https://www.a2xaccounting.com/amazon/pricing (undated, © 2026, notes increase from 14 Nov 2026; accessed 2026-11-10) [T1]
+30. Xero UAE — Pricing plans — https://www.xero.com/ae/pricing-plans/ (undated, © 2026, USD; accessed 2026-11-10) [T1]
+31. BCL Globiz — Pricing for Accounting and Tax Compliance — https://bcl.ae/pricing-for-accounting-and-tax-compliance (modified 24 Oct 2026; accessed 2026-11-10) [T1] — a firm selling the service
+32. eStore Factory — Photography and editing packages — https://www.estorefactory.com/photography-and-editing-packages/ (undated, © 2026; accessed 2026-11-10) [T1]
+33. SamVertex F.Z.E. — Amazon FBA prep UAE — https://samvertex-web.pages.dev/blog/amazon-fba-prep-uae/ (10 May 2026; accessed 2026-11-10) [T3] — vendor page on a generic host, no street address
+34. SupplyKick — How much does an Amazon PPC agency cost? — https://www.supplykick.com/blog/how-much-does-amazon-ppc-agency-cost (updated 3 Oct 2026; accessed 2026-11-10) [T3] — agency blog citing a third-party report
